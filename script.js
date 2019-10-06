@@ -3,10 +3,12 @@ const imagesX = 4;
 const imagesY = 4;
 const countImages = imagesX*imagesY;
 
+const KEY_showSilhouette = 83; // S
+const KEY_shouldConnect = 32; // SPACE
+
 const DIRECTORY = "images/"
 
 var downloadedImages = 0;
-
 
 
 // Вспомогательный объект, который необходим при удержании изображения мышью
@@ -32,6 +34,8 @@ var FragmentsGeneralCharacteristic = {
 }
 
 var CanvasCharacteristic = {
+  all_width: -1,
+  all_height: -1,
   width: -1,
   height: -1,
   lastX: -1,
@@ -52,7 +56,6 @@ function drawAll() {
     canvas.width,
     canvas.height
   );
-
   context.beginPath();
   context.rect(
     CanvasCharacteristic.firstX,
@@ -60,8 +63,16 @@ function drawAll() {
     CanvasCharacteristic.width,
     CanvasCharacteristic.height
   );
-  // console.log(FragmentsGeneralCharacteristic.widthScale);
-  // console.log(FragmentsGeneralCharacteristic.heightScale * 4);
+  context.lineWidth = "10";
+  context.strokeStyle = "green";
+  context.stroke();
+  context.beginPath();
+  context.rect(
+    CanvasCharacteristic.firstX,
+    CanvasCharacteristic.firstY,
+    CanvasCharacteristic.width,
+    CanvasCharacteristic.height
+  );
   context.lineWidth = "10";
   context.strokeStyle = "green";
   context.stroke();
@@ -91,11 +102,17 @@ function getRandomArbitary(min, max) {
 
 var lastDownTarget = null;
 var shouldConnect = false;
+var showSilhouette = false;
 window.onload = function() {
 
   console.log("Started");
   canvas = document.getElementById("canvas-puzzle");
   context = canvas.getContext('2d');
+
+  CanvasCharacteristic.all_width = canvas.width / 3*2; // ЗАМЕНИТЬ
+  CanvasCharacteristic.all_height = canvas.height; // ЗАМЕНИТЬ
+  CanvasCharacteristic.firstX = 0;
+  CanvasCharacteristic.firstY = 0;
 
   // Заполнение массива изображениями
   for (i = 0; i < countImages; i++) {
@@ -111,8 +128,8 @@ window.onload = function() {
     arr.push(
       new Fragment(
         DIRECTORY + (i + 1) + '.png',
-        getRandomArbitary(320, 1520), getRandomArbitary(280, 880),
-        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null)
+        getRandomArbitary(1940, 3020), getRandomArbitary(80, 880),
+        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null)  // ЗАМЕНИТЬ
       )
     );
   }
@@ -232,28 +249,33 @@ window.onload = function() {
   }
 
   document.addEventListener('mousedown', function(event) {
+    if(lastDownTarget != event.target) {
+      showSilhouette = false;
+    }
     lastDownTarget = event.target;
   }, false);
 
   document.addEventListener('keydown', function(event) {
     if (lastDownTarget == canvas) {
-      if (event.keyCode == 32) {
+      if (event.keyCode == KEY_shouldConnect) {
         if (shouldConnect)
           shouldConnect = false;
         else shouldConnect = true;
         console.log("shouldConnect is", shouldConnect);
       }
+      if (event.keyCode == KEY_showSilhouette) {
+        showSilhouette = true;
+      }
     }
   }, false);
 
-  // $("#d").keydown(function() {
-  //   console.log("!");
-  // });
-  //
-  // $('#canvas-puzzle').focus().blur(function() {
-  //   $('#canvas-puzzle').focus();
-  //   console.log("!");
-  // });
+  document.addEventListener('keyup', function(event) {
+    if (lastDownTarget == canvas) {
+      if (event.keyCode == KEY_showSilhouette) {
+        showSilhouette = false;
+      }
+    }
+  }, false);
 
   // Анимация с определённой частотой для обновления экрана
   setInterval(update, 1000 / FRAMES);

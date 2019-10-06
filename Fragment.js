@@ -32,23 +32,21 @@ class Fragment {
         FragmentsGeneralCharacteristic.height = this.height;
         FragmentsGeneralCharacteristic.SCALE = (
           Math.min(
-            canvas.width / (imagesX / 5 * 3) / FragmentsGeneralCharacteristic.width,
-            canvas.height / (imagesY / 5 * 3) / FragmentsGeneralCharacteristic.height
+            CanvasCharacteristic.all_width / (imagesX / 5 * 3) / FragmentsGeneralCharacteristic.width,
+            CanvasCharacteristic.all_height / (imagesY / 5 * 3) / FragmentsGeneralCharacteristic.height
           )
         );
         FragmentsGeneralCharacteristic.widthScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.width);
         FragmentsGeneralCharacteristic.heightScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.height);
         FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
         FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
-        FragmentsGeneralCharacteristic.connectRange = 3*Math.min(
+        FragmentsGeneralCharacteristic.connectRange = 3 * Math.min(
           FragmentsGeneralCharacteristic.third_x,
           FragmentsGeneralCharacteristic.third_y
         );
-        CanvasCharacteristic.width = FragmentsGeneralCharacteristic.widthScale/5*3 * imagesX;
+        CanvasCharacteristic.width = FragmentsGeneralCharacteristic.widthScale / 5 * 3 * imagesX;
         console.log(CanvasCharacteristic.width);
-        CanvasCharacteristic.height = FragmentsGeneralCharacteristic.heightScale/5*3 * imagesY;
-        CanvasCharacteristic.firstX = 0;
-        CanvasCharacteristic.firstY = 0;
+        CanvasCharacteristic.height = FragmentsGeneralCharacteristic.heightScale / 5 * 3 * imagesY;
         CanvasCharacteristic.lastX = CanvasCharacteristic.firstX + CanvasCharacteristic.width;
         CanvasCharacteristic.lastY = CanvasCharacteristic.firstY + CanvasCharacteristic.height;
       }
@@ -58,12 +56,25 @@ class Fragment {
 
   // Отображает изображение в заданных координатах
   draw() {
-    context.drawImage(this.img,
-      this.x,
-      this.y,
-      FragmentsGeneralCharacteristic.widthScale,
-      FragmentsGeneralCharacteristic.heightScale
-    )
+    if (!showSilhouette) {
+      context.drawImage(this.img,
+        this.x,
+        this.y,
+        FragmentsGeneralCharacteristic.widthScale,
+        FragmentsGeneralCharacteristic.heightScale
+      )
+    } else {
+      context.beginPath();
+      context.rect(
+        this.x + FragmentsGeneralCharacteristic.third_x,
+        this.y + FragmentsGeneralCharacteristic.third_y,
+        FragmentsGeneralCharacteristic.widthScale - 2*FragmentsGeneralCharacteristic.third_x,
+        FragmentsGeneralCharacteristic.heightScale - 2*FragmentsGeneralCharacteristic.third_y
+      );
+      context.lineWidth = "7";
+      context.strokeStyle = "black";
+      context.stroke();
+    }
   }
 
   // Проверяет, есть ли в границах изображения заданная точка или нет
