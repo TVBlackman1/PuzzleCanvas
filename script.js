@@ -3,6 +3,9 @@ const imagesX = 4;
 const imagesY = 4;
 const countImages = imagesX*imagesY;
 
+const FIELD_WIDTH = 1; // Размеры поля
+const FIELD_HEIGHT = 10 / 11; // Местоположение поля в Fragment.js -> (61, 62) строки
+
 const KEY_showSilhouette = 83; // S
 const KEY_shouldConnect = 32; // SPACE
 
@@ -60,11 +63,11 @@ function drawAll() {
   context.rect(
     CanvasCharacteristic.firstX,
     CanvasCharacteristic.firstY,
-    CanvasCharacteristic.width,
-    CanvasCharacteristic.height
+    CanvasCharacteristic.all_width,
+    CanvasCharacteristic.all_height
   );
   context.lineWidth = "10";
-  context.strokeStyle = "green";
+  context.strokeStyle = "red";
   context.stroke();
   context.beginPath();
   context.rect(
@@ -109,10 +112,8 @@ window.onload = function() {
   canvas = document.getElementById("canvas-puzzle");
   context = canvas.getContext('2d');
 
-  CanvasCharacteristic.all_width = canvas.width / 3*2; // ЗАМЕНИТЬ
-  CanvasCharacteristic.all_height = canvas.height; // ЗАМЕНИТЬ
-  CanvasCharacteristic.firstX = 0;
-  CanvasCharacteristic.firstY = 0;
+  CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
+  CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
 
   // Заполнение массива изображениями
   for (i = 0; i < countImages; i++) {
@@ -127,9 +128,10 @@ window.onload = function() {
     //getRandomArbitary(320,1520), getRandomArbitary(280,880),
     arr.push(
       new Fragment(
+        i,
         DIRECTORY + (i + 1) + '.png',
-        getRandomArbitary(1940, 3020), getRandomArbitary(80, 880),
-        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null)  // ЗАМЕНИТЬ
+        getRandomArbitary(1940, 3020), getRandomArbitary(80, 480),
+        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
       )
     );
   }
@@ -139,8 +141,17 @@ window.onload = function() {
   canvas.onmousemove = function(e) {
     var loc = getCoords(canvas, e.clientX, e.clientY);
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      arr[SelectFragmentHelper.translatedFragmentId].move(loc.x - SelectFragmentHelper.deltaX,
-        loc.y - SelectFragmentHelper.deltaY);
+      if (arr[SelectFragmentHelper.translatedFragmentId].group == null)
+        arr[SelectFragmentHelper.translatedFragmentId].move(loc.x - SelectFragmentHelper.deltaX,
+          loc.y - SelectFragmentHelper.deltaY);
+      else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+        var newX = loc.x - SelectFragmentHelper.deltaX;
+        var newY = loc.y - SelectFragmentHelper.deltaY;
+        arr[SelectFragmentHelper.translatedFragmentId].group.move(
+          newX, newY,
+          arr[SelectFragmentHelper.translatedFragmentId]
+        );
+      }
     }
   };
 
@@ -165,81 +176,12 @@ window.onload = function() {
   canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
-      leftFragment = selectedFragment.left;
-      rightFragment = selectedFragment.right;
-      topFragment = selectedFragment.top;
-      bottomFragment = selectedFragment.bottom;
-
-      // координатный номер пазла
-      i = SelectFragmentHelper.translatedFragmentId;
-      x = i % imagesX;
-      y = Math.floor(i / imagesY);
       if (shouldConnect) {
-        try {
-          console.log(selectedFragment);
-        } catch {}
-        if (x == 0 && y == 0 && arr[i].rangeFromLeftTop(CanvasCharacteristic.firstX, CanvasCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
-          console.log("!");
-          selectedFragment.smoothMove(
-            CanvasCharacteristic.firstX - FragmentsGeneralCharacteristic.third_x,
-            CanvasCharacteristic.firstY - FragmentsGeneralCharacteristic.third_y
-          );
-        } else if (x == imagesX - 1 && y == 0 && arr[i].rangeFromRightTop(CanvasCharacteristic.lastX, CanvasCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
-          console.log("!");
-          selectedFragment.smoothMove(
-            CanvasCharacteristic.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
-            CanvasCharacteristic.firstY -FragmentsGeneralCharacteristic.third_y
-          );
-        } else if (x == imagesX - 1 && y == imagesY - 1 && arr[i].rangeFromRightBottom(CanvasCharacteristic.lastX, CanvasCharacteristic.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
-          console.log("!");
-          selectedFragment.smoothMove(
-            CanvasCharacteristic.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
-            CanvasCharacteristic.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
-          );
-        } else if (x == 0 && y == imagesY - 1 && arr[i].rangeFromLeftBottom(CanvasCharacteristic.firstX, CanvasCharacteristic.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
-          console.log("!");
-          selectedFragment.smoothMove(
-            CanvasCharacteristic.firstX - FragmentsGeneralCharacteristic.third_x,
-            CanvasCharacteristic.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
-          );
-        } else if (topFragment != null && topFragment.canConnectBottomFragment()) {
-          coords = topFragment.leftBot();
-          x = coords.x;
-          y = coords.y;
-
-          selectedFragment.smoothMove(
-            x - FragmentsGeneralCharacteristic.third_x,
-            y - FragmentsGeneralCharacteristic.third_y
-          );
-        } else if (leftFragment != null && leftFragment.canConnectRightFragment()) {
-          console.log("canConnectRightFragment");
-          coords = leftFragment.rightTop();
-          x = coords.x;
-          y = coords.y;
-
-          selectedFragment.smoothMove(
-            x - FragmentsGeneralCharacteristic.third_x,
-            y - FragmentsGeneralCharacteristic.third_y
-          );
-        } else if (bottomFragment != null && bottomFragment.canConnectTopFragment()) {
-          console.log("canConnectTopFragment");
-          coords = bottomFragment.leftTop();
-          x = coords.x;
-          y = coords.y;
-
-          selectedFragment.smoothMove(
-            x - FragmentsGeneralCharacteristic.third_x,
-            y - FragmentsGeneralCharacteristic.heightScale + FragmentsGeneralCharacteristic.third_y
-          );
-        } else if (rightFragment != null && rightFragment.canConnectLeftFragment()) {
-          coords = rightFragment.leftTop();
-          x = coords.x;
-          y = coords.y;
-
-          selectedFragment.smoothMove(
-            x - FragmentsGeneralCharacteristic.widthScale + FragmentsGeneralCharacteristic.third_x,
-            y - FragmentsGeneralCharacteristic.third_y
-          );
+        if (selectedFragment.group == null) {
+          selectedFragment.connectToOther();
+        }
+        else {
+          selectedFragment.group.connectTo()
         }
       }
 
@@ -249,7 +191,7 @@ window.onload = function() {
   }
 
   document.addEventListener('mousedown', function(event) {
-    if(lastDownTarget != event.target) {
+    if (lastDownTarget != event.target) {
       showSilhouette = false;
     }
     lastDownTarget = event.target;
