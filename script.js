@@ -160,7 +160,7 @@ window.onload = function() {
     shouldConnect = true;
     for (i = arr.length - 1; i >= 0; i--) {
       var loc = getCoords(canvas, e.clientX, e.clientY);
-      if (arr[i].isHadPoint(loc.x, loc.y)) {
+      if (arr[i].isHadPoint(loc.x, loc.y) && arr[i].smoothing == false) {
         ranges = arr[i].rangeToStartImage(loc.x, loc.y);
         SelectFragmentHelper.deltaX = ranges.x;
         SelectFragmentHelper.deltaY = ranges.y;

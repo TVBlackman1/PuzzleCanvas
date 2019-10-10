@@ -9,6 +9,12 @@ class Fragment {
     this.ind = ind;
     this.downloadImage();
 
+    this.smoothing = false; // для ограничения движения объекта во время анимации
+    this.connecting = null; // для объекта, который коннектинг этот объекта
+    // чтобы объекты не коннектились друг в друга, хотя на эт похуй при быстрой анимации
+    // потому пока не реализовано
+
+
     FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.SCALE / 5;
     FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.SCALE / 5;
     FragmentsGeneralCharacteristic.connectRange = FragmentsGeneralCharacteristic.third_x * 2; // ВРЕМЕННО
@@ -107,6 +113,28 @@ class Fragment {
       x: x - this.x,
       y: y - this.y
     };
+  }
+
+  workGroups(selected, other) {
+    console.log(selected.group, other.group);
+    if (selected.group == null) {
+      if (other.group == null) {
+        selected.group = new FragmentGroup();
+        other.group = selected.group;
+        selected.group.fragments.add(selected);
+        selected.group.fragments.add(other);
+      } else {
+        selected.group = other.group;
+        selected.group.fragments.add(selected);
+      }
+    } else {
+      if (other.group == null) {
+        other.group = selected.group;
+        selected.group.fragments.add(other);
+      } else {
+        selected.group.changeGroup(other.group)
+      }
+    }
   }
 
   rightTop() {
@@ -213,11 +241,14 @@ class Fragment {
       (rB.x - x) * (rB.x - x))
   }
 
-  smoothmoveOneOrGroup(fr, selected, x, y) {
+  smoothmoveOneOrGroup(fr, x, y, connectingFragment) {
+    // нахера тут 2 первых аргумента я уже не ебу, убрал к хуям
+    // connectingFragment для передачи в smoothMove. Если тот, к кому клеется движется, то и этот должен двигаться
+    // просто добавление в группу не работает при его smoothMove
     if (fr.group == null) {
-      fr.smoothMove(x, y);
+      fr.smoothMove(x, y, connectingFragment);
     } else {
-      fr.group.smoothMove(x, y, this);
+      fr.group.smoothMove(x, y, this, connectingFragment); // допилим позже
     }
   }
 
@@ -241,7 +272,7 @@ class Fragment {
     if (x == 0 && y == 0 && this.rangeFromLeftTop(CanvasCharacteristic.firstX, CanvasCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
-          this, this,
+          this,
           CanvasCharacteristic.firstX - FragmentsGeneralCharacteristic.third_x,
           CanvasCharacteristic.firstY - FragmentsGeneralCharacteristic.third_y
         );
@@ -253,7 +284,7 @@ class Fragment {
     } else if (x == imagesX - 1 && y == 0 && this.rangeFromRightTop(CanvasCharacteristic.lastX, CanvasCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
-          this, this,
+          this,
           CanvasCharacteristic.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
           CanvasCharacteristic.firstY - FragmentsGeneralCharacteristic.third_y
         );
@@ -265,7 +296,7 @@ class Fragment {
     } else if (x == imagesX - 1 && y == imagesY - 1 && this.rangeFromRightBottom(CanvasCharacteristic.lastX, CanvasCharacteristic.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
-          this, this,
+          this,
           CanvasCharacteristic.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
           CanvasCharacteristic.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
         );
@@ -277,7 +308,7 @@ class Fragment {
     } else if (x == 0 && y == imagesY - 1 && this.rangeFromLeftBottom(CanvasCharacteristic.firstX, CanvasCharacteristic.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
-          this, this,
+          this,
           CanvasCharacteristic.firstX - FragmentsGeneralCharacteristic.third_x,
           CanvasCharacteristic.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
         );
@@ -346,25 +377,7 @@ class Fragment {
       if (connectArray.length > 0) {
         var near = connectArray[0];
         if (withConnect) {
-          this.smoothmoveOneOrGroup(this, this, near.x + near.dX, near.y + near.dY)
-          if (this.group == null) {
-            if (near.fr.group == null) {
-              this.group = new FragmentGroup();
-              near.fr.group = this.group;
-              this.group.fragments.add(this);
-              this.group.fragments.add(near.fr);
-            } else {
-              this.group = near.fr.group;
-              this.group.fragments.add(this);
-            }
-          } else {
-            if (near.fr.group == null) {
-              near.fr.group = this.group;
-              this.group.fragments.add(near.fr);
-            } else {
-              this.group.changeGroup(near.fr.group)
-            }
-          }
+          this.smoothmoveOneOrGroup(this, near.x + near.dX, near.y + near.dY, near.fr);
         }
         return {
           res: true,
@@ -382,7 +395,23 @@ class Fragment {
     this.x = x;
     this.y = y;
   }
-  smoothMove(newX, newY) {
+  smoothMove(newX, newY, connectingFragment = null) {
+    console.log("Smoothmove");
+    console.log(connectingFragment);
+    // тупо вызвать в аргументаъ объект, если идет смув к нему. Он может двигаться, в этом проблема
+    // перемещаемся с его скоростью и без проблем настигаем нахуй хохо Снова пишу в час ночи а завтра 1 пара
+    // охуенно.
+
+    // connectingFragment - фрагмент, к которому я конекчусь.
+    // при измнении его координат мои подстраиваются
+
+    // Во время проведения анимации запрещается его двигать как либо!!!
+    // это приведет к нереальному пиздецу
+
+    // если объект ещё смувится, а к нему смув другого закончился, то надо тот пододвигать
+
+    this.smoothing = true;
+
     let oldX = this.x;
     let oldY = this.y;
     let tact = 21;
@@ -390,16 +419,74 @@ class Fragment {
     let dX = (newX - oldX) / (tact);
     let dY = (newY - oldY) / (tact);
     let fragment = this;
+
+    var connectingX = -1;
+    var connectingY = -1;
+    var connectingX_start = -1;
+    var connectingY_start = -1;
+    if (connectingFragment != null) {
+      connectingX = connectingFragment.x;
+      connectingY = connectingFragment.y;
+      connectingX_start = connectingX;
+      connectingY_start = connectingY;
+    }
     //тактовая отрисовка
     function reDraw() {
       fragment.x += dX;
       fragment.y += dY;
-      if (currentTact < tact) {
-        setTimeout(reDraw, 1000 / FRAMES / tact); //ИЗМЕНЕНО
+
+      // при изменении координат присоединяющего элемента следуем за ним
+      // по разнице координат
+      if (connectingFragment != null &&
+        (
+          connectingX != connectingFragment.x ||
+          connectingY != connectingFragment.y)
+      ) {
+        fragment.x += connectingFragment.x - connectingX;
+        fragment.y += connectingFragment.y - connectingY;
+
+        connectingX = connectingFragment.x;
+        connectingY = connectingFragment.y;
+      }
+
+      if (currentTact < tact - 1) {
+        setTimeout(reDraw, 3000 / tact); //ИЗМЕНЕНО
         currentTact++;
       } else {
         fragment.x = newX;
         fragment.y = newY;
+        fragment.smoothing = false;
+        if (connectingFragment != null) {
+
+          // // установка финальных координат
+          // fragment.x += connectingX - connectingX_start;
+          // fragment.y += connectingY - connectingY_start;
+
+          function copyPositionIfNotSmoothmove() { // не работает, надо переделать
+            // если объект ещё смувится, а к нему смув другого закончился, то надо тот пододвигать
+            fragment.x += connectingFragment.x - connectingX;
+            fragment.y += connectingFragment.y - connectingY;
+
+            connectingX = connectingFragment.x;
+            connectingY = connectingFragment.y;
+
+            if (connectingFragment.smoothing) {
+              console.log("!")
+              setTimeout(copyPositionIfNotSmoothmove, 3000 / tact);
+            }
+          }
+          copyPositionIfNotSmoothmove()
+
+          // установка финальных координат
+          fragment.x += connectingX - connectingX_start;
+          fragment.y += connectingY - connectingY_start;
+
+          fragment.workGroups(fragment, connectingFragment);
+
+          // в конце добавляем объект к группе. В начале нельзя делать, иначе фрагмент будети
+          // копировать поведение выбранного объекта, а он и так движется за подсоединяющим в smoothMove
+          // а так не будет
+        }
       }
     }
     reDraw();

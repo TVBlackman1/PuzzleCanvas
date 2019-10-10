@@ -23,16 +23,19 @@ class FragmentGroup {
     selected.move(x, y);
   }
 
-  smoothMove(x, y, selected) {
+  smoothMove(x, y, selected, connectingFragment) {
+    // connectingFragment - фрагмент, к которому я конекчусь.
+    // при измнении его координат мои подстраиваются
     this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
       if (fragment !== selected) {
         fragment.smoothMove(
           x - selected.x + fragment.x,
-          y - selected.y + fragment.y
+          y - selected.y + fragment.y,
+          connectingFragment
         )
       }
     });
-    selected.smoothMove(x, y);
+    selected.smoothMove(x, y, connectingFragment);
   }
 
   changeGroup(newGroup) {
