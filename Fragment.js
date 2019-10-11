@@ -396,8 +396,6 @@ class Fragment {
     this.y = y;
   }
   smoothMove(newX, newY, connectingFragment = null) {
-    console.log("Smoothmove");
-    console.log(connectingFragment);
     // тупо вызвать в аргументаъ объект, если идет смув к нему. Он может двигаться, в этом проблема
     // перемещаемся с его скоростью и без проблем настигаем нахуй хохо Снова пишу в час ночи а завтра 1 пара
     // охуенно.
@@ -455,7 +453,7 @@ class Fragment {
       } else {
         fragment.x = newX;
         fragment.y = newY;
-        fragment.smoothing = false;
+        // fragment.smoothing = false;
         if (connectingFragment != null) {
 
           // // установка финальных координат
@@ -473,6 +471,8 @@ class Fragment {
             if (connectingFragment.smoothing) {
               console.log("!")
               setTimeout(copyPositionIfNotSmoothmove, 3000 / tact);
+            } else {
+              fragment.smoothing = false; // движется до тех пор, пока движется родитель
             }
           }
           copyPositionIfNotSmoothmove()
@@ -486,6 +486,8 @@ class Fragment {
           // в конце добавляем объект к группе. В начале нельзя делать, иначе фрагмент будети
           // копировать поведение выбранного объекта, а он и так движется за подсоединяющим в smoothMove
           // а так не будет
+        } else {
+          fragment.smoothing = false; // нет родителя, незачем двигаться
         }
       }
     }
