@@ -460,7 +460,7 @@ class Fragment {
       }
 
       if (currentTact < tact - 1) {
-        setTimeout(reDraw, 3000 / tact); //ИЗМЕНЕНО
+        setTimeout(reDraw, 1000 / FRAMES / tact); //ИЗМЕНЕНО
         currentTact++;
       } else {
         fragment.x = newX;
@@ -477,7 +477,7 @@ class Fragment {
 
             if (connectingFragment.smoothing) {
               // проверка для повтора смува
-              setTimeout(copyPositionIfNotSmoothmove, 3000 / tact);
+              setTimeout(copyPositionIfNotSmoothmove, 1000 / FRAMES / tact);
             } else {
               // при окончании убрать смув и добавить возможность к управлению элементов мышкой, убрав isConnecting и smoothing у всех элементов
               fragment.smoothing = false; // движется до тех пор, пока движется родитель
