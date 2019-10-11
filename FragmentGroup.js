@@ -1,14 +1,8 @@
 class FragmentGroup {
   constructor(src, x, y, left, top) {
     this.fragments = new Set();
-  }
-
-  getFragmentsCopy() {
-    var copied = new Set();
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
-      copied.add(fragment);
-    });
-    return copied;
+    this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
+                               // В противном случае нужно чёто рассматривать а мне лень
   }
 
   move(x, y, selected) {

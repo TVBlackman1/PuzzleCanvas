@@ -1,3 +1,7 @@
+// Возможно стоит убрать подключение к smoothing объекту. а то проблем слишком дохуя??
+// на заметку, потом посмотрим
+
+
 var hello = 4;
 class Fragment {
   constructor(ind, src, x, y, left, top) {
@@ -10,9 +14,8 @@ class Fragment {
     this.downloadImage();
 
     this.smoothing = false; // для ограничения движения объекта во время анимации
-    this.connecting = null; // для объекта, который коннектинг этот объекта
-    // чтобы объекты не коннектились друг в друга, хотя на эт похуй при быстрой анимации
-    // потому пока не реализовано
+    this.isConnecting = false; // объект конектит другой, а потому не может быть выбран. Необходим int, т.к. можно подключать несколько сразу
+                               // После первого isConnecting станет false, хотя подключается ещё второй объект, а потому будет
 
 
     FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.SCALE / 5;
@@ -376,7 +379,9 @@ class Fragment {
       });
       if (connectArray.length > 0) {
         var near = connectArray[0];
-        if (withConnect) {
+        // Из-за второго условия нельзя конектиться к тем, что движутся или уже ждут подключения. Я убрал как и написано сверху. Крч теперь
+        // функциональность сдохла, но этого никто и не заметит при быстрой анимации, главное нет багов
+        if (withConnect && (near.fr.smoothing == false && near.fr.isConnecting == false && (near.fr.group == null || near.fr.group.isConnecting == false))) {
           this.smoothmoveOneOrGroup(this, near.x + near.dX, near.y + near.dY, near.fr);
         }
         return {
@@ -409,6 +414,13 @@ class Fragment {
     // если объект ещё смувится, а к нему смув другого закончился, то надо тот пододвигать
 
     this.smoothing = true;
+    if (connectingFragment != null) {
+      if (connectingFragment.group != null) {
+        connectingFragment.group.isConnecting = true;
+      } else {
+        connectingFragment.isConnecting = true;
+      }
+    }
 
     let oldX = this.x;
     let oldY = this.y;
@@ -453,15 +465,10 @@ class Fragment {
       } else {
         fragment.x = newX;
         fragment.y = newY;
-        // fragment.smoothing = false;
         if (connectingFragment != null) {
 
-          // // установка финальных координат
-          // fragment.x += connectingX - connectingX_start;
-          // fragment.y += connectingY - connectingY_start;
-
-          function copyPositionIfNotSmoothmove() { // не работает, надо переделать
-            // если объект ещё смувится, а к нему смув другого закончился, то надо тот пододвигать
+          // Если объект подошёл к родителю, но тот ещё смувится, то копировать его перемещение до конца смува последнего.
+          function copyPositionIfNotSmoothmove() {
             fragment.x += connectingFragment.x - connectingX;
             fragment.y += connectingFragment.y - connectingY;
 
@@ -469,10 +476,17 @@ class Fragment {
             connectingY = connectingFragment.y;
 
             if (connectingFragment.smoothing) {
-              console.log("!")
+              // проверка для повтора смува
               setTimeout(copyPositionIfNotSmoothmove, 3000 / tact);
             } else {
+              // при окончании убрать смув и добавить возможность к управлению элементов мышкой, убрав isConnecting и smoothing у всех элементов
               fragment.smoothing = false; // движется до тех пор, пока движется родитель
+              if (connectingFragment != null) {
+                if (connectingFragment.group != null) {
+                  connectingFragment.group.isConnecting = false;
+                }
+                connectingFragment.isConnecting = false;
+              }
             }
           }
           copyPositionIfNotSmoothmove()

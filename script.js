@@ -1,7 +1,7 @@
 const FRAMES = 45;
 const imagesX = 4;
 const imagesY = 4;
-const countImages = imagesX*imagesY;
+const countImages = imagesX * imagesY;
 
 const FIELD_WIDTH = 1; // Размеры поля
 const FIELD_HEIGHT = 10 / 11; // Местоположение поля в Fragment.js -> (61, 62) строки
@@ -108,123 +108,125 @@ var shouldConnect = false;
 var showSilhouette = false;
 window.onload = function() {
 
-  console.log("Started");
-  canvas = document.getElementById("canvas-puzzle");
-  context = canvas.getContext('2d');
+    console.log("Started");
+    canvas = document.getElementById("canvas-puzzle");
+    context = canvas.getContext('2d');
 
-  CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
-  CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
+    CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
+    CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
 
-  // Заполнение массива изображениями
-  for (i = 0; i < countImages; i++) {
-    x = i % imagesX;
-    y = Math.floor(i / imagesY);
+    // Заполнение массива изображениями
+    for (i = 0; i < countImages; i++) {
+      x = i % imagesX;
+      y = Math.floor(i / imagesY);
 
-    leftId = i % imagesX - 1; // ИСПРАВЛЕНИЕ БАГА в todoist (leftId = i - 1;)
-    topId = i - imagesY;
+      leftId = i % imagesX - 1; // ИСПРАВЛЕНИЕ БАГА в todoist (leftId = i - 1;)
+      topId = i - imagesY;
 
-    console.log(i, x, y, leftId, topId);
-    // console.log(getRandomArbitary(0, 1900));
-    //getRandomArbitary(320,1520), getRandomArbitary(280,880),
-    arr.push(
-      new Fragment(
-        i,
-        DIRECTORY + (i + 1) + '.png',
-        getRandomArbitary(1940, 3020), getRandomArbitary(80, 480),
-        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
-      )
-    );
-  }
-
-
-  // Отслеживать перемещение курсора мыши
-  canvas.onmousemove = function(e) {
-    var loc = getCoords(canvas, e.clientX, e.clientY);
-    if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      if (arr[SelectFragmentHelper.translatedFragmentId].group == null)
-        arr[SelectFragmentHelper.translatedFragmentId].move(loc.x - SelectFragmentHelper.deltaX,
-          loc.y - SelectFragmentHelper.deltaY);
-      else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
-        var newX = loc.x - SelectFragmentHelper.deltaX;
-        var newY = loc.y - SelectFragmentHelper.deltaY;
-        arr[SelectFragmentHelper.translatedFragmentId].group.move(
-          newX, newY,
-          arr[SelectFragmentHelper.translatedFragmentId]
-        );
-      }
+      console.log(i, x, y, leftId, topId);
+      // console.log(getRandomArbitary(0, 1900));
+      //getRandomArbitary(320,1520), getRandomArbitary(280,880),
+      arr.push(
+        new Fragment(
+          i,
+          DIRECTORY + (i + 1) + '.png',
+          getRandomArbitary(1940, 3020), getRandomArbitary(80, 480),
+          (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
+        )
+      );
     }
-  };
 
-  // Отслеживать нажатие на кнопки мыши
-  canvas.onmousedown = function(e) {
-    shouldConnect = true;
-    for (i = arr.length - 1; i >= 0; i--) {
+
+    // Отслеживать перемещение курсора мыши
+    canvas.onmousemove = function(e) {
       var loc = getCoords(canvas, e.clientX, e.clientY);
-      if (arr[i].isHadPoint(loc.x, loc.y) && arr[i].smoothing == false) {
-        ranges = arr[i].rangeToStartImage(loc.x, loc.y);
-        SelectFragmentHelper.deltaX = ranges.x;
-        SelectFragmentHelper.deltaY = ranges.y;
-        SelectFragmentHelper.translatedFragmentId = i;
-        console.log("Image number", SelectFragmentHelper.translatedFragmentId);
-        break;
-      }
-    }
-  }
-
-
-  // Отслеживать отжатие кнопок мыши
-  canvas.onmouseup = function(e) {
-    if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
-      if (shouldConnect) {
-        if (selectedFragment.group == null) {
-          selectedFragment.connectToOther();
-        }
-        else {
-          selectedFragment.group.connectTo()
+      if (SelectFragmentHelper.translatedFragmentId >= 0) {
+        if (arr[SelectFragmentHelper.translatedFragmentId].group == null)
+          arr[SelectFragmentHelper.translatedFragmentId].move(loc.x - SelectFragmentHelper.deltaX,
+            loc.y - SelectFragmentHelper.deltaY);
+        else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+          var newX = loc.x - SelectFragmentHelper.deltaX;
+          var newY = loc.y - SelectFragmentHelper.deltaY;
+          arr[SelectFragmentHelper.translatedFragmentId].group.move(
+            newX, newY,
+            arr[SelectFragmentHelper.translatedFragmentId]
+          );
         }
       }
+    };
 
-      SelectFragmentHelper.translatedFragmentId = -1;
-
-    }
-  }
-
-  document.addEventListener('mousedown', function(event) {
-    if (lastDownTarget != event.target) {
-      showSilhouette = false;
-    }
-    lastDownTarget = event.target;
-  }, false);
-
-  document.addEventListener('keydown', function(event) {
-    if (lastDownTarget == canvas) {
-      if (event.keyCode == KEY_shouldConnect) {
-        if (shouldConnect)
-          shouldConnect = false;
-        else shouldConnect = true;
-        console.log("shouldConnect is", shouldConnect);
+    // Отслеживать нажатие на кнопки мыши
+    canvas.onmousedown = function(e) {
+      shouldConnect = true;
+      for (i = arr.length - 1; i >= 0; i--) {
+        var loc = getCoords(canvas, e.clientX, e.clientY);
+        if (arr[i].isHadPoint(loc.x, loc.y)) {
+            if (arr[i].smoothing == false && arr[i].isConnecting == false && (arr[i].group == null || arr[i].group.isConnecting == false)) {
+              // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
+              ranges = arr[i].rangeToStartImage(loc.x, loc.y);
+              SelectFragmentHelper.deltaX = ranges.x;
+              SelectFragmentHelper.deltaY = ranges.y;
+              SelectFragmentHelper.translatedFragmentId = i;
+              console.log("Image number", SelectFragmentHelper.translatedFragmentId);
+              break;
+            }
+          }
+        }
       }
-      if (event.keyCode == KEY_showSilhouette) {
-        showSilhouette = true;
+
+
+      // Отслеживать отжатие кнопок мыши
+      canvas.onmouseup = function(e) {
+        if (SelectFragmentHelper.translatedFragmentId >= 0) {
+          selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
+          if (shouldConnect) {
+            if (selectedFragment.group == null) {
+              selectedFragment.connectToOther();
+            } else {
+              selectedFragment.group.connectTo()
+            }
+          }
+
+          SelectFragmentHelper.translatedFragmentId = -1;
+
+        }
       }
+
+      document.addEventListener('mousedown', function(event) {
+        if (lastDownTarget != event.target) {
+          showSilhouette = false;
+        }
+        lastDownTarget = event.target;
+      }, false);
+
+      document.addEventListener('keydown', function(event) {
+        if (lastDownTarget == canvas) {
+          if (event.keyCode == KEY_shouldConnect) {
+            if (shouldConnect)
+              shouldConnect = false;
+            else shouldConnect = true;
+            console.log("shouldConnect is", shouldConnect);
+          }
+          if (event.keyCode == KEY_showSilhouette) {
+            showSilhouette = true;
+          }
+        }
+      }, false);
+
+      document.addEventListener('keyup', function(event) {
+        if (lastDownTarget == canvas) {
+          if (event.keyCode == KEY_showSilhouette) {
+            showSilhouette = false;
+          }
+        }
+      }, false);
+
+      // Анимация с определённой частотой для обновления экрана
+      setInterval(update, 1000 / FRAMES);
+
     }
-  }, false);
 
-  document.addEventListener('keyup', function(event) {
-    if (lastDownTarget == canvas) {
-      if (event.keyCode == KEY_showSilhouette) {
-        showSilhouette = false;
-      }
+    // Функция для анимации с определённой частотой для обновления экрана
+    function update() {
+      drawAll();
     }
-  }, false);
-
-  // Анимация с определённой частотой для обновления экрана
-  setInterval(update, 1000 / FRAMES);
-
-}
-
-// Функция для анимации с определённой частотой для обновления экрана
-function update() {
-  drawAll();
-}
