@@ -18,13 +18,21 @@ var downloadedImages = 0;
 // Способен определить индекс изображения в массиве, а так же запомнить
 // Разницу между координатами курсора мыши и началом изображения в левом верхнем
 // углу из метода "rangeToStartImage(x, y)" класса "Fragment"
-var SelectFragmentHelper = {
+let SelectFragmentHelper = {
   translatedFragmentId: -1,
   deltaX: 0,
   deltaY: 0
 };
 
-var FragmentsGeneralCharacteristic = {
+
+// Ссылки на первый, последний элементы двусвязного списка фрагментов или групп фрагментов для правильного
+// отображения поверх остальных элементов на экране
+let ListObjectHelper = {
+  lastVisualObject: null,
+  firstVisualObject: null
+}
+
+let FragmentsGeneralCharacteristic = {
   SCALE: -1,
   downloadedImages: 0,
   width: -1,
@@ -34,9 +42,9 @@ var FragmentsGeneralCharacteristic = {
   third_x: -1,
   third_y: -1,
   connectRange: -1
-}
+};
 
-var CanvasCharacteristic = {
+let CanvasCharacteristic = {
   all_width: -1,
   all_height: -1,
   width: -1,
@@ -45,7 +53,7 @@ var CanvasCharacteristic = {
   lastY: -1,
   firstX: -1,
   firstY: -1,
-}
+};
 
 
 // Массив для изображений
@@ -79,14 +87,17 @@ function drawAll() {
   context.lineWidth = "10";
   context.strokeStyle = "green";
   context.stroke();
-  for (i = 0; i < arr.length; i++) {
-    arr[i].draw();
-  }
-}
+  // for (i = 0; i < arr.length; i++) {
+  //   arr[i].draw();
+  // }
 
-// Не рабочая функция
-function getColor(x, y) {
-  context.getImageData(x, y, 1, 1).data
+  var lastSeenObject = ListObjectHelper.firstVisualObject;
+  do {
+    lastSeenObject.value.draw();
+    lastSeenObject = lastSeenObject.next;
+    if(lastSeenObject != null && lastSeenObject == lastSeenObject.next) console.log("Err");
+  } while (lastSeenObject != null)
+
 }
 
 // Определяет координаты пользователя в границах canvas
@@ -106,127 +117,176 @@ function getRandomArbitary(min, max) {
 var lastDownTarget = null;
 var shouldConnect = false;
 var showSilhouette = false;
+
 window.onload = function() {
 
-    console.log("Started");
-    canvas = document.getElementById("canvas-puzzle");
-    context = canvas.getContext('2d');
+  console.log("Started");
+  canvas = document.getElementById("canvas-puzzle");
+  context = canvas.getContext('2d');
 
-    CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
-    CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
+  CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
+  CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
 
-    // Заполнение массива изображениями
-    for (i = 0; i < countImages; i++) {
-      x = i % imagesX;
-      y = Math.floor(i / imagesY);
+  // Заполнение массива изображениями
+  for (i = 0; i < countImages; i++) {
+    x = i % imagesX;
+    y = Math.floor(i / imagesY);
 
-      leftId = i % imagesX - 1; // ИСПРАВЛЕНИЕ БАГА в todoist (leftId = i - 1;)
-      topId = i - imagesY;
+    leftId = i % imagesX - 1; // ИСПРАВЛЕНИЕ БАГА в todoist (leftId = i - 1;)
+    topId = i - imagesY;
 
-      console.log(i, x, y, leftId, topId);
-      // console.log(getRandomArbitary(0, 1900));
-      //getRandomArbitary(320,1520), getRandomArbitary(280,880),
-      arr.push(
-        new Fragment(
-          i,
-          DIRECTORY + (i + 1) + '.png',
-          getRandomArbitary(1940, 3020), getRandomArbitary(80, 480),
-          (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
-        )
-      );
+    arr.push(
+      new Fragment(
+        i,
+        DIRECTORY + (i + 1) + '.png',
+        getRandomArbitary(1940, 3020), getRandomArbitary(80, 480),
+        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
+      )
+    );
+    if (ListObjectHelper.lastVisualObject == null) {
+      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
+      ListObjectHelper.firstVisualObject = ListObjectHelper.lastVisualObject;
+    } else {
+      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], ListObjectHelper.lastVisualObject);
     }
 
+  }
 
-    // Отслеживать перемещение курсора мыши
-    canvas.onmousemove = function(e) {
-      var loc = getCoords(canvas, e.clientX, e.clientY);
-      if (SelectFragmentHelper.translatedFragmentId >= 0) {
-        if (arr[SelectFragmentHelper.translatedFragmentId].group == null)
-          arr[SelectFragmentHelper.translatedFragmentId].move(loc.x - SelectFragmentHelper.deltaX,
-            loc.y - SelectFragmentHelper.deltaY);
-        else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
-          var newX = loc.x - SelectFragmentHelper.deltaX;
-          var newY = loc.y - SelectFragmentHelper.deltaY;
-          arr[SelectFragmentHelper.translatedFragmentId].group.move(
-            newX, newY,
-            arr[SelectFragmentHelper.translatedFragmentId]
-          );
+
+  // Отслеживать перемещение курсора мыши
+  canvas.onmousemove = function(e) {
+    var loc = getCoords(canvas, e.clientX, e.clientY);
+    if (SelectFragmentHelper.translatedFragmentId >= 0) {
+      if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
+        arr[SelectFragmentHelper.translatedFragmentId].move(loc.x - SelectFragmentHelper.deltaX,
+          loc.y - SelectFragmentHelper.deltaY);
+      } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+        var newX = loc.x - SelectFragmentHelper.deltaX;
+        var newY = loc.y - SelectFragmentHelper.deltaY;
+        arr[SelectFragmentHelper.translatedFragmentId].group.move(
+          newX, newY,
+          arr[SelectFragmentHelper.translatedFragmentId]
+        );
+      }
+    }
+  };
+
+  // Отслеживать нажатие на кнопки мыши
+  canvas.onmousedown = function(e) {
+    shouldConnect = true;
+
+    var loc = getCoords(canvas, e.clientX, e.clientY);
+    var lastSeenObject = ListObjectHelper.lastVisualObject;
+    do {
+      var objInCoords = lastSeenObject.value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
+      // console.log(objInCoords);
+      if (lastSeenObject.value instanceof Fragment) {
+        if (objInCoords) {
+          // console.log(lastSeenObject.value)
+          if (
+            lastSeenObject.value.smoothing == false &&
+            lastSeenObject.value.isConnecting == false &&
+            (lastSeenObject.value.group == null || lastSeenObject.value.group.isConnecting == false)
+          ) {
+            // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
+            ranges = lastSeenObject.value.rangeToStartImage(loc.x, loc.y);
+            SelectFragmentHelper.deltaX = ranges.x;
+            SelectFragmentHelper.deltaY = ranges.y;
+            SelectFragmentHelper.translatedFragmentId = lastSeenObject.value.ind;
+            lastSeenObject.replaceToTop(); // отображать поверх других объектов
+            console.log("Image number", SelectFragmentHelper.translatedFragmentId);
+            break;
+          }
+        }
+      } else if (lastSeenObject.value instanceof FragmentGroup) {
+        if (objInCoords > -1) {
+          console.log(objInCoords);
+          console.log(lastSeenObject.value)
+          if (
+            arr[objInCoords].smoothing == false &&
+            arr[objInCoords].isConnecting == false &&
+            lastSeenObject.value.isConnecting == false
+          ) {
+            // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
+            ranges = arr[objInCoords].rangeToStartImage(loc.x, loc.y);
+            SelectFragmentHelper.deltaX = ranges.x;
+            SelectFragmentHelper.deltaY = ranges.y;
+            SelectFragmentHelper.translatedFragmentId = objInCoords;
+            lastSeenObject.replaceToTop(); // отображать поверх других объектов
+            console.log("Image number", SelectFragmentHelper.translatedFragmentId);
+            break;
+          }
         }
       }
-    };
+      lastSeenObject = lastSeenObject.prev;
+      console.log("!");
+    } while (lastSeenObject != null)
+  }
 
-    // Отслеживать нажатие на кнопки мыши
-    canvas.onmousedown = function(e) {
-      shouldConnect = true;
-      for (i = arr.length - 1; i >= 0; i--) {
-        var loc = getCoords(canvas, e.clientX, e.clientY);
-        if (arr[i].isHadPoint(loc.x, loc.y)) {
-            if (arr[i].smoothing == false && arr[i].isConnecting == false && (arr[i].group == null || arr[i].group.isConnecting == false)) {
-              // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-              ranges = arr[i].rangeToStartImage(loc.x, loc.y);
-              SelectFragmentHelper.deltaX = ranges.x;
-              SelectFragmentHelper.deltaY = ranges.y;
-              SelectFragmentHelper.translatedFragmentId = i;
-              console.log("Image number", SelectFragmentHelper.translatedFragmentId);
-              break;
-            }
-          }
+
+  // Отслеживать отжатие кнопок мыши
+  canvas.onmouseup = function(e) {
+    if (SelectFragmentHelper.translatedFragmentId >= 0) {
+      console.log(SelectFragmentHelper.translatedFragmentId);
+      selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
+      if (shouldConnect) {
+        if (selectedFragment.group == null) {
+          selectedFragment.connectToOther();
+        } else {
+          selectedFragment.group.connectTo()
         }
       }
 
-
-      // Отслеживать отжатие кнопок мыши
-      canvas.onmouseup = function(e) {
-        if (SelectFragmentHelper.translatedFragmentId >= 0) {
-          selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
-          if (shouldConnect) {
-            if (selectedFragment.group == null) {
-              selectedFragment.connectToOther();
-            } else {
-              selectedFragment.group.connectTo()
-            }
-          }
-
-          SelectFragmentHelper.translatedFragmentId = -1;
-
-        }
-      }
-
-      document.addEventListener('mousedown', function(event) {
-        if (lastDownTarget != event.target) {
-          showSilhouette = false;
-        }
-        lastDownTarget = event.target;
-      }, false);
-
-      document.addEventListener('keydown', function(event) {
-        if (lastDownTarget == canvas) {
-          if (event.keyCode == KEY_shouldConnect) {
-            if (shouldConnect)
-              shouldConnect = false;
-            else shouldConnect = true;
-            console.log("shouldConnect is", shouldConnect);
-          }
-          if (event.keyCode == KEY_showSilhouette) {
-            showSilhouette = true;
-          }
-        }
-      }, false);
-
-      document.addEventListener('keyup', function(event) {
-        if (lastDownTarget == canvas) {
-          if (event.keyCode == KEY_showSilhouette) {
-            showSilhouette = false;
-          }
-        }
-      }, false);
-
-      // Анимация с определённой частотой для обновления экрана
-      setInterval(update, 1000 / FRAMES);
+      SelectFragmentHelper.translatedFragmentId = -1;
 
     }
+  }
 
-    // Функция для анимации с определённой частотой для обновления экрана
-    function update() {
-      drawAll();
+  document.addEventListener('mousedown', function(event) {
+    if (lastDownTarget != event.target) {
+      showSilhouette = false;
     }
+    lastDownTarget = event.target;
+  }, false);
+
+  document.addEventListener('keydown', function(event) {
+    if (lastDownTarget == canvas) {
+      if (event.keyCode == KEY_shouldConnect) {
+        if (shouldConnect)
+          shouldConnect = false;
+        else shouldConnect = true;
+        console.log("shouldConnect is", shouldConnect);
+      }
+      if (event.keyCode == KEY_showSilhouette) {
+        showSilhouette = true;
+      }
+      if(event.keyCode == 49) {
+        var lastSeenObject = ListObjectHelper.lastVisualObject;
+        do {
+          console.log(lastSeenObject);
+          lastSeenObject = lastSeenObject.prev;
+        } while (lastSeenObject != null)
+        console.log(arr[14])
+        console.log(arr[15])
+        console.log("\nEND\n")
+      }
+    }
+  }, false);
+
+  document.addEventListener('keyup', function(event) {
+    if (lastDownTarget == canvas) {
+      if (event.keyCode == KEY_showSilhouette) {
+        showSilhouette = false;
+      }
+    }
+  }, false);
+
+  // Анимация с определённой частотой для обновления экрана
+  setInterval(update, 1000 / FRAMES);
+
+}
+
+// Функция для анимации с определённой частотой для обновления экрана
+function update() {
+  drawAll();
+}

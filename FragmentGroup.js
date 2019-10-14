@@ -2,7 +2,20 @@ class FragmentGroup {
   constructor(src, x, y, left, top) {
     this.fragments = new Set();
     this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
-                               // В противном случае нужно чёто рассматривать а мне лень
+    // В противном случае нужно чёто рассматривать а мне лень
+  }
+
+  isHadPoint(x, y) {
+    var found = false;
+    var ind_ans = -1;
+    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+      if (found)
+        return;
+      found = fragment.isHadPoint(x, y);
+      if(found)
+        ind_ans = fragment.ind;
+    });
+    return ind_ans
   }
 
   move(x, y, selected) {
@@ -15,6 +28,13 @@ class FragmentGroup {
       }
     });
     selected.move(x, y);
+  }
+
+  draw() {
+    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+      fragment.draw();
+      // console.log("draw", fragment.src);
+    });
   }
 
   smoothMove(x, y, selected, connectingFragment) {

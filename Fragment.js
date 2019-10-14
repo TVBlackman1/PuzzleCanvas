@@ -32,6 +32,7 @@ class Fragment {
       this.top.bottom = this;
 
     this.group = null;
+    this.listElem = null; // заполняется
   }
 
   downloadImage() {
@@ -55,7 +56,7 @@ class Fragment {
         FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
         FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
 
-        FragmentsGeneralCharacteristic.connectRange = 3 * Math.min(
+        FragmentsGeneralCharacteristic.connectRange = 1 * Math.min(
           FragmentsGeneralCharacteristic.third_x,
           FragmentsGeneralCharacteristic.third_y
         );
@@ -126,14 +127,34 @@ class Fragment {
         other.group = selected.group;
         selected.group.fragments.add(selected);
         selected.group.fragments.add(other);
+
+        selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на группу
+        other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись, т.к. он уже отрисовывается в группе
+
+        // TODO Группы в FragmentList
+
       } else {
+        // меняем все элементы бОльшей группы, а не наооброт, т.к. ебанутый баг: плохо идет коннект одиночных к группе, если та группа не пред верхняя
+        console.log("one to any");
         selected.group = other.group;
         selected.group.fragments.add(selected);
+
+        // selected.group = new FragmentGroup();
+        // other.group.changeGroup(selected.group);
+        // selected.group.fragments.add(selected);
+
+        selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на чужую группу
+        other.listElem.remove();
+
       }
     } else {
       if (other.group == null) {
         other.group = selected.group;
         selected.group.fragments.add(other);
+
+        selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на чужую группу
+        other.listElem.remove();
+
       } else {
         selected.group.changeGroup(other.group)
       }
@@ -331,6 +352,7 @@ class Fragment {
 
       function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
         if (getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other))) {
+          // работает только на объекты, отсутствующие в группе
           connectArray.push({
             range: getInfo.range,
             x: getCoordinates.x,
@@ -379,6 +401,7 @@ class Fragment {
       });
       if (connectArray.length > 0) {
         var near = connectArray[0];
+        console.log(near);
         // Из-за второго условия нельзя конектиться к тем, что движутся или уже ждут подключения. Я убрал как и написано сверху. Крч теперь
         // функциональность сдохла, но этого никто и не заметит при быстрой анимации, главное нет багов
         if (withConnect && (near.fr.smoothing == false && near.fr.isConnecting == false && (near.fr.group == null || near.fr.group.isConnecting == false))) {
@@ -422,6 +445,7 @@ class Fragment {
       }
     }
 
+
     let oldX = this.x;
     let oldY = this.y;
     let tact = 21;
@@ -429,6 +453,8 @@ class Fragment {
     let dX = (newX - oldX) / (tact);
     let dY = (newY - oldY) / (tact);
     let fragment = this;
+
+    let speedAnimation = 1000 / FRAMES / tact;
 
     var connectingX = -1;
     var connectingY = -1;
@@ -444,7 +470,7 @@ class Fragment {
     function reDraw() {
       fragment.x += dX;
       fragment.y += dY;
-
+      console.log("reDraw");
       // при изменении координат присоединяющего элемента следуем за ним
       // по разнице координат
       if (connectingFragment != null &&
@@ -460,7 +486,7 @@ class Fragment {
       }
 
       if (currentTact < tact - 1) {
-        setTimeout(reDraw, 1000 / FRAMES / tact); //ИЗМЕНЕНО
+        setTimeout(reDraw, speedAnimation); //ИЗМЕНЕНО
         currentTact++;
       } else {
         fragment.x = newX;
@@ -476,8 +502,9 @@ class Fragment {
             connectingY = connectingFragment.y;
 
             if (connectingFragment.smoothing) {
+              console.log("Repeat");
               // проверка для повтора смува
-              setTimeout(copyPositionIfNotSmoothmove, 1000 / FRAMES / tact);
+              setTimeout(copyPositionIfNotSmoothmove, speedAnimation);
             } else {
               // при окончании убрать смув и добавить возможность к управлению элементов мышкой, убрав isConnecting и smoothing у всех элементов
               fragment.smoothing = false; // движется до тех пор, пока движется родитель
