@@ -120,22 +120,25 @@ class Fragment {
   }
 
   workGroups(selected, other) {
-    console.log(selected.group, other.group);
     if (selected.group == null) {
       if (other.group == null) {
+        // создание группы
         selected.group = new FragmentGroup();
         other.group = selected.group;
         selected.group.fragments.add(selected);
         selected.group.fragments.add(other);
 
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на группу
+        selected.group.listElemGroup = selected.listElem;
         other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись, т.к. он уже отрисовывается в группе
 
         // TODO Группы в FragmentList
 
       } else {
+        // selected - not group;
+        // other - group
+
         // меняем все элементы бОльшей группы, а не наооброт, т.к. ебанутый баг: плохо идет коннект одиночных к группе, если та группа не пред верхняя
-        console.log("one to any");
         selected.group = other.group;
         selected.group.fragments.add(selected);
 
@@ -143,8 +146,10 @@ class Fragment {
         // other.group.changeGroup(selected.group);
         // selected.group.fragments.add(selected);
 
-        selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на чужую группу
-        other.listElem.remove();
+        // other.listElem.remove();
+        // other.group.listElemGroup
+
+        selected.listElem.remove();
 
       }
     } else {
@@ -169,7 +174,6 @@ class Fragment {
   }
 
   leftTop() {
-    // console.log(this.x, this.y);
     return {
       x: this.x + FragmentsGeneralCharacteristic.third_x,
       y: this.y + FragmentsGeneralCharacteristic.third_y
@@ -401,7 +405,6 @@ class Fragment {
       });
       if (connectArray.length > 0) {
         var near = connectArray[0];
-        console.log(near);
         // Из-за второго условия нельзя конектиться к тем, что движутся или уже ждут подключения. Я убрал как и написано сверху. Крч теперь
         // функциональность сдохла, но этого никто и не заметит при быстрой анимации, главное нет багов
         if (withConnect && (near.fr.smoothing == false && near.fr.isConnecting == false && (near.fr.group == null || near.fr.group.isConnecting == false))) {
@@ -470,7 +473,6 @@ class Fragment {
     function reDraw() {
       fragment.x += dX;
       fragment.y += dY;
-      console.log("reDraw");
       // при изменении координат присоединяющего элемента следуем за ним
       // по разнице координат
       if (connectingFragment != null &&
@@ -502,7 +504,6 @@ class Fragment {
             connectingY = connectingFragment.y;
 
             if (connectingFragment.smoothing) {
-              console.log("Repeat");
               // проверка для повтора смува
               setTimeout(copyPositionIfNotSmoothmove, speedAnimation);
             } else {

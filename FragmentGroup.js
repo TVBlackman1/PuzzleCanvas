@@ -3,6 +3,7 @@ class FragmentGroup {
     this.fragments = new Set();
     this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
     // В противном случае нужно чёто рассматривать а мне лень
+    this.listElemGroup = null;
   }
 
   isHadPoint(x, y) {
@@ -33,7 +34,6 @@ class FragmentGroup {
   draw() {
     this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
       fragment.draw();
-      // console.log("draw", fragment.src);
     });
   }
 

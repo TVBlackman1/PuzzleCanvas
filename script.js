@@ -87,15 +87,11 @@ function drawAll() {
   context.lineWidth = "10";
   context.strokeStyle = "green";
   context.stroke();
-  // for (i = 0; i < arr.length; i++) {
-  //   arr[i].draw();
-  // }
 
   var lastSeenObject = ListObjectHelper.firstVisualObject;
   do {
     lastSeenObject.value.draw();
     lastSeenObject = lastSeenObject.next;
-    if(lastSeenObject != null && lastSeenObject == lastSeenObject.next) console.log("Err");
   } while (lastSeenObject != null)
 
 }
@@ -139,7 +135,7 @@ window.onload = function() {
       new Fragment(
         i,
         DIRECTORY + (i + 1) + '.png',
-        getRandomArbitary(1940, 3020), getRandomArbitary(80, 480),
+        getRandomArbitary(1940, 2720), getRandomArbitary(80, 480),
         (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
       )
     );
@@ -182,7 +178,6 @@ window.onload = function() {
       // console.log(objInCoords);
       if (lastSeenObject.value instanceof Fragment) {
         if (objInCoords) {
-          // console.log(lastSeenObject.value)
           if (
             lastSeenObject.value.smoothing == false &&
             lastSeenObject.value.isConnecting == false &&
@@ -200,8 +195,6 @@ window.onload = function() {
         }
       } else if (lastSeenObject.value instanceof FragmentGroup) {
         if (objInCoords > -1) {
-          console.log(objInCoords);
-          console.log(lastSeenObject.value)
           if (
             arr[objInCoords].smoothing == false &&
             arr[objInCoords].isConnecting == false &&
@@ -219,7 +212,6 @@ window.onload = function() {
         }
       }
       lastSeenObject = lastSeenObject.prev;
-      console.log("!");
     } while (lastSeenObject != null)
   }
 
@@ -227,7 +219,6 @@ window.onload = function() {
   // Отслеживать отжатие кнопок мыши
   canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      console.log(SelectFragmentHelper.translatedFragmentId);
       selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
       if (shouldConnect) {
         if (selectedFragment.group == null) {
@@ -236,9 +227,7 @@ window.onload = function() {
           selectedFragment.group.connectTo()
         }
       }
-
       SelectFragmentHelper.translatedFragmentId = -1;
-
     }
   }
 
@@ -266,9 +255,13 @@ window.onload = function() {
           console.log(lastSeenObject);
           lastSeenObject = lastSeenObject.prev;
         } while (lastSeenObject != null)
-        console.log(arr[14])
-        console.log(arr[15])
         console.log("\nEND\n")
+      }
+
+      if(event.keyCode == 50) {
+        if(SelectFragmentHelper.translatedFragmentId >= 0) {
+          arr[SelectFragmentHelper.translatedFragmentId].listElem.remove();
+        }
       }
     }
   }, false);
