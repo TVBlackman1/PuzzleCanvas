@@ -37,6 +37,8 @@ class Fragment {
 
   downloadImage() {
     this.img.onload = function() {
+      // начальные настройки канваса
+
       FragmentsGeneralCharacteristic.downloadedImages++;
       if (FragmentsGeneralCharacteristic.downloadedImages == countImages) {
         console.log("Downloaded all images");
@@ -129,10 +131,9 @@ class Fragment {
         selected.group.fragments.add(other);
 
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на группу
+        selected.listElem.src = null; // убрать путь до картинки, а то некрасиво
         selected.group.listElemGroup = selected.listElem;
         other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись, т.к. он уже отрисовывается в группе
-
-        // TODO Группы в FragmentList
 
       } else {
         // selected - not group;
@@ -141,13 +142,6 @@ class Fragment {
         // меняем все элементы бОльшей группы, а не наооброт, т.к. ебанутый баг: плохо идет коннект одиночных к группе, если та группа не пред верхняя
         selected.group = other.group;
         selected.group.fragments.add(selected);
-
-        // selected.group = new FragmentGroup();
-        // other.group.changeGroup(selected.group);
-        // selected.group.fragments.add(selected);
-
-        // other.listElem.remove();
-        // other.group.listElemGroup
 
         selected.listElem.remove();
 
@@ -161,7 +155,8 @@ class Fragment {
         other.listElem.remove();
 
       } else {
-        selected.group.changeGroup(other.group)
+        selected.group.listElemGroup.remove();
+        selected.group.changeGroup(other.group);
       }
     }
   }
@@ -270,9 +265,6 @@ class Fragment {
   }
 
   smoothmoveOneOrGroup(fr, x, y, connectingFragment) {
-    // нахера тут 2 первых аргумента я уже не ебу, убрал к хуям
-    // connectingFragment для передачи в smoothMove. Если тот, к кому клеется движется, то и этот должен двигаться
-    // просто добавление в группу не работает при его smoothMove
     if (fr.group == null) {
       fr.smoothMove(x, y, connectingFragment);
     } else {
@@ -280,22 +272,33 @@ class Fragment {
     }
   }
 
+
+  /**
+  *  @param int  newInd - индекс фрагмента, для которого стоит проверить возможность присоединения,
+  *                       по умолчанию выбирается индекс фрагмента, передвигаемого игроком (SelectFragmentHelper.translatedFragmentId).
+  *                       Рассмотрение от других фрагментов нужно при проверке подсоединения для нескольких фрагментов от одной группы
+  *
+  *  @param bool withConnect - выполнить присоединение после подтверждения соответствующей проверки,
+  *                            по умолчанию присоединяет один фрагмент к другому
+  *                            Проверка необходима при подсоединении группы к фрагментам, где сначала узнается вся информация о возможных
+  *                            подсоединениях, а потом полученые данные сортируются по неубыванию, выполняя подсоединение к самому
+  *                            близкому из возможных
+  *
+  *  @return object {
+  *           res
+  *           range
+  *          }
+  *
+  */
   connectToOther(newInd = null, withConnect = true) {
-    // возвращает объект, чтобы в будущем добавить сортировку по расстоянию для групп
-    // newInd чтобы сравнивать объекты, на которые мы Не нажали, но которые обрабатываются
-    // внутри группы на сближение с углами
-
-    // withConnect - для проверки ближайшего конекта без конекта лол
-
-
     var i = null;
     if (newInd == null) {
       i = SelectFragmentHelper.translatedFragmentId
     } else {
       i = newInd;
     }
-    x = i % imagesX;
-    y = Math.floor(i / imagesY);
+    var x = i % imagesX;
+    var y = Math.floor(i / imagesY);
 
     if (x == 0 && y == 0 && this.rangeFromLeftTop(CanvasCharacteristic.firstX, CanvasCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {

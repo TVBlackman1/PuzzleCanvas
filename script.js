@@ -1,17 +1,16 @@
 const FRAMES = 45;
-const imagesX = 4;
-const imagesY = 4;
+const imagesX = 2;
+const imagesY = 2;
 const countImages = imagesX * imagesY;
 
 const FIELD_WIDTH = 1; // Размеры поля
-const FIELD_HEIGHT = 10 / 11; // Местоположение поля в Fragment.js -> (61, 62) строки
+const FIELD_HEIGHT = 5 / 11; // Местоположение поля в Fragment.js -> (61, 62) строки
 
 const KEY_showSilhouette = 83; // S
 const KEY_shouldConnect = 32; // SPACE
 
-const DIRECTORY = "images/"
+const DIRECTORY = "images/test";
 
-var downloadedImages = 0;
 
 
 // Вспомогательный объект, который необходим при удержании изображения мышью
@@ -59,8 +58,6 @@ let CanvasCharacteristic = {
 // Массив для изображений
 arr = [];
 
-// Функция для очистки экрана и вывода всех элементов
-// Работает с определённой частотой
 function drawAll() {
   context.clearRect(0,
     0,
@@ -96,7 +93,32 @@ function drawAll() {
 
 }
 
-// Определяет координаты пользователя в границах canvas
+function initializeFragmentList(arr) {
+  for (i = 0; i < countImages; i++) {
+    var x = i % imagesX;
+    var y = Math.floor(i / imagesY);
+
+    var leftId = i % imagesX - 1;
+    var topId = i - imagesY;
+
+    arr.push(
+      new Fragment(
+        i,
+        DIRECTORY + (i + 1) + '.png',
+        getRandomArbitary(1940, 2720), getRandomArbitary(80, 480),
+        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null)
+      )
+    );
+
+    if (ListObjectHelper.lastVisualObject == null) {
+      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
+      ListObjectHelper.firstVisualObject = ListObjectHelper.lastVisualObject;
+    } else {
+      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], ListObjectHelper.lastVisualObject);
+    }
+  }
+}
+
 function getCoords(canvas, x, y) {
   var bbox = canvas.getBoundingClientRect();
   return {
@@ -104,7 +126,7 @@ function getCoords(canvas, x, y) {
     y: (y - bbox.top) * (canvas.height / bbox.height)
   };
 }
-//рандом чисел
+
 function getRandomArbitary(min, max) {
   return Math.ceil(Math.random() * (max - min) + min);
 }
@@ -122,34 +144,9 @@ window.onload = function() {
 
   CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
   CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
-
-  // Заполнение массива изображениями
-  for (i = 0; i < countImages; i++) {
-    x = i % imagesX;
-    y = Math.floor(i / imagesY);
-
-    leftId = i % imagesX - 1; // ИСПРАВЛЕНИЕ БАГА в todoist (leftId = i - 1;)
-    topId = i - imagesY;
-
-    arr.push(
-      new Fragment(
-        i,
-        DIRECTORY + (i + 1) + '.png',
-        getRandomArbitary(1940, 2720), getRandomArbitary(80, 480),
-        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null) // ЗАМЕНИТЬ
-      )
-    );
-    if (ListObjectHelper.lastVisualObject == null) {
-      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
-      ListObjectHelper.firstVisualObject = ListObjectHelper.lastVisualObject;
-    } else {
-      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], ListObjectHelper.lastVisualObject);
-    }
-
-  }
+  initializeFragmentList(arr);
 
 
-  // Отслеживать перемещение курсора мыши
   canvas.onmousemove = function(e) {
     var loc = getCoords(canvas, e.clientX, e.clientY);
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
@@ -167,7 +164,6 @@ window.onload = function() {
     }
   };
 
-  // Отслеживать нажатие на кнопки мыши
   canvas.onmousedown = function(e) {
     shouldConnect = true;
 
@@ -175,7 +171,6 @@ window.onload = function() {
     var lastSeenObject = ListObjectHelper.lastVisualObject;
     do {
       var objInCoords = lastSeenObject.value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
-      // console.log(objInCoords);
       if (lastSeenObject.value instanceof Fragment) {
         if (objInCoords) {
           if (
@@ -216,10 +211,9 @@ window.onload = function() {
   }
 
 
-  // Отслеживать отжатие кнопок мыши
   canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
+      var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
       if (shouldConnect) {
         if (selectedFragment.group == null) {
           selectedFragment.connectToOther();
@@ -249,7 +243,7 @@ window.onload = function() {
       if (event.keyCode == KEY_showSilhouette) {
         showSilhouette = true;
       }
-      if(event.keyCode == 49) {
+      if (event.keyCode == 49) {
         var lastSeenObject = ListObjectHelper.lastVisualObject;
         do {
           console.log(lastSeenObject);
@@ -258,10 +252,9 @@ window.onload = function() {
         console.log("\nEND\n")
       }
 
-      if(event.keyCode == 50) {
-        if(SelectFragmentHelper.translatedFragmentId >= 0) {
-          arr[SelectFragmentHelper.translatedFragmentId].listElem.remove();
-        }
+      if (event.keyCode == 50) {
+        console.log(ListObjectHelper.firstVisualObject);
+        console.log(ListObjectHelper.lastVisualObject);
       }
     }
   }, false);

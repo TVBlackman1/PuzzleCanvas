@@ -32,7 +32,7 @@ class FragmentGroup {
   }
 
   draw() {
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+    this.fragments.forEach(function(fragment, ind, arr) {
       fragment.draw();
     });
   }
@@ -40,7 +40,7 @@ class FragmentGroup {
   smoothMove(x, y, selected, connectingFragment) {
     // connectingFragment - фрагмент, к которому я конекчусь.
     // при измнении его координат мои подстраиваются
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+    this.fragments.forEach(function(fragment, ind, arr) {
       if (fragment !== selected) {
         fragment.smoothMove(
           x - selected.x + fragment.x,
@@ -53,22 +53,21 @@ class FragmentGroup {
   }
 
   changeGroup(newGroup) {
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+    this.fragments.forEach(function(fragment, ind, arr) {
       fragment.group = newGroup;
       newGroup.fragments.add(fragment);
     });
   }
 
   connectTo() {
-    // нужно сделать копию, потому что в Fragment.js другие фрагменты добавятся к этому классу и пройдут в цикл,
-    // а они могут конектиться к другим и так всё сломается к хуям
-
-    // копия нахуй не нужна, если к ним не конектиться, а только их проверять. Конект потом
-    // второй аргумент проверяет
     var minRange = -1;
     var minFragment = null;
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
-      var res = fragment.connectToOther(fragment.ind, false);
+    this.fragments.forEach(function(fragment, ind, arr) {
+
+      // для каждого из фрагментов смотрим, можем ли мы присоединить его к другим фрагментам вне группы
+      var res = fragment.connectToOther(fragment.ind, false); // информация о возможности присоединения БЕЗ самого присоединения
+
+      // сортировка по расстоянию, если есть возможность присоединить. Выбор минимального из расстояний
       if (res.res) {
         if (minRange == -1) {
           minRange = res.range;
@@ -81,7 +80,7 @@ class FragmentGroup {
       }
     });
     if (minFragment != null)
-      minFragment.connectToOther(minFragment.ind);
+      minFragment.connectToOther(minFragment.ind, true);
 
   }
 }

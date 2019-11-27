@@ -21,17 +21,25 @@ class FragmentList {
         this.next.prev = this.prev;
       } else if(this.next == null){
         // конец
-        ListObjectHelper.lastVisualObject = this.prev;
-        this.prev.next = null;
+        if(this.prev != null) {
+          ListObjectHelper.lastVisualObject = this.prev;
+          this.prev.next = null;
+        }
       }
     } else {
       // начало
-      ListObjectHelper.firstVisualObject = this.next;
-      this.next.prev = null;
+      if(this.next != null) {
+        ListObjectHelper.firstVisualObject = this.next;
+        this.next.prev = null;
+      }
     }
   }
 
   replaceToTop() {
+    if(ListObjectHelper.lastVisualObject === this) {
+      return;
+    }
+
     this.remove();
     if (ListObjectHelper.lastVisualObject !== this) {
       ListObjectHelper.lastVisualObject.next = this;
