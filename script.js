@@ -50,22 +50,6 @@ function drawAll(canvas, context) {
   for (var i = 0; i < arrButtons.length; i++) {
     arrButtons[i].draw();
   }
-
-
-  // console.log(BottomPanel.fragmentsCount);
-  // for(var i = 0; i < BottomPanel.fragmentsCount; i++) {
-  //   context.beginPath();
-  //   context.rect(
-  //     BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * i,
-  //     BottomPanel.firstY + BottomPanel.paddingY,
-  //     FragmentsGeneralCharacteristic.widthPanel,
-  //     FragmentsGeneralCharacteristic.heightPanel
-  //   );
-  //   context.lineWidth = "3";
-  //   context.strokeStyle = "black";
-  //   context.stroke();
-  // }
-
 }
 
 function initializeFragmentList(arr) {

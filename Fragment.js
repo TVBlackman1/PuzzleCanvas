@@ -60,7 +60,7 @@ class Fragment {
         FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
         FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
 
-        FragmentsGeneralCharacteristic.connectRange = 1 * Math.min(
+        FragmentsGeneralCharacteristic.connectRange = 2 * Math.min(
           FragmentsGeneralCharacteristic.third_x,
           FragmentsGeneralCharacteristic.third_y
         );
@@ -99,36 +99,42 @@ class Fragment {
   // Отображает изображение в заданных координатах
   draw() {
     if (!showSilhouette) {
-      if (this.onBottomPanel) {
-        if (
-          (BottomPanel.fragmentsCount * (BottomPanel.list - 1) <= this.bottomPanelInd &&
-            this.bottomPanelInd < BottomPanel.fragmentsCount * BottomPanel.list)) {
-          context.drawImage(
-            this.img,
-            BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
-              this.bottomPanelInd % BottomPanel.fragmentsCount),
-            BottomPanel.firstY + BottomPanel.paddingY,
-            FragmentsGeneralCharacteristic.widthPanel,
-            FragmentsGeneralCharacteristic.heightPanel
-          );
-        }
-      } else {
+      if (!this.onBottomPanel) {
+        // изобразить элемент, если он не на панели
         context.drawImage(
           this.img,
           this.x,
           this.y,
           FragmentsGeneralCharacteristic.widthScale,
           FragmentsGeneralCharacteristic.heightScale
-        )
+        );
       }
-
-      // context.drawImage(
-      //   this.img,
-      //   this.x,
-      //   this.y,
-      //   FragmentsGeneralCharacteristic.widthScale,
-      //   FragmentsGeneralCharacteristic.heightScale
-      // )
+      if (
+        (BottomPanel.fragmentsCount * (BottomPanel.list - 1) <= this.bottomPanelInd &&
+          this.bottomPanelInd < BottomPanel.fragmentsCount * BottomPanel.list)) {
+        // если находится на данном листе, нарисовать его
+        context.drawImage(
+          this.img,
+          BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+            this.bottomPanelInd % BottomPanel.fragmentsCount),
+          BottomPanel.firstY + BottomPanel.paddingY,
+          FragmentsGeneralCharacteristic.widthPanel,
+          FragmentsGeneralCharacteristic.heightPanel
+        );
+        if (!this.onBottomPanel) {
+          // изобразить маску, если объект не на панели
+          context.beginPath();
+          context.fillStyle = "rgba(255,255,255,0.5)";
+          context.rect(
+            BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+              this.bottomPanelInd % BottomPanel.fragmentsCount),
+            BottomPanel.firstY + BottomPanel.paddingY,
+            FragmentsGeneralCharacteristic.widthPanel,
+            FragmentsGeneralCharacteristic.heightPanel
+          );
+          context.fill();
+        }
+      }
     } else {
       context.beginPath();
       context.rect(
@@ -424,7 +430,7 @@ class Fragment {
       let inner_this = this;
 
       function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
-        if (getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other))) {
+        if (getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other) && !other.onBottomPanel)) {
           // работает только на объекты, отсутствующие в группе
           connectArray.push({
             range: getInfo.range,
