@@ -50,6 +50,12 @@ class FragmentGroup {
       }
     });
     selected.smoothMove(x, y, connectingFragment);
+    if(connectingFragment != null) {
+      // проверка для того, чтобы работать с группами один раз.
+      // Если есть группа - работать, если нет, то работа внутри smoothMove
+      selected.workGroups(selected, connectingFragment);
+    }
+
   }
 
   changeGroup(newGroup) {

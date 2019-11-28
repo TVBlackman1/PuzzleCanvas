@@ -14,8 +14,8 @@ h1 {
     display: block;
     border: 1px solid darkblue;
     box-sizing: border-box;
-    width: 1760px; /* ЗАМЕНИТЬ */
-    height: 990px;
+    width: 1800px; /* ЗАМЕНИТЬ */
+    height: 820px;
     /* height: 495px; */
     margin: auto;
 }

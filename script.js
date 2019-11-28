@@ -1,95 +1,70 @@
-const FRAMES = 45;
-const imagesX = 2;
-const imagesY = 2;
-const countImages = imagesX * imagesY;
+function drawAll(canvas, context) {
+  context.lineWidth = "1";
 
-const FIELD_WIDTH = 1; // Размеры поля
-const FIELD_HEIGHT = 5 / 11; // Местоположение поля в Fragment.js -> (61, 62) строки
-
-const KEY_showSilhouette = 83; // S
-const KEY_shouldConnect = 32; // SPACE
-
-const DIRECTORY = "images/test";
-
-
-
-// Вспомогательный объект, который необходим при удержании изображения мышью
-// Способен определить индекс изображения в массиве, а так же запомнить
-// Разницу между координатами курсора мыши и началом изображения в левом верхнем
-// углу из метода "rangeToStartImage(x, y)" класса "Fragment"
-let SelectFragmentHelper = {
-  translatedFragmentId: -1,
-  deltaX: 0,
-  deltaY: 0
-};
-
-
-// Ссылки на первый, последний элементы двусвязного списка фрагментов или групп фрагментов для правильного
-// отображения поверх остальных элементов на экране
-let ListObjectHelper = {
-  lastVisualObject: null,
-  firstVisualObject: null
-}
-
-let FragmentsGeneralCharacteristic = {
-  SCALE: -1,
-  downloadedImages: 0,
-  width: -1,
-  height: -1,
-  widthScale: -1,
-  heightScale: -1,
-  third_x: -1,
-  third_y: -1,
-  connectRange: -1
-};
-
-let CanvasCharacteristic = {
-  all_width: -1,
-  all_height: -1,
-  width: -1,
-  height: -1,
-  lastX: -1,
-  lastY: -1,
-  firstX: -1,
-  firstY: -1,
-};
-
-
-// Массив для изображений
-arr = [];
-
-function drawAll() {
   context.clearRect(0,
     0,
     canvas.width,
     canvas.height
   );
+
+
   context.beginPath();
   context.rect(
-    CanvasCharacteristic.firstX,
-    CanvasCharacteristic.firstY,
-    CanvasCharacteristic.all_width,
-    CanvasCharacteristic.all_height
+    MainFieldCharacteristic.firstX,
+    MainFieldCharacteristic.firstY,
+    MainFieldCharacteristic.all_width,
+    MainFieldCharacteristic.all_height
   );
-  context.lineWidth = "10";
   context.strokeStyle = "red";
   context.stroke();
+
+
   context.beginPath();
   context.rect(
-    CanvasCharacteristic.firstX,
-    CanvasCharacteristic.firstY,
-    CanvasCharacteristic.width,
-    CanvasCharacteristic.height
+    MainFieldCharacteristic.firstX,
+    MainFieldCharacteristic.firstY,
+    MainFieldCharacteristic.width,
+    MainFieldCharacteristic.height
   );
-  context.lineWidth = "10";
   context.strokeStyle = "green";
   context.stroke();
+
 
   var lastSeenObject = ListObjectHelper.firstVisualObject;
   do {
     lastSeenObject.value.draw();
     lastSeenObject = lastSeenObject.next;
   } while (lastSeenObject != null)
+
+
+  context.beginPath();
+  context.rect(
+    BottomPanel.firstX,
+    BottomPanel.firstY,
+    BottomPanel.width,
+    BottomPanel.height
+  );
+  context.strokeStyle = "blue";
+  context.stroke();
+
+  for (var i = 0; i < arrButtons.length; i++) {
+    arrButtons[i].draw();
+  }
+
+
+  // console.log(BottomPanel.fragmentsCount);
+  // for(var i = 0; i < BottomPanel.fragmentsCount; i++) {
+  //   context.beginPath();
+  //   context.rect(
+  //     BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * i,
+  //     BottomPanel.firstY + BottomPanel.paddingY,
+  //     FragmentsGeneralCharacteristic.widthPanel,
+  //     FragmentsGeneralCharacteristic.heightPanel
+  //   );
+  //   context.lineWidth = "3";
+  //   context.strokeStyle = "black";
+  //   context.stroke();
+  // }
 
 }
 
@@ -105,8 +80,9 @@ function initializeFragmentList(arr) {
       new Fragment(
         i,
         DIRECTORY + (i + 1) + '.png',
-        getRandomArbitary(1940, 2720), getRandomArbitary(80, 480),
-        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null)
+        100, 100,
+        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null),
+        i
       )
     );
 
@@ -130,11 +106,7 @@ function getCoords(canvas, x, y) {
 function getRandomArbitary(min, max) {
   return Math.ceil(Math.random() * (max - min) + min);
 }
-// При загрузке экрана
 
-var lastDownTarget = null;
-var shouldConnect = false;
-var showSilhouette = false;
 
 window.onload = function() {
 
@@ -142,9 +114,16 @@ window.onload = function() {
   canvas = document.getElementById("canvas-puzzle");
   context = canvas.getContext('2d');
 
-  CanvasCharacteristic.all_width = canvas.width * FIELD_WIDTH;
-  CanvasCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
+  MainFieldCharacteristic.all_width = canvas.width * FIELD_WIDTH;
+  MainFieldCharacteristic.all_height = canvas.height * FIELD_HEIGHT;
   initializeFragmentList(arr);
+
+  arrButtons.push(new PanelButton(-1, function() { // функция для получения, т.к. соответствующие переменные объявлены позже
+    return BottomPanel.firstX
+  }));
+  arrButtons.push(new PanelButton(1, function() {
+    return BottomPanel.lastX - BottomPanel.buttonWidth
+  }));
 
 
   canvas.onmousemove = function(e) {
@@ -168,6 +147,16 @@ window.onload = function() {
     shouldConnect = true;
 
     var loc = getCoords(canvas, e.clientX, e.clientY);
+    for (var i = 0; i < arrButtons.length; i++) {
+      console.log("!");
+      if (arrButtons[i].isHadPoint(loc.x, loc.y)) {
+        console.log("!!!");
+        arrButtons[i].func();
+        return;
+      }
+    }
+
+
     var lastSeenObject = ListObjectHelper.lastVisualObject;
     do {
       var objInCoords = lastSeenObject.value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
@@ -179,11 +168,16 @@ window.onload = function() {
             (lastSeenObject.value.group == null || lastSeenObject.value.group.isConnecting == false)
           ) {
             // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-            ranges = lastSeenObject.value.rangeToStartImage(loc.x, loc.y);
-            SelectFragmentHelper.deltaX = ranges.x;
-            SelectFragmentHelper.deltaY = ranges.y;
-            SelectFragmentHelper.translatedFragmentId = lastSeenObject.value.ind;
-            lastSeenObject.replaceToTop(); // отображать поверх других объектов
+            if (lastSeenObject.value.onBottomPanel) {
+              lastSeenObject.value.onBottomPanel = false;
+              lastSeenObject.value.moveToPanel();
+
+            }
+              ranges = lastSeenObject.value.rangeToStartImage(loc.x, loc.y);
+              SelectFragmentHelper.deltaX = ranges.x;
+              SelectFragmentHelper.deltaY = ranges.y;
+              SelectFragmentHelper.translatedFragmentId = lastSeenObject.value.ind;
+              lastSeenObject.replaceToTop(); // отображать поверх других объектов
             console.log("Image number", SelectFragmentHelper.translatedFragmentId);
             break;
           }
@@ -214,6 +208,10 @@ window.onload = function() {
   canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
+      var loc = getCoords(canvas, e.clientX, e.clientY);
+      if(selectedFragment.group == null && panel.isHadPoint(loc.x, loc.y)) {
+        selectedFragment.onBottomPanel = true;
+      }
       if (shouldConnect) {
         if (selectedFragment.group == null) {
           selectedFragment.connectToOther();
@@ -274,5 +272,5 @@ window.onload = function() {
 
 // Функция для анимации с определённой частотой для обновления экрана
 function update() {
-  drawAll();
+  drawAll(canvas, context);
 }
