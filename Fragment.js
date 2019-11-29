@@ -99,20 +99,10 @@ class Fragment {
   // Отображает изображение в заданных координатах
   draw() {
     if (!showSilhouette) {
-      if (!this.onBottomPanel) {
-        // изобразить элемент, если он не на панели
-        context.drawImage(
-          this.img,
-          this.x,
-          this.y,
-          FragmentsGeneralCharacteristic.widthScale,
-          FragmentsGeneralCharacteristic.heightScale
-        );
-      }
       if (
         (BottomPanel.fragmentsCount * (BottomPanel.list - 1) <= this.bottomPanelInd &&
           this.bottomPanelInd < BottomPanel.fragmentsCount * BottomPanel.list)) {
-        // если находится на данном листе, нарисовать его
+        // если находится на данном листе нижней панели - нарисовать его
         context.drawImage(
           this.img,
           BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
@@ -134,6 +124,16 @@ class Fragment {
           );
           context.fill();
         }
+      }
+      if (!this.onBottomPanel) {
+        // изобразить элемент, если он не на панели
+        context.drawImage(
+          this.img,
+          this.x,
+          this.y,
+          FragmentsGeneralCharacteristic.widthScale,
+          FragmentsGeneralCharacteristic.heightScale
+        );
       }
     } else {
       context.beginPath();

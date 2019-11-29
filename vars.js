@@ -1,4 +1,4 @@
-const FRAMES = 45;
+const FRAMES = 60;
 const imagesX = 4;
 const imagesY = 4;
 const countImages = imagesX * imagesY;
