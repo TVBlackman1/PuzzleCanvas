@@ -79,10 +79,11 @@ let BottomPanel = {
 
 
 // Массив для изображений
-arr = [];
-arrButtons = [];
+var arr = [];
 
 var lastDownTarget = null;
 var shouldConnect = false;
 var showSilhouette = false;
-var panel = undefined;
+
+var panel = undefined; // init in Fragment.js
+var canvas = undefined; // init in script.js

@@ -9,9 +9,11 @@ class Fragment {
     this.x = x;
     this.y = y;
     this.img = new Image();
+
+    this.downloadImage();
+
     this.img.src = this.src;
     this.ind = ind;
-    this.downloadImage();
     this.onBottomPanel = true;
     this.bottomPanelInd = bottomInd;
 
@@ -39,92 +41,19 @@ class Fragment {
 
   downloadImage() {
     this.img.onload = function() {
-      // начальные настройки канваса
-
       FragmentsGeneralCharacteristic.downloadedImages++;
       if (FragmentsGeneralCharacteristic.downloadedImages == countImages) {
         console.log("Downloaded all images");
-
-        FragmentsGeneralCharacteristic.width = this.width;
-        FragmentsGeneralCharacteristic.height = this.height;
-
-        FragmentsGeneralCharacteristic.SCALE = (
-          Math.min(
-            MainFieldCharacteristic.all_width / (imagesX / 5 * 3) / FragmentsGeneralCharacteristic.width,
-            MainFieldCharacteristic.all_height / (imagesY / 5 * 3) / FragmentsGeneralCharacteristic.height
-          )
-        );
-        FragmentsGeneralCharacteristic.widthScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.width);
-        FragmentsGeneralCharacteristic.heightScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.height);
-
-        FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
-        FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
-
-        FragmentsGeneralCharacteristic.connectRange = 2 * Math.min(
-          FragmentsGeneralCharacteristic.third_x,
-          FragmentsGeneralCharacteristic.third_y
-        );
-        MainFieldCharacteristic.width = FragmentsGeneralCharacteristic.widthScale / 5 * 3 * imagesX;
-        MainFieldCharacteristic.height = FragmentsGeneralCharacteristic.heightScale / 5 * 3 * imagesY;
-
-        MainFieldCharacteristic.firstX = canvas.width / 2 - MainFieldCharacteristic.width / 2;
-        MainFieldCharacteristic.firstY = 40;
-
-        MainFieldCharacteristic.lastX = MainFieldCharacteristic.firstX + MainFieldCharacteristic.width;
-        MainFieldCharacteristic.lastY = MainFieldCharacteristic.firstY + MainFieldCharacteristic.height;
-
-
-        BottomPanel.width = MainFieldCharacteristic.width * 1.6;
-        BottomPanel.firstX = canvas.width / 2 - BottomPanel.width / 2;
-        BottomPanel.firstY = MainFieldCharacteristic.lastY + 15;
-        BottomPanel.lastX = BottomPanel.firstX + BottomPanel.width;
-        BottomPanel.lastY = BottomPanel.firstY + BottomPanel.height;
-        BottomPanel.mainWidth = BottomPanel.width - 2 * BottomPanel.buttonWidth - 2 * BottomPanel.paddingX;
-
-        FragmentsGeneralCharacteristic.heightPanel = BottomPanel.height - 2 * BottomPanel.paddingY;
-        FragmentsGeneralCharacteristic.widthPanel = FragmentsGeneralCharacteristic.heightPanel / FragmentsGeneralCharacteristic.height * FragmentsGeneralCharacteristic.width;
-        BottomPanel.fragmentsCount = Math.floor(BottomPanel.mainWidth / FragmentsGeneralCharacteristic.widthPanel);
-        BottomPanel.fragmentSpace = (BottomPanel.mainWidth - BottomPanel.fragmentsCount * FragmentsGeneralCharacteristic.widthPanel) / (BottomPanel.fragmentsCount - 1);
-
-        BottomPanel.lists = Math.floor(countImages / BottomPanel.fragmentsCount) + 1
-
-        panel = new Panel();
-
-
+        initializeSizesByImageSize(this)
+        // panel = new Panel();
       }
     }
   }
 
 
   // Отображает изображение в заданных координатах
-  draw() {
+  draw(context) {
     if (!showSilhouette) {
-      if (
-        (BottomPanel.fragmentsCount * (BottomPanel.list - 1) <= this.bottomPanelInd &&
-          this.bottomPanelInd < BottomPanel.fragmentsCount * BottomPanel.list)) {
-        // если находится на данном листе нижней панели - нарисовать его
-        context.drawImage(
-          this.img,
-          BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
-            this.bottomPanelInd % BottomPanel.fragmentsCount),
-          BottomPanel.firstY + BottomPanel.paddingY,
-          FragmentsGeneralCharacteristic.widthPanel,
-          FragmentsGeneralCharacteristic.heightPanel
-        );
-        if (!this.onBottomPanel) {
-          // изобразить маску, если объект не на панели
-          context.beginPath();
-          context.fillStyle = "rgba(255,255,255,0.5)";
-          context.rect(
-            BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
-              this.bottomPanelInd % BottomPanel.fragmentsCount),
-            BottomPanel.firstY + BottomPanel.paddingY,
-            FragmentsGeneralCharacteristic.widthPanel,
-            FragmentsGeneralCharacteristic.heightPanel
-          );
-          context.fill();
-        }
-      }
       if (!this.onBottomPanel) {
         // изобразить элемент, если он не на панели
         context.drawImage(
@@ -226,7 +155,6 @@ class Fragment {
         other.listElem.remove();
 
       } else {
-        console.log("1");
         selected.group.listElemGroup.remove();
         selected.group.changeGroup(other.group);
       }
@@ -362,7 +290,7 @@ class Fragment {
    *          }
    *
    */
-  connectToOther(newInd = null, withConnect = true) {
+  connectTo(newInd = null, withConnect = true) {
     var i = null;
     if (newInd == null) {
       i = SelectFragmentHelper.translatedFragmentId
@@ -430,7 +358,7 @@ class Fragment {
       let inner_this = this;
 
       function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
-        if (getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other) && !other.onBottomPanel)) {
+        if ((getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other)) && !other.onBottomPanel)) {
           // работает только на объекты, отсутствующие в группе
           connectArray.push({
             range: getInfo.range,

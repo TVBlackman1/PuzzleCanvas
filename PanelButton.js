@@ -13,7 +13,7 @@ class PanelButton {
     )
   }
 
-  draw() {
+  draw(context) {
     context.beginPath();
     context.rect(
       this.getPos(),
@@ -25,6 +25,8 @@ class PanelButton {
     context.stroke();
   }
 
+  // onclick
+  // увеличивает номер страницы на заданный инкремент (увеличивает или уменьшает на 1, разное для левой и правой кнопок)
   func() {
     BottomPanel.list += this.inc
     if(BottomPanel.list == 0) BottomPanel.list = 1;

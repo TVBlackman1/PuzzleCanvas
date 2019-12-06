@@ -20,7 +20,7 @@ class FragmentGroup {
   }
 
   move(x, y, selected) {
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+    this.fragments.forEach(function(fragment, ind, arr) {
       if (fragment !== selected) {
         fragment.move(
           x - selected.x + fragment.x,
@@ -28,12 +28,12 @@ class FragmentGroup {
         )
       }
     });
-    selected.move(x, y);
+    selected.move(x, y); // обрабатывается последним, т.к. в цикле используются его данные
   }
 
-  draw() {
+  draw(context) {
     this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.draw();
+      fragment.draw(context);
     });
   }
 
@@ -71,7 +71,7 @@ class FragmentGroup {
     this.fragments.forEach(function(fragment, ind, arr) {
 
       // для каждого из фрагментов смотрим, можем ли мы присоединить его к другим фрагментам вне группы
-      var res = fragment.connectToOther(fragment.ind, false); // информация о возможности присоединения БЕЗ самого присоединения
+      var res = fragment.connectTo(fragment.ind, false); // информация о возможности присоединения БЕЗ самого присоединения
 
       // сортировка по расстоянию, если есть возможность присоединить. Выбор минимального из расстояний
       if (res.res) {
@@ -86,7 +86,7 @@ class FragmentGroup {
       }
     });
     if (minFragment != null)
-      minFragment.connectToOther(minFragment.ind, true);
+      minFragment.connectTo(minFragment.ind, true);
 
   }
 }
