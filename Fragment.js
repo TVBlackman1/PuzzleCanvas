@@ -39,17 +39,39 @@ class Fragment {
     this.listElem = null; // заполняется
   }
 
+  init(img) {
+    FragmentsGeneralCharacteristic.width = img.width;
+    FragmentsGeneralCharacteristic.height = img.height;
+
+    FragmentsGeneralCharacteristic.SCALE = (
+      Math.min(
+        canvas.field.all_width / (imagesX / 5 * 3) / FragmentsGeneralCharacteristic.width,
+        canvas.field.all_height / (imagesY / 5 * 3) / FragmentsGeneralCharacteristic.height
+      )
+    );
+    FragmentsGeneralCharacteristic.widthScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.width);
+    FragmentsGeneralCharacteristic.heightScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.height);
+
+    FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
+    FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
+
+    FragmentsGeneralCharacteristic.connectRange = 2 * Math.min(
+      FragmentsGeneralCharacteristic.third_x,
+      FragmentsGeneralCharacteristic.third_y
+    );
+  }
+
   downloadImage() {
+    var fr = this;
     this.img.onload = function() {
       FragmentsGeneralCharacteristic.downloadedImages++;
-      if (FragmentsGeneralCharacteristic.downloadedImages == countImages) {
+      if (FragmentsGeneralCharacteristic.downloadedImages == 1) {
         console.log("Downloaded all images");
-        initializeSizesByImageSize(this)
+        initializeSizes(fr, this)
         // panel = new Panel();
       }
     }
   }
-
 
   // Отображает изображение в заданных координатах
   draw(context) {
@@ -83,14 +105,14 @@ class Fragment {
   isHadPoint(x, y) {
     if (this.onBottomPanel) {
       return (
-        BottomPanel.fragmentsCount * (BottomPanel.list - 1) <= this.bottomPanelInd &&
-        this.bottomPanelInd < BottomPanel.fragmentsCount * BottomPanel.list &&
-        x >= (BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
-          this.bottomPanelInd % BottomPanel.fragmentsCount)) &&
-        x <= (BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
-          this.bottomPanelInd % BottomPanel.fragmentsCount) + FragmentsGeneralCharacteristic.widthPanel) &&
-        y >= BottomPanel.firstY + BottomPanel.paddingY &&
-        y <= BottomPanel.firstY + BottomPanel.paddingY + FragmentsGeneralCharacteristic.heightPanel
+        canvas.panel.fragmentsCount * (canvas.panel.list - 1) <= this.bottomPanelInd &&
+        this.bottomPanelInd < canvas.panel.fragmentsCount * canvas.panel.list &&
+        x >= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+          this.bottomPanelInd % canvas.panel.fragmentsCount)) &&
+        x <= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+          this.bottomPanelInd % canvas.panel.fragmentsCount) + FragmentsGeneralCharacteristic.widthPanel) &&
+        y >= canvas.panel.firstY + canvas.panel.paddingY &&
+        y <= canvas.panel.firstY + canvas.panel.paddingY + FragmentsGeneralCharacteristic.heightPanel
 
       )
     } else
@@ -115,9 +137,10 @@ class Fragment {
   }
 
   moveToPanel() {
-    var x = (BottomPanel.firstX + BottomPanel.buttonWidth + BottomPanel.paddingX + (BottomPanel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
-      this.bottomPanelInd % BottomPanel.fragmentsCount)) + FragmentsGeneralCharacteristic.widthPanel / 2 - FragmentsGeneralCharacteristic.widthScale / 2;
-    var y = BottomPanel.firstY + BottomPanel.paddingY + FragmentsGeneralCharacteristic.heightPanel / 2 - FragmentsGeneralCharacteristic.heightScale / 2;
+    // edit
+    var x = (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+      this.bottomPanelInd % canvas.panel.fragmentsCount)) + FragmentsGeneralCharacteristic.widthPanel / 2 - FragmentsGeneralCharacteristic.widthScale / 2;
+    var y = canvas.panel.firstY + canvas.panel.paddingY + FragmentsGeneralCharacteristic.heightPanel / 2 - FragmentsGeneralCharacteristic.heightScale / 2;
     this.move(x, y);
   }
 
@@ -300,48 +323,48 @@ class Fragment {
     var x = i % imagesX;
     var y = Math.floor(i / imagesY);
 
-    if (x == 0 && y == 0 && this.rangeFromLeftTop(MainFieldCharacteristic.firstX, MainFieldCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
+    if (x == 0 && y == 0 && this.rangeFromLeftTop(canvas.field.firstX, canvas.field.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
           this,
-          MainFieldCharacteristic.firstX - FragmentsGeneralCharacteristic.third_x,
-          MainFieldCharacteristic.firstY - FragmentsGeneralCharacteristic.third_y
+          canvas.field.firstX - FragmentsGeneralCharacteristic.third_x,
+          canvas.field.firstY - FragmentsGeneralCharacteristic.third_y
         );
       }
       return {
         res: true,
         range: 0
       };
-    } else if (x == imagesX - 1 && y == 0 && this.rangeFromRightTop(MainFieldCharacteristic.lastX, MainFieldCharacteristic.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
+    } else if (x == imagesX - 1 && y == 0 && this.rangeFromRightTop(canvas.field.lastX, canvas.field.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
           this,
-          MainFieldCharacteristic.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
-          MainFieldCharacteristic.firstY - FragmentsGeneralCharacteristic.third_y
+          canvas.field.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
+          canvas.field.firstY - FragmentsGeneralCharacteristic.third_y
         );
       }
       return {
         res: true,
         range: 0
       };
-    } else if (x == imagesX - 1 && y == imagesY - 1 && this.rangeFromRightBottom(MainFieldCharacteristic.lastX, MainFieldCharacteristic.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
+    } else if (x == imagesX - 1 && y == imagesY - 1 && this.rangeFromRightBottom(canvas.field.lastX, canvas.field.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
           this,
-          MainFieldCharacteristic.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
-          MainFieldCharacteristic.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
+          canvas.field.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
+          canvas.field.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
         );
       }
       return {
         res: true,
         range: 0
       };
-    } else if (x == 0 && y == imagesY - 1 && this.rangeFromLeftBottom(MainFieldCharacteristic.firstX, MainFieldCharacteristic.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
+    } else if (x == 0 && y == imagesY - 1 && this.rangeFromLeftBottom(canvas.field.firstX, canvas.field.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
       if (withConnect) {
         this.smoothmoveOneOrGroup(
           this,
-          MainFieldCharacteristic.firstX - FragmentsGeneralCharacteristic.third_x,
-          MainFieldCharacteristic.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
+          canvas.field.firstX - FragmentsGeneralCharacteristic.third_x,
+          canvas.field.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
         );
       }
       return {
@@ -442,7 +465,11 @@ class Fragment {
 
     // если объект ещё смувится, а к нему смув другого закончился, то надо тот пододвигать
 
-    this.smoothing = true;
+    if(this.group != null) {
+      this.group.smoothing = true;
+    } else {
+      this.smoothing = true;
+    }
     if (connectingFragment != null) {
       if (connectingFragment.group != null) {
         connectingFragment.group.isConnecting = true;
@@ -511,7 +538,13 @@ class Fragment {
               setTimeout(copyPositionIfNotSmoothmove, speedAnimation);
             } else {
               // при окончании убрать смув и добавить возможность к управлению элементов мышкой, убрав isConnecting и smoothing у всех элементов
-              fragment.smoothing = false; // движется до тех пор, пока движется родитель
+
+              // движется до тех пор, пока движется родитель
+              if(fragment.group != null) {
+                fragment.group.smoothing = false;
+              } else {
+                fragment.smoothing = false;
+              }
               if (connectingFragment != null) {
                 if (connectingFragment.group != null) {
                   connectingFragment.group.isConnecting = false;
@@ -526,10 +559,15 @@ class Fragment {
           fragment.x += connectingX - connectingX_start;
           fragment.y += connectingY - connectingY_start;
           if (fragment.group == null) // для работы один раз, чтобы не выполнялось для каждого элемента в группе
-            fragment.workGroups(fragment, connectingFragment);
+            fragment.workGroups(fragment, connectingFragment); // для группы отдельно обрабатывается в группе
 
         } else {
-          fragment.smoothing = false; // нет родителя, незачем двигаться
+          // нет родителя, незачем двигаться
+          if(fragment.group != null) {
+            fragment.group.smoothing = false;
+          } else {
+            fragment.smoothing = false;
+          }
         }
       }
     }

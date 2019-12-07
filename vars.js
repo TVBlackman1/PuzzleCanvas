@@ -48,42 +48,12 @@ let FragmentsGeneralCharacteristic = {
   third_yPanel: -1
 };
 
-let MainFieldCharacteristic = {
-  all_width: -1,
-  all_height: -1,
-  width: -1,
-  height: -1,
-  lastX: -1,
-  lastY: -1,
-  firstX: -1,
-  firstY: -1,
-};
-
-let BottomPanel = {
-  height: 120,
-  width: 900,
-  firstX: 200,
-  firstY: 900,
-  lastX: -1,
-  lastY: -1,
-  buttonWidth: 90,
-  paddingX: 0,
-  paddingY: 0,
-  mainWidth: -1,
-  fragmentsCount: -1,
-  fragmentSpace: -1,
-  lists: -1,
-  list: 1
-
-};
-
 
 // Массив для изображений
-var arr = [];
+const arr = [];
 
 var lastDownTarget = null;
 var shouldConnect = false;
 var showSilhouette = false;
 
-var panel = undefined; // init in Fragment.js
 var canvas = undefined; // init in script.js

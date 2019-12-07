@@ -7,9 +7,9 @@ class PanelButton {
   isHadPoint(x, y) {
     return (
       x >= this.getPos() &&
-      x <= this.getPos() + BottomPanel.buttonWidth &&
-      y >= BottomPanel.firstY &&
-      y <= BottomPanel.firstY + BottomPanel.height
+      x <= this.getPos() + canvas.panel.buttonWidth &&
+      y >= canvas.panel.firstY &&
+      y <= canvas.panel.firstY + canvas.panel.height
     )
   }
 
@@ -17,9 +17,9 @@ class PanelButton {
     context.beginPath();
     context.rect(
       this.getPos(),
-      BottomPanel.firstY,
-      BottomPanel.buttonWidth,
-      BottomPanel.height
+      canvas.panel.firstY,
+      canvas.panel.buttonWidth,
+      canvas.panel.height
     );
     context.strokeStyle = "blue";
     context.stroke();
@@ -28,8 +28,8 @@ class PanelButton {
   // onclick
   // увеличивает номер страницы на заданный инкремент (увеличивает или уменьшает на 1, разное для левой и правой кнопок)
   func() {
-    BottomPanel.list += this.inc
-    if(BottomPanel.list == 0) BottomPanel.list = 1;
-    if(BottomPanel.list == BottomPanel.lists + 1) BottomPanel.list = BottomPanel.lists;
+    canvas.panel.list += this.inc
+    if (canvas.panel.list == 0) canvas.panel.list = 1;
+    if (canvas.panel.list == canvas.panel.lists + 1) canvas.panel.list = canvas.panel.lists;
   }
 }

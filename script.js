@@ -3,33 +3,11 @@ function drawAll(canvas, context) {
 
   context.clearRect(0,
     0,
-    canvas.width,
-    canvas.height
+    canvas.canvas.width,
+    canvas.canvas.height
   );
 
-
-  // context.beginPath();
-  // context.rect(
-  //   MainFieldCharacteristic.firstX,
-  //   MainFieldCharacteristic.firstY,
-  //   MainFieldCharacteristic.all_width,
-  //   MainFieldCharacteristic.all_height
-  // );
-  // context.strokeStyle = "red";
-  // context.stroke();
-
-
-  context.beginPath();
-  context.rect(
-    MainFieldCharacteristic.firstX,
-    MainFieldCharacteristic.firstY,
-    MainFieldCharacteristic.width,
-    MainFieldCharacteristic.height
-  );
-  context.strokeStyle = "green";
-  context.stroke();
-
-  panel.draw(context);
+  canvas.draw(context); // нарисовать всё кроме фрагментов
 
   var lastSeenObject = ListObjectHelper.firstVisualObject;
   do {
@@ -57,8 +35,7 @@ function initializeFragmentList(arr) {
       )
     );
 
-    panel.fragments[i] = i;
-    console.log(panel.fragments[i]);
+    canvas.panel.fragments[i] = i;
 
     if (ListObjectHelper.lastVisualObject == null) {
       ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
@@ -69,128 +46,76 @@ function initializeFragmentList(arr) {
   }
 }
 
-function initializeSizesByImageSize(fragment) {
-  MainFieldCharacteristic.all_width = canvas.canvas.width * FIELD_WIDTH;
-  MainFieldCharacteristic.all_height = canvas.canvas.height * FIELD_HEIGHT;
+function initializeSizes(fragment, img) {
 
-  FragmentsGeneralCharacteristic.width = fragment.width;
-  FragmentsGeneralCharacteristic.height = fragment.height;
+  canvas.field.all_width = canvas.canvas.width * FIELD_WIDTH;
+  canvas.field.all_height = canvas.canvas.height * FIELD_HEIGHT;
+  fragment.init(img);
 
-  FragmentsGeneralCharacteristic.SCALE = (
-    Math.min(
-      MainFieldCharacteristic.all_width / (imagesX / 5 * 3) / FragmentsGeneralCharacteristic.width,
-      MainFieldCharacteristic.all_height / (imagesY / 5 * 3) / FragmentsGeneralCharacteristic.height
-    )
-  );
-  FragmentsGeneralCharacteristic.widthScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.width);
-  FragmentsGeneralCharacteristic.heightScale = Math.floor(FragmentsGeneralCharacteristic.SCALE * FragmentsGeneralCharacteristic.height);
+  canvas.field.init();
+  canvas.panel.init();
 
-  FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
-  FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
-
-  FragmentsGeneralCharacteristic.connectRange = 2 * Math.min(
-    FragmentsGeneralCharacteristic.third_x,
-    FragmentsGeneralCharacteristic.third_y
-  );
-  // ДЛИНА КОННЕКТ-РАССТОЯНИЯ
-
-  MainFieldCharacteristic.width = FragmentsGeneralCharacteristic.widthScale / 5 * 3 * imagesX;
-  MainFieldCharacteristic.height = FragmentsGeneralCharacteristic.heightScale / 5 * 3 * imagesY;
-
-  MainFieldCharacteristic.firstX = canvas.canvas.width / 2 - MainFieldCharacteristic.width / 2; // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
-  MainFieldCharacteristic.firstY = 40; // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
-
-  MainFieldCharacteristic.lastX = MainFieldCharacteristic.firstX + MainFieldCharacteristic.width;
-  MainFieldCharacteristic.lastY = MainFieldCharacteristic.firstY + MainFieldCharacteristic.height;
-
-
-  BottomPanel.width = MainFieldCharacteristic.width * 1.6; // ШИРИНА ПАНЕЛИ
-  BottomPanel.firstX = canvas.canvas.width / 2 - BottomPanel.width / 2; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-  BottomPanel.firstY = MainFieldCharacteristic.lastY + 15; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-  BottomPanel.lastX = BottomPanel.firstX + BottomPanel.width;
-  BottomPanel.lastY = BottomPanel.firstY + BottomPanel.height;
-  BottomPanel.mainWidth = BottomPanel.width - 2 * BottomPanel.buttonWidth - 2 * BottomPanel.paddingX;
-
-  FragmentsGeneralCharacteristic.heightPanel = BottomPanel.height - 2 * BottomPanel.paddingY;
-  FragmentsGeneralCharacteristic.widthPanel = FragmentsGeneralCharacteristic.heightPanel / FragmentsGeneralCharacteristic.height * FragmentsGeneralCharacteristic.width;
-  BottomPanel.fragmentsCount = Math.floor(BottomPanel.mainWidth / FragmentsGeneralCharacteristic.widthPanel);
-  BottomPanel.fragmentSpace = (BottomPanel.mainWidth - BottomPanel.fragmentsCount * FragmentsGeneralCharacteristic.widthPanel) / (BottomPanel.fragmentsCount - 1);
-
-  BottomPanel.lists = Math.floor(countImages / BottomPanel.fragmentsCount) + 1
+  canvas.left_menu.init();
+  canvas.right_menu.init();
 }
-
-// function getRandomArbitary(min, max) {
-//   return Math.ceil(Math.random() * (max - min) + min);
-// }
-
 
 window.onload = function() {
 
   console.log("Started");
-  canvas = new Canvas("canvas-puzzle");
-  panel = new Panel(countImages);
+  canvas = new Canvas("canvas-puzzle", countImages);
+  canvas.initElements();
   initializeFragmentList(arr);
 
   canvas.canvas.onmousemove = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      var newX = loc.x - SelectFragmentHelper.deltaX;
-      var newY = loc.y - SelectFragmentHelper.deltaY;
-      if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
-        arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
+      if (canvas.isInZones(loc.x, loc.y)) {
+        var newX = loc.x - SelectFragmentHelper.deltaX;
+        var newY = loc.y - SelectFragmentHelper.deltaY;
+        if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
+          arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
 
-      } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
-        arr[SelectFragmentHelper.translatedFragmentId].group.move(
-          newX, newY,
-          arr[SelectFragmentHelper.translatedFragmentId]
-        );
+        } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+          arr[SelectFragmentHelper.translatedFragmentId].group.move(
+            newX, newY,
+            arr[SelectFragmentHelper.translatedFragmentId]
+          );
+        }
       }
     }
   };
 
   canvas.canvas.onmousedown = function(e) {
     shouldConnect = true;
-
     var loc = canvas.getCoords(e.clientX, e.clientY);
-
-    // если панель существует и нажата клавиша - не обрабатывать пазлы
-    if (panel.onmousedown(loc)) {
+    if (canvas.panel.onmousedown(loc)) {
       return;
     }
 
-
     var lastSeenObject = ListObjectHelper.lastVisualObject;
     do {
-      var objInCoords = lastSeenObject.value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
-      if (lastSeenObject.value instanceof Fragment) {
+      var value = lastSeenObject.value;
+      var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
+      if (value instanceof Fragment) {
         if (objInCoords) {
-          if (
-            lastSeenObject.value.smoothing == false &&
-            lastSeenObject.value.isConnecting == false &&
-            (lastSeenObject.value.group == null || lastSeenObject.value.group.isConnecting == false)
-          ) {
+          if (!value.smoothing && !value.isConnecting) {
             // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-            if (lastSeenObject.value.onBottomPanel) {
-              lastSeenObject.value.onBottomPanel = false;
-              lastSeenObject.value.moveToPanel();
-
+            if (value.onBottomPanel) {
+              value.onBottomPanel = false;
+              value.moveToPanel();
             }
-            ranges = lastSeenObject.value.rangeToStartImage(loc.x, loc.y);
+            ranges = value.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
-            SelectFragmentHelper.translatedFragmentId = lastSeenObject.value.ind;
+            SelectFragmentHelper.translatedFragmentId = value.ind;
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
             console.log("Image number", SelectFragmentHelper.translatedFragmentId);
             break;
           }
         }
-      } else if (lastSeenObject.value instanceof FragmentGroup) {
+      } else if (value instanceof FragmentGroup) {
         if (objInCoords > -1) {
-          if (
-            arr[objInCoords].smoothing == false &&
-            arr[objInCoords].isConnecting == false &&
-            lastSeenObject.value.isConnecting == false
-          ) {
+          if (!value.smoothing && !value.isConnecting) {
             // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
             ranges = arr[objInCoords].rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
@@ -212,7 +137,7 @@ window.onload = function() {
       var loc = canvas.getCoords(e.clientX, e.clientY);
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
 
-      if (selectedFragment.group == null && panel.isHadPoint(loc.x, loc.y)) {
+      if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
         selectedFragment.onBottomPanel = true;
       }
 
@@ -272,5 +197,5 @@ window.onload = function() {
 
 // Функция для анимации с определённой частотой для обновления экрана
 function update() {
-  drawAll(canvas.canvas, canvas.context);
+  drawAll(canvas, canvas.context);
 }

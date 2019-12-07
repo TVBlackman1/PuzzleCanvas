@@ -9,7 +9,7 @@ class FragmentGroup {
   isHadPoint(x, y) {
     var found = false;
     var ind_ans = -1;
-    this.fragments.forEach(function(fragment, ind, arr) { // ЕЛЕ РАБОЧАЯ ХУЕТА
+    this.fragments.forEach(function(fragment, ind, arr) {
       if (found)
         return;
       found = fragment.isHadPoint(x, y);
