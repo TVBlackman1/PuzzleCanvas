@@ -28,19 +28,4 @@ class Menu extends Component {
       this.firstX = this.lastX - this.width;
     }
   }
-
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.rect(
-      this.firstX,
-      this.firstY,
-      this.width,
-      this.height
-    );
-    var grd = ctx.createRadialGradient(100, 100, 30, 200, 300, 300)
-    grd.addColorStop(0, 'red')
-    grd.addColorStop(1, 'white')
-    ctx.fillStyle = grd;
-    ctx.fill();
-  }
 }

@@ -6,14 +6,14 @@ function drawAll(canvas, context) {
     canvas.canvas.width,
     canvas.canvas.height
   );
+
+  canvas.draw(context); // нарисовать всё кроме фрагментов
+
   var lastSeenObject = ListObjectHelper.firstVisualObject;
   do {
     lastSeenObject.value.draw(context);
     lastSeenObject = lastSeenObject.next;
   } while (lastSeenObject != null)
-
-
-  canvas.draw(context); // нарисовать всё кроме фрагментов
 }
 
 function initializeFragmentList(arr) {
