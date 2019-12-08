@@ -7,7 +7,7 @@ class Panel extends Component {
     this.borderColor = "blue";
 
     this.width = 900;
-    this.height = 120;
+    this.height = 100;
 
     this.firstX = 200;
     this.lastX = 900;
@@ -22,7 +22,11 @@ class Panel extends Component {
     this.fragmentSpace = null; // расстояние между фрагментами
     this.lists = null; // количество листов
     this.list = 1; // текущий лист
-    this.buttonWidth = 90;
+    this.buttonWidth = 80;
+    this.marginTop = 30;
+
+    this.place = new PanelPlace();
+    this.place.height = this.height;
 
     var th = this;
     this.leftButton = new PanelButton(-1, function() {
@@ -41,8 +45,14 @@ class Panel extends Component {
 
   init() {
     this.width = canvas.field.width * 1.6; // ШИРИНА ПАНЕЛИ
+    this.place.width = this.width;
+
     this.firstX = canvas.canvas.width / 2 - this.width / 2; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-    this.firstY = canvas.field.lastY + 15; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.place.firstX = this.firstX;
+
+    this.firstY = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.place.firstY = this.firstY;
+
     this.lastX = this.firstX + this.width;
     this.lastY = this.firstY + this.height;
     this.mainWidth = this.width - 2 * this.buttonWidth - 2 * this.paddingX;
@@ -64,11 +74,19 @@ class Panel extends Component {
       }
     }
     return false;
+  }
 
+  onmousemove(x, y) {
+    // if (!this.place.isHadPoint(x, y)) {
+    //   this.height = this.place.height / 2;
+    // } else {
+    //   this.height = this.place.height;
+    // }
   }
 
   draw(context) {
     super.draw(context);
+    // this.place.draw(context);
 
     for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].draw(context);
@@ -76,13 +94,13 @@ class Panel extends Component {
 
     var start = this.fragmentsCount * (this.list - 1);
     var end = this.fragmentsCount * this.list;
-    if(this.list == this.lists) {
+    if (this.list == this.lists) {
       end = start + this.fragments.length % this.fragmentsCount;
     }
-    for(var i = start; i < end; i++) {
+    for (var i = start; i < end; i++) {
       var fr = arr[this.fragments[i]];
       context.drawImage(
-      fr.img,
+        fr.img,
         this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
           i % this.fragmentsCount),
         this.firstY + this.paddingY,

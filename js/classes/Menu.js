@@ -1,6 +1,6 @@
 // init in Fragment.js
 
-class Menu extends Component{
+class Menu extends Component {
   constructor(type, cnv) {
     super();
     this.borderColor = "red";
@@ -27,5 +27,20 @@ class Menu extends Component{
       this.lastX = this.center - (canvas.field.width / 2) - 20;
       this.firstX = this.lastX - this.width;
     }
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.rect(
+      this.firstX,
+      this.firstY,
+      this.width,
+      this.height
+    );
+    var grd = ctx.createRadialGradient(100, 100, 30, 200, 300, 300)
+    grd.addColorStop(0, 'red')
+    grd.addColorStop(1, 'white')
+    ctx.fillStyle = grd;
+    ctx.fill();
   }
 }

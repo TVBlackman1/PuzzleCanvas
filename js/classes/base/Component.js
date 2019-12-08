@@ -1,6 +1,15 @@
 class Component {
   constructor() {
-    this.borderColor;
+    this.borderColor = null;
+
+    this.width = null;
+    this.height = null;
+
+    this.firstX = null;
+    this.lastX = null;
+
+    this.firstY = null;
+    this.lastY = null;
   }
 
   isHadPoint(x, y) {
@@ -18,6 +27,7 @@ class Component {
       this.width,
       this.height
     );
+
     context.strokeStyle = this.borderColor;
     context.stroke();
   }
