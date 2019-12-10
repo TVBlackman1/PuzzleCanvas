@@ -7,13 +7,15 @@ function drawAll(canvas, context) {
     canvas.canvas.height
   );
 
-  canvas.draw(context); // нарисовать всё кроме фрагментов
+  canvas.panel.draw(context); // нарисовать всё кроме фрагментов
 
   var lastSeenObject = ListObjectHelper.firstVisualObject;
   do {
     lastSeenObject.value.draw(context);
     lastSeenObject = lastSeenObject.next;
   } while (lastSeenObject != null)
+  canvas.drawBlank(context);
+  canvas.draw(context);
 }
 
 function initializeFragmentList(arr) {
@@ -57,6 +59,8 @@ function initializeSizes(fragment, img) {
 
   canvas.left_menu.init();
   canvas.right_menu.init();
+
+  canvas.workBlankZones();
 }
 
 window.onload = function() {
@@ -88,6 +92,8 @@ window.onload = function() {
   };
 
   canvas.canvas.onmousedown = function(e) {
+    var loc = canvas.getCoords(e.clientX, e.clientY);
+    console.log(loc.x, loc.y);
     shouldConnect = true;
     var loc = canvas.getCoords(e.clientX, e.clientY);
     if (canvas.panel.onmousedown(loc)) {
@@ -178,9 +184,13 @@ window.onload = function() {
       }
 
       if (event.keyCode == 50) {
-        console.log(ListObjectHelper.firstVisualObject);
-        console.log(ListObjectHelper.lastVisualObject);
+        console.log(canvas.blank_zones);
       }
+
+      // if (event.keyCode == 51) {
+      //   var loc = canvas.getCoords(e.clientX, e.clientY);
+      //   console.log(loc.x, loc.y);
+      // }
     }
   }, false);
 

@@ -18,7 +18,7 @@ class Menu extends Component {
     this.firstY = canvas.field.firstY + canvas.field.height * .1;
     this.lastY = canvas.field.firstY + canvas.field.height * .9;
 
-    this.width = 400;
+    this.width = 350;
     if (this.type == 1) {
       this.firstX = this.center + (canvas.field.width / 2) + 20;
       this.lastX = this.firstX + this.width;
