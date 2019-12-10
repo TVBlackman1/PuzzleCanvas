@@ -32,11 +32,9 @@
 
    sortZonesByFirstX() {
      this.fr_zones.sort((a, b) => (a.firstX > b.firstX) ? 1 : ((b.firstX > a.firstX) ? -1 : 0));
-     console.log(this.fr_zones);
    }
 
    getBlankZones(start, top, bottom, type = null) {
-     console.log("Args:", start, top, bottom)
 
      // переписать потом на бинарный поиск
      var ind = -1;
@@ -74,10 +72,6 @@
 
    workBlankZones() {
      this.sortZonesByFirstX();
-     // var zones = this.fr_zones;
-     // for (var i = 0; i < zones.length; i++) {
-     //   console.log(zones[i].firstY);
-     // }
      this.getBlankZones(0, 0, this.canvas.height, true);
    }
 
@@ -100,14 +94,22 @@
      return false;
    }
 
+   onMenuZone() {
+     if(this.left_menu.isPlace || this.right_menu.isPlace) {
+       arr[SelectFragmentHelper.translatedFragmentId].onMenu = true;
+     } else {
+       arr[SelectFragmentHelper.translatedFragmentId].onMenu = false;
+     }
+   }
+
    draw(context) {
-     // var zones = this.fr_zones;
-     // for (var i = 0; i < zones.length; i++) {
-     //   zones[i].draw(context)
-     // }
-     this.left_menu.draw(context);
-     this.right_menu.draw(context);
-     this.field.draw(context);
+     var zones = this.fr_zones;
+     for (var i = 0; i < zones.length; i++) {
+       zones[i].draw(context)
+       if(zones[i] instanceof Menu) {
+
+       }
+     }
 
    }
 

@@ -87,11 +87,12 @@ class Panel extends Component {
   draw(context) {
     super.draw(context);
     // this.place.draw(context);
-
     for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].draw(context);
     }
+  }
 
+  drawFragments(context) {
     var start = this.fragmentsCount * (this.list - 1);
     var end = this.fragmentsCount * this.list;
     if (this.list == this.lists) {

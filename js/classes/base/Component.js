@@ -14,7 +14,8 @@ class Component {
 
   isHadPoint(x, y) {
     return (
-      x >= this.firstX && x <= this.firstX + this.width &&
+      x >= this.firstX && x <= this.firstX + this.width
+      &&
       y >= this.firstY && y <= this.firstY + this.height
     )
   }

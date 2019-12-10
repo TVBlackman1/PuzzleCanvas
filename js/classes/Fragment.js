@@ -15,6 +15,7 @@ class Fragment {
     this.img.src = this.src;
     this.ind = ind;
     this.onBottomPanel = true;
+    this.onMenu = false;
     this.bottomPanelInd = bottomInd;
 
     this.smoothing = false; // для ограничения движения объекта во время анимации
@@ -55,7 +56,7 @@ class Fragment {
     FragmentsGeneralCharacteristic.third_x = FragmentsGeneralCharacteristic.widthScale / 5;
     FragmentsGeneralCharacteristic.third_y = FragmentsGeneralCharacteristic.heightScale / 5;
 
-    FragmentsGeneralCharacteristic.connectRange = 2 * Math.min(
+    FragmentsGeneralCharacteristic.connectRange = 2.5 * Math.min(
       FragmentsGeneralCharacteristic.third_x,
       FragmentsGeneralCharacteristic.third_y
     );
@@ -78,15 +79,26 @@ class Fragment {
     if (!showSilhouette) {
       if (!this.onBottomPanel) {
         // изобразить элемент, если он не на панели
-        context.drawImage(
-          this.img,
-          this.x,
-          this.y,
-          FragmentsGeneralCharacteristic.widthScale,
-          FragmentsGeneralCharacteristic.heightScale
-        );
+        if (!this.onMenu) {
+          context.drawImage(
+            this.img,
+            this.x,
+            this.y,
+            FragmentsGeneralCharacteristic.widthScale,
+            FragmentsGeneralCharacteristic.heightScale
+          );
+        } else {
+          context.drawImage(
+            this.img,
+            this.x + FragmentsGeneralCharacteristic.third_x * 5 / 3,
+            this.y + FragmentsGeneralCharacteristic.third_y * 5 / 3,
+            FragmentsGeneralCharacteristic.widthPanel,
+            FragmentsGeneralCharacteristic.heightPanel
+          );
+        }
       }
     } else {
+      // изобразить силуэт
       context.beginPath();
       context.rect(
         this.x + FragmentsGeneralCharacteristic.third_x,
@@ -320,131 +332,119 @@ class Fragment {
     } else {
       i = newInd;
     }
-    var x = i % imagesX;
-    var y = Math.floor(i / imagesY);
+    let connectArray = [];
 
-    if (x == 0 && y == 0 && this.rangeFromLeftTop(canvas.field.firstX, canvas.field.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
-      if (withConnect) {
-        this.smoothmoveOneOrGroup(
-          this,
-          canvas.field.firstX - FragmentsGeneralCharacteristic.third_x,
-          canvas.field.firstY - FragmentsGeneralCharacteristic.third_y
-        );
-      }
-      return {
-        res: true,
-        range: 0
-      };
-    } else if (x == imagesX - 1 && y == 0 && this.rangeFromRightTop(canvas.field.lastX, canvas.field.firstY) <= FragmentsGeneralCharacteristic.connectRange) {
-      if (withConnect) {
-        this.smoothmoveOneOrGroup(
-          this,
-          canvas.field.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
-          canvas.field.firstY - FragmentsGeneralCharacteristic.third_y
-        );
-      }
-      return {
-        res: true,
-        range: 0
-      };
-    } else if (x == imagesX - 1 && y == imagesY - 1 && this.rangeFromRightBottom(canvas.field.lastX, canvas.field.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
-      if (withConnect) {
-        this.smoothmoveOneOrGroup(
-          this,
-          canvas.field.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
-          canvas.field.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
-        );
-      }
-      return {
-        res: true,
-        range: 0
-      };
-    } else if (x == 0 && y == imagesY - 1 && this.rangeFromLeftBottom(canvas.field.firstX, canvas.field.lastY) <= FragmentsGeneralCharacteristic.connectRange) {
-      if (withConnect) {
-        this.smoothmoveOneOrGroup(
-          this,
-          canvas.field.firstX - FragmentsGeneralCharacteristic.third_x,
-          canvas.field.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale
-        );
-      }
-      return {
-        res: true,
-        range: 0
-      };
-    } else {
-      let leftFragment = this.left;
-      let rightFragment = this.right;
-      let topFragment = this.top;
-      let bottomFragment = this.bottom;
+    let leftFragment = this.left;
+    let rightFragment = this.right;
+    let topFragment = this.top;
+    let bottomFragment = this.bottom;
+    let inner_this = this;
 
-      let connectArray = [];
-      let inner_this = this;
+    let x = i % imagesX;
+    let y = Math.floor(i / imagesY);
 
-      function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
-        if ((getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other)) && !other.onBottomPanel)) {
-          // работает только на объекты, отсутствующие в группе
-          connectArray.push({
-            range: getInfo.range,
-            x: getCoordinates.x,
-            y: getCoordinates.y,
-            dX: newX,
-            dY: newY,
-            fr: other
-          })
+    /**
+     *  @param int  needX, needY - необходимые конечные координаты пазла в изображении, соответствующие заданному углу
+     *
+     *  @param float range - расстояние до заданного угла
+     *
+     *  @param int newX, newY - место, куда необходимо перенести пазл при выполнении всех условий
+     *
+     */
+    function connectToCorner(needX, needY, range, newX, newY) {
+      if (x == needX && y == needY && range <= FragmentsGeneralCharacteristic.connectRange) {
+        connectArray.push({
+          range: range,
+          x: newX,
+          y: newY,
+          fr: null
+        });
+      }
+    }
+    connectToCorner(0, 0, this.rangeFromLeftTop(canvas.field.firstX, canvas.field.firstY),
+      canvas.field.firstX - FragmentsGeneralCharacteristic.third_x,
+      canvas.field.firstY - FragmentsGeneralCharacteristic.third_y);
+    connectToCorner(imagesX - 1, 0, this.rangeFromRightTop(canvas.field.lastX, canvas.field.firstY),
+      canvas.field.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
+      canvas.field.firstY - FragmentsGeneralCharacteristic.third_y);
+    connectToCorner(imagesX - 1, imagesY - 1, this.rangeFromRightBottom(canvas.field.lastX, canvas.field.lastY),
+      canvas.field.lastX + FragmentsGeneralCharacteristic.third_x - FragmentsGeneralCharacteristic.widthScale,
+      canvas.field.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale);
+    connectToCorner(0, imagesY - 1, this.rangeFromLeftBottom(canvas.field.firstX, canvas.field.lastY),
+      canvas.field.firstX - FragmentsGeneralCharacteristic.third_x,
+      canvas.field.lastY + FragmentsGeneralCharacteristic.third_y - FragmentsGeneralCharacteristic.heightScale);
+
+
+    /**
+     *  @param Fragment other - фрагмент, к которому идет подсоединение
+     *
+     *  @param object getInfo - расстояние до другого фрагмента
+     *
+     *  @param object getCoordinates - координаты одного из углов другого фрагмента
+     *
+     *  @param int newX, newY - координаты, которые необходимо добавить к третьему аргументу
+     *                          для получения новых координат текущего фрагмента (this)
+     *
+     */
+    function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
+      if ((getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other)) && !other.onBottomPanel)) {
+        // работает только на объекты, отсутствующие в группе
+        connectArray.push({
+          range: getInfo.range,
+          x: getCoordinates.x,
+          y: getCoordinates.y,
+          dX: newX,
+          dY: newY,
+          fr: other
+        })
+      }
+    }
+    if (topFragment != null)
+      connectToFragment(topFragment, topFragment.canConnectBottomFragment(),
+        topFragment.leftBot(),
+        -FragmentsGeneralCharacteristic.third_x, -FragmentsGeneralCharacteristic.third_y);
+    if (leftFragment != null)
+      connectToFragment(leftFragment, leftFragment.canConnectRightFragment(),
+        leftFragment.rightTop(),
+        -FragmentsGeneralCharacteristic.third_x, -FragmentsGeneralCharacteristic.third_y);
+    if (bottomFragment != null)
+      connectToFragment(bottomFragment, bottomFragment.canConnectTopFragment(),
+        bottomFragment.leftTop(),
+        -FragmentsGeneralCharacteristic.third_x,
+        -FragmentsGeneralCharacteristic.heightScale + FragmentsGeneralCharacteristic.third_y);
+    if (rightFragment != null)
+      connectToFragment(rightFragment, rightFragment.canConnectLeftFragment(),
+        rightFragment.leftTop(),
+        -FragmentsGeneralCharacteristic.widthScale + FragmentsGeneralCharacteristic.third_x,
+        -FragmentsGeneralCharacteristic.third_y);
+
+
+    connectArray.sort(function(a, b) {
+      return a.range - b.range
+    });
+
+    if (connectArray.length > 0) {
+      var near = connectArray[0];
+      if (withConnect) {
+        if (near.fr == null) {
+          // идет присоединение к углу, а не к фрагменту
+          this.smoothmoveOneOrGroup(this, near.x, near.y);
+        } else {
+          // подсоединение к фрагменту
+          if (!near.fr.smoothing && !near.fr.isConnecting && (near.fr.group == null || !near.fr.group.isConnecting)) {
+            this.smoothmoveOneOrGroup(this, near.x + near.dX, near.y + near.dY, near.fr);
+          }
         }
       }
-      if (topFragment != null)
-        connectToFragment(
-          topFragment,
-          topFragment.canConnectBottomFragment(),
-          topFragment.leftBot(),
-          -FragmentsGeneralCharacteristic.third_x,
-          -FragmentsGeneralCharacteristic.third_y
-        );
-      if (leftFragment != null)
-        connectToFragment(
-          leftFragment,
-          leftFragment.canConnectRightFragment(),
-          leftFragment.rightTop(),
-          -FragmentsGeneralCharacteristic.third_x,
-          -FragmentsGeneralCharacteristic.third_y
-        );
-      if (bottomFragment != null)
-        connectToFragment(
-          bottomFragment,
-          bottomFragment.canConnectTopFragment(),
-          bottomFragment.leftTop(),
-          -FragmentsGeneralCharacteristic.third_x,
-          -FragmentsGeneralCharacteristic.heightScale + FragmentsGeneralCharacteristic.third_y
-        );
-      if (rightFragment != null)
-        connectToFragment(
-          rightFragment,
-          rightFragment.canConnectLeftFragment(),
-          rightFragment.leftTop(),
-          -FragmentsGeneralCharacteristic.widthScale + FragmentsGeneralCharacteristic.third_x,
-          -FragmentsGeneralCharacteristic.third_y
-        );
 
-      connectArray.sort(function(a, b) {
-        return a.range - b.range
-      });
-      if (connectArray.length > 0) {
-        var near = connectArray[0];
-        // Из-за второго условия нельзя конектиться к тем, что движутся или уже ждут подключения. Я убрал как и написано сверху. Крч теперь
-        // функциональность сдохла, но этого никто и не заметит при быстрой анимации, главное нет багов
-        if (withConnect && (near.fr.smoothing == false && near.fr.isConnecting == false && (near.fr.group == null || near.fr.group.isConnecting == false))) {
-          this.smoothmoveOneOrGroup(this, near.x + near.dX, near.y + near.dY, near.fr);
-        }
-        return {
-          res: true,
-          range: near.range
-        };
-      }
       return {
-        res: false
+        res: true,
+        range: near.range
       };
     }
+    return {
+      res: false
+    };
   }
 
   // Изменяет местоположение изображения
@@ -465,7 +465,7 @@ class Fragment {
 
     // если объект ещё смувится, а к нему смув другого закончился, то надо тот пододвигать
 
-    if(this.group != null) {
+    if (this.group != null) {
       this.group.smoothing = true;
     } else {
       this.smoothing = true;
@@ -540,7 +540,7 @@ class Fragment {
               // при окончании убрать смув и добавить возможность к управлению элементов мышкой, убрав isConnecting и smoothing у всех элементов
 
               // движется до тех пор, пока движется родитель
-              if(fragment.group != null) {
+              if (fragment.group != null) {
                 fragment.group.smoothing = false;
               } else {
                 fragment.smoothing = false;
@@ -563,7 +563,7 @@ class Fragment {
 
         } else {
           // нет родителя, незачем двигаться
-          if(fragment.group != null) {
+          if (fragment.group != null) {
             fragment.group.smoothing = false;
           } else {
             fragment.smoothing = false;

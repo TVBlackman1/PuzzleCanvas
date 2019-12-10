@@ -6,14 +6,13 @@ function drawAll(canvas, context) {
     canvas.canvas.width,
     canvas.canvas.height
   );
-
-  canvas.panel.draw(context); // нарисовать всё кроме фрагментов
-
+  canvas.panel.drawFragments(context);
   var lastSeenObject = ListObjectHelper.firstVisualObject;
   do {
     lastSeenObject.value.draw(context);
     lastSeenObject = lastSeenObject.next;
   } while (lastSeenObject != null)
+
   canvas.drawBlank(context);
   canvas.draw(context);
 }
@@ -89,6 +88,8 @@ window.onload = function() {
     }
 
     canvas.panel.onmousemove(loc.x, loc.y);
+    canvas.left_menu.onmousemove(loc.x, loc.y);
+    canvas.right_menu.onmousemove(loc.x, loc.y);
   };
 
   canvas.canvas.onmousedown = function(e) {
@@ -142,6 +143,10 @@ window.onload = function() {
 
   canvas.canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
+      if(canvas.onMenuZone()) {
+        
+      }
+
       var loc = canvas.getCoords(e.clientX, e.clientY);
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
 
