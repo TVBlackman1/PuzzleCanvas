@@ -4,15 +4,18 @@
 
 var hello = 4;
 class Fragment {
-  constructor(ind, src, x, y, left, top, bottomInd) {
+  constructor(ind, src, srcBorder, x, y, left, top, bottomInd) {
     this.src = src;
+    this.srcB = srcBorder;
     this.x = x;
     this.y = y;
     this.img = new Image();
+    this.imgB = new Image();
 
     this.downloadImage();
 
     this.img.src = this.src;
+    this.imgB.src = this.srcB;
     this.ind = ind;
     this.onBottomPanel = true;
     this.onMenu = false;
@@ -82,6 +85,13 @@ class Fragment {
         if (!this.onMenu) {
           context.drawImage(
             this.img,
+            this.x,
+            this.y,
+            FragmentsGeneralCharacteristic.widthScale,
+            FragmentsGeneralCharacteristic.heightScale
+          );
+          context.drawImage(
+            this.imgB,
             this.x,
             this.y,
             FragmentsGeneralCharacteristic.widthScale,

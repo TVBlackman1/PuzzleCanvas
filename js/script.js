@@ -29,6 +29,7 @@ function initializeFragmentList(arr) {
       new Fragment(
         i,
         DIRECTORY + (i + 1) + '.png',
+        DIRECTORY + (i + 1) + '_.png',
         100, 100,
         (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null),
         i
@@ -144,7 +145,7 @@ window.onload = function() {
   canvas.canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       if(canvas.onMenuZone()) {
-        
+
       }
 
       var loc = canvas.getCoords(e.clientX, e.clientY);
