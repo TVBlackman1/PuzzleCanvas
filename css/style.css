@@ -19,3 +19,11 @@ h1 {
     /* height: 495px; */
     margin: auto;
 }
+
+#cnv-try {
+  display: block;
+  border: 1px solid darkblue;
+  box-sizing: border-box;
+  width: 200px;
+  height: 125px;
+}

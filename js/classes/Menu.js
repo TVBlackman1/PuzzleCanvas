@@ -38,6 +38,23 @@ class Menu extends Component {
     this.place.height = this.height;
   }
 
+  static workInMenu = function() {
+    const selected = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
+      arr[SelectFragmentHelper.translatedFragmentId].group :
+      arr[SelectFragmentHelper.translatedFragmentId]
+    );
+    selected.onMenu = true;
+  }
+
+  static workOutMenu = function() {
+    const selected = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
+      arr[SelectFragmentHelper.translatedFragmentId].group :
+      arr[SelectFragmentHelper.translatedFragmentId]
+    );
+    selected.onMenu = false;
+  }
+
+
   onmousemove(x, y) {
     if (this.place.isHadPoint(x, y)) {
       this.isPlace = true;
@@ -49,7 +66,7 @@ class Menu extends Component {
   draw(context) {
     super.draw(context);
     // this.drawMask(context);
-    if(this.isPlace && SelectFragmentHelper.translatedFragmentId >= 0) {
+    if (this.isPlace && SelectFragmentHelper.translatedFragmentId >= 0) {
       context.beginPath();
       context.rect(
         this.firstX,

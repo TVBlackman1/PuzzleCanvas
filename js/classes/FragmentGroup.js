@@ -4,6 +4,10 @@ class FragmentGroup {
     this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
     // В противном случае нужно чёто рассматривать а мне лень
     this.listElemGroup = null;
+    this.mainFragment = null // главный фрагмент группы, нужный для вычисления расстояния до
+                             // в уменьшенной группе в области меню и определения его новых координат
+    this.onMenu = false;
+    this.onMenuLast = false;
   }
 
   isHadPoint(x, y) {
@@ -88,5 +92,26 @@ class FragmentGroup {
     if (minFragment != null)
       minFragment.connectTo(minFragment.ind, true);
 
+  }
+
+  editMenuCoords(fr) {
+    // fr - фрагмент, который мы взяли. Относительно него будут строиться остальные
+    if(this.onMenuLast == this.onMenu) {
+      return;
+    }
+    this.onMenuLast = this.onMenu;
+    if(!this.onMenu) {
+      // поставить по умолчанию
+      this.fragments.forEach(function(fragment, ind, arr) {
+        fragment.setMenuD(false);
+      });
+      return;
+    }
+
+    // поставить в зависимости от главного, в меню
+    this.mainFragment = fr;
+    this.fragments.forEach(function(fragment, ind, arr) {
+      fragment.setMenuD(true);
+    });
   }
 }

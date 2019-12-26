@@ -41,11 +41,15 @@ let FragmentsGeneralCharacteristic = {
   third_x: -1,
   third_y: -1,
   connectRange: -1,
+  widthWithoutSpaces: -1,
+  heightWithoutSpaces: -1,
 
   widthPanel: -1,
   heightPanel: -1,
   third_xPanel: -1,
-  third_yPanel: -1
+  third_yPanel: -1,
+  widthWithoutSpacesPanel: -1,
+  heightWithoutSpacesPanel: -1,
 };
 
 

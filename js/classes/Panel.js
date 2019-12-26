@@ -59,6 +59,9 @@ class Panel extends Component {
 
     FragmentsGeneralCharacteristic.heightPanel = this.height - 2 * this.paddingY;
     FragmentsGeneralCharacteristic.widthPanel = FragmentsGeneralCharacteristic.heightPanel / FragmentsGeneralCharacteristic.height * FragmentsGeneralCharacteristic.width;
+
+    FragmentsGeneralCharacteristic.third_xPanel = FragmentsGeneralCharacteristic.widthPanel / 5;
+    FragmentsGeneralCharacteristic.third_yPanel = FragmentsGeneralCharacteristic.heightPanel / 5;
     this.fragmentsCount = Math.floor(this.mainWidth / FragmentsGeneralCharacteristic.widthPanel);
     this.fragmentSpace = (this.mainWidth - this.fragmentsCount * FragmentsGeneralCharacteristic.widthPanel) / (this.fragmentsCount - 1);
 

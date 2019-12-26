@@ -144,12 +144,19 @@ window.onload = function() {
 
   canvas.canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      if(canvas.onMenuZone()) {
+      if (canvas.onMenuZone()) {
 
       }
 
       var loc = canvas.getCoords(e.clientX, e.clientY);
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
+
+      if (selectedFragment.group != null) {
+        selectedFragment.group.editMenuCoords(selectedFragment);
+      }
+      else {
+        selectedFragment.editMenuCoords();
+      }
 
       if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
         selectedFragment.onBottomPanel = true;

@@ -96,9 +96,9 @@
 
    onMenuZone() {
      if(this.left_menu.isPlace || this.right_menu.isPlace) {
-       arr[SelectFragmentHelper.translatedFragmentId].onMenu = true;
+        Menu.workInMenu();
      } else {
-       arr[SelectFragmentHelper.translatedFragmentId].onMenu = false;
+       Menu.workOutMenu();
      }
    }
 
