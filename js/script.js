@@ -7,7 +7,7 @@ function drawAll(canvas, context) {
     canvas.canvas.height
   );
   canvas.panel.drawFragments(context);
-  var lastSeenObject = ListObjectHelper.firstVisualObject;
+  var lastSeenObject = FragmentList.firstVisualObject;
   do {
     lastSeenObject.value.draw(context);
     lastSeenObject = lastSeenObject.next;
@@ -38,11 +38,11 @@ function initializeFragmentList(arr) {
 
     canvas.panel.fragments[i] = i;
 
-    if (ListObjectHelper.lastVisualObject == null) {
-      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
-      ListObjectHelper.firstVisualObject = ListObjectHelper.lastVisualObject;
+    if (FragmentList.lastVisualObject == null) {
+      FragmentList.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
+      FragmentList.firstVisualObject = FragmentList.lastVisualObject;
     } else {
-      ListObjectHelper.lastVisualObject = new FragmentList(arr[arr.length - 1], ListObjectHelper.lastVisualObject);
+      FragmentList.lastVisualObject = new FragmentList(arr[arr.length - 1], FragmentList.lastVisualObject);
     }
   }
 }
@@ -60,7 +60,7 @@ function initializeSizes(fragment, img) {
   canvas.left_menu.init();
   canvas.right_menu.init();
 
-  canvas.workBlankZones();
+  canvas.createBlankZones();
 }
 
 window.onload = function() {
@@ -95,14 +95,13 @@ window.onload = function() {
 
   canvas.canvas.onmousedown = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
-    console.log(loc.x, loc.y);
     shouldConnect = true;
     var loc = canvas.getCoords(e.clientX, e.clientY);
     if (canvas.panel.onmousedown(loc)) {
       return;
     }
 
-    var lastSeenObject = ListObjectHelper.lastVisualObject;
+    var lastSeenObject = FragmentList.lastVisualObject;
     do {
       var value = lastSeenObject.value;
       var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
@@ -119,7 +118,6 @@ window.onload = function() {
             SelectFragmentHelper.deltaY = ranges.y;
             SelectFragmentHelper.translatedFragmentId = value.ind;
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
-            console.log("Image number", SelectFragmentHelper.translatedFragmentId);
             break;
           }
         }
@@ -132,7 +130,6 @@ window.onload = function() {
             SelectFragmentHelper.deltaY = ranges.y;
             SelectFragmentHelper.translatedFragmentId = objInCoords;
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
-            console.log("Image number", SelectFragmentHelper.translatedFragmentId);
             break;
           }
         }
@@ -153,8 +150,7 @@ window.onload = function() {
 
       if (selectedFragment.group != null) {
         selectedFragment.group.editMenuCoords(selectedFragment);
-      }
-      else {
+      } else {
         selectedFragment.editMenuCoords();
       }
 
@@ -163,55 +159,46 @@ window.onload = function() {
       }
 
       if (shouldConnect) {
-        ListObjectHelper.lastVisualObject.value.connectTo();
+        FragmentList.lastVisualObject.value.connectTo();
       }
       SelectFragmentHelper.translatedFragmentId = -1;
     }
   }
 
   document.addEventListener('mousedown', function(event) {
-    if (lastDownTarget != event.target) {
-      showSilhouette = false;
-    }
-    lastDownTarget = event.target;
+    // if (lastDownTarget != event.target) {
+    //   showSilhouette = false;
+    // }
+    // lastDownTarget = event.target;
   }, false);
 
   document.addEventListener('keydown', function(event) {
-    if (lastDownTarget == canvas.canvas) {
-      if (event.keyCode == KEY_shouldConnect) {
-        if (shouldConnect)
-          shouldConnect = false;
-        else shouldConnect = true;
-        console.log("shouldConnect is", shouldConnect);
-      }
-      if (event.keyCode == KEY_showSilhouette) {
-        showSilhouette = true;
-      }
-      if (event.keyCode == 49) {
-        var lastSeenObject = ListObjectHelper.lastVisualObject;
-        do {
-          console.log(lastSeenObject);
-          lastSeenObject = lastSeenObject.prev;
-        } while (lastSeenObject != null)
-        console.log("\nEND\n")
-      }
+    if (event.keyCode == KEY_shouldConnect) {
+      if (shouldConnect)
+        shouldConnect = false;
+      else shouldConnect = true;
+      console.log("shouldConnect is", shouldConnect);
+    }
+    if (event.keyCode == KEY_showSilhouette) {
+      showSilhouette = true;
+    }
+    if (event.keyCode == 49) {
+      var lastSeenObject = FragmentList.lastVisualObject;
+      do {
+        console.log(lastSeenObject);
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
+      console.log("\nEND\n")
+    }
 
-      if (event.keyCode == 50) {
-        console.log(canvas.blank_zones);
-      }
-
-      // if (event.keyCode == 51) {
-      //   var loc = canvas.getCoords(e.clientX, e.clientY);
-      //   console.log(loc.x, loc.y);
-      // }
+    if (event.keyCode == 50) {
+      console.log(canvas.blank_zones);
     }
   }, false);
 
   document.addEventListener('keyup', function(event) {
-    if (lastDownTarget == canvas.canvas) {
-      if (event.keyCode == KEY_showSilhouette) {
-        showSilhouette = false;
-      }
+    if (event.keyCode == KEY_showSilhouette) {
+      showSilhouette = false;
     }
   }, false);
 
@@ -220,7 +207,7 @@ window.onload = function() {
 
 }
 
-// Функция для анимации с определённой частотой для обновления экрана
+// Обновление экрана
 function update() {
   drawAll(canvas, canvas.context);
 }

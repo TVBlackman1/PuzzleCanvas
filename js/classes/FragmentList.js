@@ -1,4 +1,7 @@
 class FragmentList {
+  static lastVisualObject = null;
+  static firstVisualObject = null;
+
   constructor(value, prev) {
     this.value = value;
     this.prev = null;
@@ -22,33 +25,33 @@ class FragmentList {
       } else if(this.next == null){
         // конец
         if(this.prev != null) {
-          ListObjectHelper.lastVisualObject = this.prev;
+          FragmentList.lastVisualObject = this.prev;
           this.prev.next = null;
         }
       }
     } else {
       // начало
       if(this.next != null) {
-        ListObjectHelper.firstVisualObject = this.next;
+        FragmentList.firstVisualObject = this.next;
         this.next.prev = null;
       }
     }
   }
 
   replaceToTop() {
-    if(ListObjectHelper.lastVisualObject === this) {
+    if(FragmentList.lastVisualObject === this) {
       return;
     }
 
     this.remove();
-    if (ListObjectHelper.lastVisualObject !== this) {
-      ListObjectHelper.lastVisualObject.next = this;
-      this.prev = ListObjectHelper.lastVisualObject;
+    if (FragmentList.lastVisualObject !== this) {
+      FragmentList.lastVisualObject.next = this;
+      this.prev = FragmentList.lastVisualObject;
       this.next = null;
-      ListObjectHelper.lastVisualObject = this;
+      FragmentList.lastVisualObject = this;
     }
 
-    var lastSeenObject = ListObjectHelper.lastVisualObject;
+    var lastSeenObject = FragmentList.lastVisualObject;
     do {
       lastSeenObject = lastSeenObject.prev;
     } while (lastSeenObject != null)

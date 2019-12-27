@@ -1,19 +1,19 @@
 class BlankField extends Component{
+
+  static fillColor = "rgba(152,152,192)";
+
   constructor(x, y, width, height) {
     super();
     this.firstX = x;
     this.firstY = y;
     this.width = width;
     this.height = height;
-    this.borderColor = "rgba(155,155,200)";
-    this.fillColor = "rgba(155,155,200)";
-    // "rgba(155,155,200,0.7)";
-
+    this.borderColor = "rgba(152,152,192)";
   }
 
   draw(context) {
     super.draw(context);
-    context.fillStyle = this.fillColor;
+    context.fillStyle = BlankField.fillColor;
     context.fill();
   }
 }

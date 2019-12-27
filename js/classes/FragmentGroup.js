@@ -3,9 +3,11 @@ class FragmentGroup {
     this.fragments = new Set();
     this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
     // В противном случае нужно чёто рассматривать а мне лень
+    this.smoothing = false;
+
     this.listElemGroup = null;
-    this.mainFragment = null // главный фрагмент группы, нужный для вычисления расстояния до
-                             // в уменьшенной группе в области меню и определения его новых координат
+    this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
+                              // в уменьшенной группе в области меню и определения его новых координат
     this.onMenu = false;
     this.onMenuLast = false;
   }

@@ -38,7 +38,7 @@ class Menu extends Component {
     this.place.height = this.height;
   }
 
-  static workInMenu = function() {
+  static includeInMenu = function() {
     const selected = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
       arr[SelectFragmentHelper.translatedFragmentId].group :
       arr[SelectFragmentHelper.translatedFragmentId]
@@ -46,7 +46,7 @@ class Menu extends Component {
     selected.onMenu = true;
   }
 
-  static workOutMenu = function() {
+  static removeFromMenu = function() {
     const selected = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
       arr[SelectFragmentHelper.translatedFragmentId].group :
       arr[SelectFragmentHelper.translatedFragmentId]

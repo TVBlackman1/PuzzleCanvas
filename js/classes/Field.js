@@ -21,8 +21,8 @@ class Field extends Component {
   }
 
   init() {
-    this.width = FragmentsGeneralCharacteristic.widthScale / 5 * 3 * imagesX;
-    this.height = FragmentsGeneralCharacteristic.heightScale / 5 * 3 * imagesY;
+    this.width = Fragment.widthScale / 5 * 3 * imagesX;
+    this.height = Fragment.heightScale / 5 * 3 * imagesY;
 
     this.firstX = canvas.canvas.width / 2 - this.width / 2; // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
     this.firstY = 40; // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ

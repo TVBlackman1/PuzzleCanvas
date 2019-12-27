@@ -56,7 +56,7 @@
      if (ind == -1) { // дойти до края карты, если нет элемента
        last = this.canvas.width;
      }
-     if ( bottom > top) {
+     if (bottom > top) {
        // создать новый пустой прямоугольник
        this.blank_zones.push(new BlankField(
          start - 1, top - 1,
@@ -70,7 +70,7 @@
      }
    }
 
-   workBlankZones() {
+   createBlankZones() {
      this.sortZonesByFirstX();
      this.getBlankZones(0, 0, this.canvas.height, true);
    }
@@ -95,10 +95,10 @@
    }
 
    onMenuZone() {
-     if(this.left_menu.isPlace || this.right_menu.isPlace) {
-        Menu.workInMenu();
+     if (this.left_menu.isPlace || this.right_menu.isPlace) {
+       Menu.includeInMenu();
      } else {
-       Menu.workOutMenu();
+       Menu.removeFromMenu();
      }
    }
 
@@ -106,7 +106,7 @@
      var zones = this.fr_zones;
      for (var i = 0; i < zones.length; i++) {
        zones[i].draw(context)
-       if(zones[i] instanceof Menu) {
+       if (zones[i] instanceof Menu) {
 
        }
      }

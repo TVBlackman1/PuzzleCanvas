@@ -57,13 +57,13 @@ class Panel extends Component {
     this.lastY = this.firstY + this.height;
     this.mainWidth = this.width - 2 * this.buttonWidth - 2 * this.paddingX;
 
-    FragmentsGeneralCharacteristic.heightPanel = this.height - 2 * this.paddingY;
-    FragmentsGeneralCharacteristic.widthPanel = FragmentsGeneralCharacteristic.heightPanel / FragmentsGeneralCharacteristic.height * FragmentsGeneralCharacteristic.width;
+    Fragment.heightPanel = this.height - 2 * this.paddingY;
+    Fragment.widthPanel = Fragment.heightPanel / Fragment.height * Fragment.width;
 
-    FragmentsGeneralCharacteristic.third_xPanel = FragmentsGeneralCharacteristic.widthPanel / 5;
-    FragmentsGeneralCharacteristic.third_yPanel = FragmentsGeneralCharacteristic.heightPanel / 5;
-    this.fragmentsCount = Math.floor(this.mainWidth / FragmentsGeneralCharacteristic.widthPanel);
-    this.fragmentSpace = (this.mainWidth - this.fragmentsCount * FragmentsGeneralCharacteristic.widthPanel) / (this.fragmentsCount - 1);
+    Fragment.third_xPanel = Fragment.widthPanel / 5;
+    Fragment.third_yPanel = Fragment.heightPanel / 5;
+    this.fragmentsCount = Math.floor(this.mainWidth / Fragment.widthPanel);
+    this.fragmentSpace = (this.mainWidth - this.fragmentsCount * Fragment.widthPanel) / (this.fragmentsCount - 1);
 
     this.lists = Math.floor(countImages / this.fragmentsCount) + 1;
   }
@@ -105,11 +105,11 @@ class Panel extends Component {
       var fr = arr[this.fragments[i]];
       context.drawImage(
         fr.img,
-        this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+        this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
           i % this.fragmentsCount),
         this.firstY + this.paddingY,
-        FragmentsGeneralCharacteristic.widthPanel,
-        FragmentsGeneralCharacteristic.heightPanel
+        Fragment.widthPanel,
+        Fragment.heightPanel
       );
 
       if (!fr.onBottomPanel) {
@@ -117,11 +117,11 @@ class Panel extends Component {
         context.beginPath();
         context.fillStyle = "rgba(255,255,255,0.5)";
         context.rect(
-          this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + FragmentsGeneralCharacteristic.widthPanel) * (
+          this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
             i % this.fragmentsCount),
           this.firstY + this.paddingY,
-          FragmentsGeneralCharacteristic.widthPanel,
-          FragmentsGeneralCharacteristic.heightPanel
+          Fragment.widthPanel,
+          Fragment.heightPanel
         );
         context.fill();
       }
