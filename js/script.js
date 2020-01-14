@@ -61,6 +61,11 @@ function initializeSizes(fragment, img) {
   canvas.right_menu.init();
 
   canvas.createBlankZones();
+
+  for(i = 0; i < countImages; i++) {
+    arr[i].current_width = Fragment.widthScale;
+    arr[i].current_height = Fragment.heightScale;
+  }
 }
 
 window.onload = function() {
@@ -107,7 +112,7 @@ window.onload = function() {
       var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
       if (value instanceof Fragment) {
         if (objInCoords) {
-          if (!value.smoothing && !value.isConnecting) {
+          if (!value.smoothing && !value.isConnecting && !value.resizing) {
             // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
             if (value.onBottomPanel) {
               value.onBottomPanel = false;
@@ -123,7 +128,7 @@ window.onload = function() {
         }
       } else if (value instanceof FragmentGroup) {
         if (objInCoords > -1) {
-          if (!value.smoothing && !value.isConnecting) {
+          if (!value.smoothing && !value.isConnecting && !value.resizing) {
             // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
             ranges = arr[objInCoords].rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
@@ -141,9 +146,7 @@ window.onload = function() {
 
   canvas.canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      if (canvas.onMenuZone()) {
-
-      }
+      canvas.onMenuZone() // проверка на вхождение в зону меню + изменение состояния объектов
 
       var loc = canvas.getCoords(e.clientX, e.clientY);
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];

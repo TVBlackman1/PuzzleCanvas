@@ -21,16 +21,23 @@ class Fragment {
   static widthWithoutSpacesPanel = -1;
   static heightWithoutSpacesPanel = -1;
 
+  static tact = 21;
+  static frame_time = 1000 / FRAMES / Fragment.tact;
+
 
   constructor(ind, src, srcBorder, x, y, left, top, bottomInd) {
-    this.src = src;
+    this.src = src; // путь до изображения пазла
     this.srcB = srcBorder; // путь до изображения с границами изображения
     this.x = x;
     this.y = y;
-    this.menuDX = 0;
-    this.menuDY = 0;
-    this.img = new Image();
+
+    // необходимо для вычисления нового положения при изменении размера элементов группы
+    this.menuDX = 0; // расстояние от главного фрагмента в группе до текущего по X
+    this.menuDY = 0; // расстояние от главного фрагмента в группе до текущего по Y
+    this.img = new Image(); // изображение фрагмента
     this.imgB = new Image(); // image-border
+    this.current_width = -1;
+    this.current_height = -1;
 
     this.mainFragment = this;
 
@@ -41,18 +48,35 @@ class Fragment {
     this.ind = ind;
     this.onBottomPanel = true;
     this.onMenu = false;
-    this.onMenuLast = false;
+    this.onMenuLast = false; // проверка на нахождение в меню, выполненная ранее
+    // нужна для неизменности некоторых данных, при условии
+    // что объект так же как и в предыдущих находится/не находится
+    // в области меню
     this.bottomPanelInd = bottomInd;
 
-    this.smoothing = false; // для ограничения движения объекта во время анимации
-    this.isConnecting = false; // объект конектит другой, а потому не может быть выбран. Необходим int, т.к. можно подключать несколько сразу
-    // После первого isConnecting станет false, хотя подключается ещё второй объект, а потому будет
+    /*
+     * Для следуюих переменных в блоке
+     * при истинности хотя бы одной из них
+     * запрещается подключаться к другим фрагментам (не считая самой анимации)
+     * запрещается выделять объекты мышкой
+     *
+     */
+    this.smoothing = false; // плавное автоматическое перемещение, не зависящее от мыши
+    this.isConnecting = false; // объект ждет подключения к нему другого объекта
+    this.resizing = false; // проигрывание анимации изменения размера
+
+    this.animated = false;
 
 
     Fragment.third_x = Fragment.SCALE / 5;
     Fragment.third_y = Fragment.SCALE / 5;
     Fragment.connectRange = Fragment.third_x * 2; // ВРЕМЕННО
 
+    /*
+     * В данном блоке представлены ссылки на соседние пазлы
+     * в цельном изображении. Соответственно верхний, нижний,
+     * правый, левый. Если таких не существует - null
+     */
     this.left = left;
     this.top = top;
     this.right = null;
@@ -62,8 +86,8 @@ class Fragment {
     if (this.top != null)
       this.top.bottom = this;
 
-    this.group = null;
-    this.listElem = null; // заполняется
+    this.group = null; // ссылка на групп
+    this.listElem = null; // ссылка на элемент двусвязного списка
   }
 
   init(img) {
@@ -88,6 +112,8 @@ class Fragment {
       Fragment.third_x,
       Fragment.third_y
     );
+
+
   }
 
   downloadImage() {
@@ -106,32 +132,40 @@ class Fragment {
       if (!this.onBottomPanel) {
         // изобразить элемент, если он не на панели
         let selected = (this.group != null) ? this.group : this;
-        if (selected.onMenu) {
-          // Menu
-          context.drawImage(
-            this.img,
-            selected.mainFragment.x + this.menuDX + Fragment.third_xPanel,
-            selected.mainFragment.y + this.menuDY + Fragment.third_yPanel,
-            Fragment.widthPanel,
-            Fragment.heightPanel
-          );
-        } else {
-          // Обычное расположение на поле
-          context.drawImage(
-            this.img,
-            this.x,
-            this.y,
-            Fragment.widthScale,
-            Fragment.heightScale
-          );
-          context.drawImage(
-            this.imgB,
-            this.x,
-            this.y,
-            Fragment.widthScale,
-            Fragment.heightScale
-          );
-        }
+        // console.log(this.menuDX);
+        context.drawImage(
+          this.img,
+          selected.mainFragment.x + this.menuDX,
+          selected.mainFragment.y + this.menuDY,
+          this.current_width,
+          this.current_height
+        );
+        // if (selected.onMenu) {
+        //   // Menu
+        //   context.drawImage(
+        //     this.img,
+        //     selected.mainFragment.x + this.menuDX + Fragment.third_xPanel,
+        //     selected.mainFragment.y + this.menuDY + Fragment.third_yPanel,
+        //     Fragment.widthPanel,
+        //     Fragment.heightPanel
+        //   );
+        // } else {
+        //   // Обычное расположение на поле
+        //   context.drawImage(
+        //     this.img,
+        //     this.x,
+        //     this.y,
+        //     Fragment.widthScale,
+        //     Fragment.heightScale
+        //   );
+        //   context.drawImage(
+        //     this.imgB,
+        //     this.x,
+        //     this.y,
+        //     Fragment.widthScale,
+        //     Fragment.heightScale
+        //   );
+        // }
       }
     } else {
       // изобразить силуэт
@@ -180,22 +214,11 @@ class Fragment {
 
     let selected = (this.group != null) ? this.group : this;
     if (selected.onMenu) {
-      console.log(Fragment.third_xPanel);
-      var tmp = (
-        x >= (selected.mainFragment.x + this.menuDX + 2 * Fragment.third_xPanel) &&
-        x <= (selected.mainFragment.x + this.menuDX + Fragment.widthPanel + 2 * Fragment.third_xPanel) &&
+      return (
+        x >= (selected.mainFragment.x + this.menuDX + Fragment.third_xPanel) &&
+        x <= (selected.mainFragment.x + this.menuDX + Fragment.widthPanel - Fragment.third_xPanel) &&
         y >= (selected.mainFragment.y + this.menuDY + Fragment.third_yPanel) &&
         y <= (selected.mainFragment.y + this.menuDY + Fragment.heightPanel - Fragment.third_yPanel)
-      )
-      // console.log("!", tmp, this.src);
-      // console.log(selected.mainFragment.x + this.menuDX + 2 * Fragment.third_xPanel, x,
-      //   (selected.mainFragment.x + this.menuDX + Fragment.widthPanel - Fragment.third_xPanel)
-      // )
-      return (
-        x >= (selected.mainFragment.x + this.menuDX + 2 * Fragment.third_xPanel) &&
-        x <= (selected.mainFragment.x + this.menuDX + Fragment.widthPanel) &&
-        y >= (selected.mainFragment.y + this.menuDY + 2 * Fragment.third_yPanel) &&
-        y <= (selected.mainFragment.y + this.menuDY + Fragment.heightPanel)
 
       )
     }
@@ -210,26 +233,41 @@ class Fragment {
   }
 
   editMenuCoords() {
-    this.menuDX = Fragment.third_x;
-    this.menuDY = Fragment.third_y;
-  }
-
-
-  setMenuD(dl) {
-    // вызывается только из группы и 1 раз за onmouseup. В проверке нет необходимости
-
-    if (dl) {
-      // поставить в зависимости от главного, в меню
-      this.menuDX = Fragment.third_x + (
-        (this.x - this.group.mainFragment.x) / Fragment.widthScale * Fragment.widthPanel
-      );
-      this.menuDY = Fragment.third_y + (
-        (this.y - this.group.mainFragment.y) / Fragment.heightScale * Fragment.heightPanel
+    if (this.onMenuLast == this.onMenu) {
+      return;
+    }
+    this.onMenuLast = this.onMenu;
+    if (!this.onMenu) {
+      // поставить по умолчанию
+      this.smoothResize(
+        Fragment.widthPanel, Fragment.heightPanel,
+        Fragment.widthScale, Fragment.heightScale
       );
     } else {
-      this.menuDX = Fragment.third_x;
-      this.menuDY = Fragment.third_y;
+      // поставить в зависимости от главного, в меню
+      // this.mainFragment = fr;
+      this.smoothResize(
+        Fragment.widthScale, Fragment.heightScale,
+        Fragment.widthPanel, Fragment.heightPanel
+      );
     }
+  }
+
+  /*
+   * Вызывается из smoothResize
+   * для высчитывания нового положения фрагментов при изменении размеров
+   *
+   */
+  setMenuD(this_fr, current_width, current_height) {
+    let selected = (this_fr.group != null) ? this_fr.group : this_fr;
+    this_fr.menuDX = (
+      (this_fr.x - selected.mainFragment.x) / Fragment.widthScale * current_width
+    );
+    this_fr.menuDY = (
+      (this_fr.y - selected.mainFragment.y) / Fragment.heightScale * current_height
+    );
+    this_fr.current_width = current_width;
+    this_fr.current_height = current_height;
   }
 
   // Расстояниме от курсора мыши до старта изображения в левом верхнем углу в пикселях.
@@ -251,7 +289,15 @@ class Fragment {
     this.move(x, y);
   }
 
-  workGroups(selected, other) {
+  /**
+   *
+   * @param selected - группа или фрагмент
+   * @param other - группа или фрагмент
+   * @param animate - анимация будет воспроизведена
+   * @param animationDelay - анимация с задержкой
+   *
+   */
+  workGroups(selected, other, animate = false, animationDelay = .0) {
     if (selected.group == null) {
       if (other.group == null) {
         // создание группы
@@ -266,14 +312,16 @@ class Fragment {
         selected.group.listElemGroup = selected.listElem;
         other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись, т.к. он уже отрисовывается в группе
 
+        other.setMenuD(other, other.current_width, other.current_height);
       } else {
         // selected - not group;
         // other - group
 
         selected.group = other.group;
         selected.group.fragments.add(selected);
-
         selected.listElem.remove();
+
+        selected.setMenuD(selected, selected.current_width, selected.current_height);
 
       }
     } else {
@@ -284,11 +332,19 @@ class Fragment {
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на чужую группу
         other.listElem.remove();
 
+        other.setMenuD(other, other.current_width, other.current_height);
+
       } else {
         selected.group.listElemGroup.remove();
-        selected.group.changeGroup(other.group);
+        selected.group.changeGroup(other.group); //setMenuD внутри
       }
     }
+    if (animate) {
+      console.log("animate");
+      console.log(selected.group);
+      setTimeout(selected.group.animationConnect, animationDelay, selected.group);
+    }
+
   }
 
   rightTop() {
@@ -534,7 +590,7 @@ class Fragment {
         } else {
           // подсоединение к фрагменту
           let near_frg = (near.fr.group == null) ? near.fr : near.fr.group;
-          if (!near_frg.smoothing && !near_frg.isConnecting) {
+          if (!near_frg.smoothing && !near_frg.isConnecting && !near_frg.resizing) {
             this.smoothmoveOneOrGroup(this, near.x + near.dX, near.y + near.dY, near.fr);
           }
         }
@@ -564,9 +620,12 @@ class Fragment {
    *  @param Fragment connectingFragment - фрагмент, к которому, возможно,
    *                                       подключается наш фрагмент
    *
-   *
+   *  @param bool shouldWorkGroups - должно ли сработать присоединение к
+   *                                 несмотря на присутствие группы у фрагмента
+   *                                 Срабатывает у одного фрагмента из всей
+   *                                 группы, нет повторений
    */
-  smoothMove(newX, newY, connectingFragment = null) {
+  smoothMove(newX, newY, connectingFragment=null, shouldWorkGroups=false) {
     let near = null;
     let this_frg = (this.group == null) ? this : this.group;
     // группа или одиночный фрагмент, к которому идет подключение
@@ -580,33 +639,89 @@ class Fragment {
 
     let oldX = this.x;
     let oldY = this.y;
-    let tact = 21;
     let currentTact = 0;
-    let dX = (newX - oldX) / (tact);
-    let dY = (newY - oldY) / (tact);
-    let this_fr = this;
-
-    let frame_time = 1000 / FRAMES / tact;
+    let dX = (newX - oldX) / (Fragment.tact);
+    let dY = (newY - oldY) / (Fragment.tact);
+    let this_fr = this; // сам фрагмент (отличие с this_frg)
 
     //тактовая отрисовка
     function reDraw() {
       this_fr.x += dX;
       this_fr.y += dY;
 
-      if (currentTact < tact - 1) {
-        setTimeout(reDraw, frame_time);
+      if (currentTact < Fragment.tact - 1) {
+        setTimeout(reDraw, Fragment.frame_time);
         currentTact++;
       } else {
         this_fr.x = newX;
         this_fr.y = newY;
         if (connectingFragment != null) {
-          if (this_fr.group == null) // для работы один раз, чтобы не выполнялось для каждого элемента в группе
-            this_fr.workGroups(this_fr, connectingFragment); // для группы отдельно обрабатывается в группе
+          // this_fr.resizeSelect()
+          connectingFragment.setMenuD(connectingFragment, Fragment.widthScale, Fragment.heightScale);
+          if (this_fr.group == null || shouldWorkGroups) // для работы один раз, чтобы не выполнялось для каждого элемента в группе
+            this_fr.workGroups(this_fr, connectingFragment, true, 0); // для группы отдельно обрабатывается в группе
           near.isConnecting = false; // !!
         }
         this_frg.smoothing = false;
       }
     }
     reDraw();
+  }
+
+  /**
+   * Вызывается из группы или фрагмента в процессе onmouseup
+   * Меняет относительные координаты у фрагментов группы для
+   * нормального уменьшения / увеличения изображения при добавлении в группу
+   * и изменяет сам размер изображения
+   *
+   * @param double - 4 длины пазлины, понятные из их названий
+   *
+   * @param bool back - повторяет анимацию задонаперед при истинности
+   *
+   */
+  smoothResize(old_x, old_y, new_x, new_y, back = false) {
+    let this_frg = (this.group == null) ? this : this.group;
+    this_frg.resizing = true;
+    let old_width = old_x;
+    let old_height = old_y;
+    let new_width = new_x;
+    let new_height = new_y;
+    let currentTact = 0;
+    let dX = (new_width - old_width) / (Fragment.tact);
+    let dY = (new_height - old_height) / (Fragment.tact);
+
+    var current_width = old_width;
+    var current_height = old_height;
+
+    let this_fr = this;
+
+    function resize() {
+      current_width += dX;
+      current_height += dY;
+      this_fr.setMenuD(this_fr, current_width, current_height);
+
+      if (currentTact < Fragment.tact - 1) {
+        setTimeout(resize, Fragment.frame_time);
+        currentTact++;
+      } else {
+        this_fr.setMenuD(this_fr, new_width, new_height);
+        if (back) {
+          // alert("!");
+          this_fr.smoothResize(new_x, new_y, old_x, old_y);
+          console.log("back");
+        } else {
+          this_frg.resizing = false;
+        }
+      }
+    }
+    resize();
+  }
+
+  resizeSelect() {
+    this.smoothResize(
+      this.current_width, this.current_height,
+      this.current_width * 0.96, this.current_height * 0.96,
+      true
+    );
   }
 }

@@ -124,6 +124,16 @@ class Panel extends Component {
           Fragment.heightPanel
         );
         context.fill();
+      } else {
+        // если объект на панели, то нарисовать обводку вокруг него
+        context.drawImage(
+          fr.imgB,
+          this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
+            i % this.fragmentsCount),
+          this.firstY + this.paddingY,
+          Fragment.widthPanel,
+          Fragment.heightPanel
+        );
       }
     }
   }

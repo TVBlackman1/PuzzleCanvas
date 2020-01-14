@@ -38,6 +38,12 @@ class Menu extends Component {
     this.place.height = this.height;
   }
 
+  /*
+  * Добавляет фрагмент или группу фрагментов в левое/правое меню
+  * Меняя булеву переменную, дальнейшая логика в классах
+  * дает элементам меньший размер и убирает способность
+  * присоединяться
+  */
   static includeInMenu = function() {
     const selected = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
       arr[SelectFragmentHelper.translatedFragmentId].group :
@@ -46,6 +52,12 @@ class Menu extends Component {
     selected.onMenu = true;
   }
 
+  /*
+  * Удаляет фрагмент или группу фрагментов с левого/правого меню
+  * Меняя булеву переменную, дальнейшая логика в классах
+  * возвращает элементам прежний размер и прежнюю способность
+  * присоединяться
+  */
   static removeFromMenu = function() {
     const selected = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
       arr[SelectFragmentHelper.translatedFragmentId].group :
@@ -54,7 +66,11 @@ class Menu extends Component {
     selected.onMenu = false;
   }
 
-
+  /*
+  * Срабатывает при БЛИЗКОМ наведении мышкой на меню
+  * Проверяется вхождение координат мыши внутрь поля
+  * вокруг меню (больше него)
+  */
   onmousemove(x, y) {
     if (this.place.isHadPoint(x, y)) {
       this.isPlace = true;
@@ -80,6 +96,11 @@ class Menu extends Component {
     }
   }
 
+  /*
+  * Рисует маску для скрытия объектов внутри
+  * Вдальнейшем TODO
+  *
+  */
   drawMask(context) {
     context.beginPath();
     context.rect(

@@ -51,10 +51,5 @@ class FragmentList {
       FragmentList.lastVisualObject = this;
     }
 
-    var lastSeenObject = FragmentList.lastVisualObject;
-    do {
-      lastSeenObject = lastSeenObject.prev;
-    } while (lastSeenObject != null)
-
   }
 }

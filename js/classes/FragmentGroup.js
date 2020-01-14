@@ -4,10 +4,11 @@ class FragmentGroup {
     this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
     // В противном случае нужно чёто рассматривать а мне лень
     this.smoothing = false;
+    this.resizing = false;
 
     this.listElemGroup = null;
     this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
-                              // в уменьшенной группе в области меню и определения его новых координат
+    // в уменьшенной группе в области меню и определения его новых координат
     this.onMenu = false;
     this.onMenuLast = false;
   }
@@ -19,10 +20,10 @@ class FragmentGroup {
       if (found)
         return;
       found = fragment.isHadPoint(x, y);
-      if(found)
+      if (found)
         ind_ans = fragment.ind;
     });
-    return ind_ans
+    return ind_ans;
   }
 
   move(x, y, selected) {
@@ -55,12 +56,8 @@ class FragmentGroup {
         )
       }
     });
-    selected.smoothMove(x, y, connectingFragment);
-    if(connectingFragment != null) {
-      // проверка для того, чтобы работать с группами один раз.
-      // Если есть группа - работать, если нет, то работа внутри smoothMove
-      selected.workGroups(selected, connectingFragment);
-    }
+    selected.smoothMove(x, y, connectingFragment, true);
+    // true, можно работать с группой
 
   }
 
@@ -68,6 +65,7 @@ class FragmentGroup {
     this.fragments.forEach(function(fragment, ind, arr) {
       fragment.group = newGroup;
       newGroup.fragments.add(fragment);
+      fragment.setMenuD(fragment, fragment.current_width, fragment.current_height);
     });
   }
 
@@ -98,22 +96,45 @@ class FragmentGroup {
 
   editMenuCoords(fr) {
     // fr - фрагмент, который мы взяли. Относительно него будут строиться остальные
-    if(this.onMenuLast == this.onMenu) {
+    if (this.onMenuLast == this.onMenu) {
       return;
     }
     this.onMenuLast = this.onMenu;
-    if(!this.onMenu) {
+    if (!this.onMenu) {
       // поставить по умолчанию
-      this.fragments.forEach(function(fragment, ind, arr) {
-        fragment.setMenuD(false);
-      });
-      return;
+      this.smoothResize(
+        Fragment.widthPanel, Fragment.heightPanel,
+        Fragment.widthScale, Fragment.heightScale
+      );
+    } else {
+      // поставить в зависимости от главного, в меню
+      this.mainFragment = fr;
+      this.smoothResize(
+        Fragment.widthScale, Fragment.heightScale,
+        Fragment.widthPanel, Fragment.heightPanel
+      );
     }
+  }
 
-    // поставить в зависимости от главного, в меню
-    this.mainFragment = fr;
+  /**
+   * Меняет относительные координаты у фрагментов группы для
+   * нормального уменьшения / увеличения изображения при добавлении в группу
+   *
+   * @param double - 4 длины пазлины, понятные из их названий
+   *
+   * @param bool back - повторяет анимацию задонаперед
+   *
+   */
+  smoothResize(old_x, old_y, new_x, new_y, back) {
     this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.setMenuD(true);
+      fragment.smoothResize(old_x, old_y, new_x, new_y, back);
+    });
+  }
+
+  animationConnect(this_gr = this) {
+    console.log(this_gr)
+    this_gr.fragments.forEach(function(fragment, ind, arr) {
+      fragment.resizeSelect();
     });
   }
 }
