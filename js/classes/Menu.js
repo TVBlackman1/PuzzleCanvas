@@ -34,6 +34,7 @@ class Menu extends Component {
     }
 
     this.isPlace = false;
+    this.lastIsPlace = false;
     this.place.firstY = this.firstY;
     this.place.height = this.height;
   }
@@ -72,17 +73,21 @@ class Menu extends Component {
   * вокруг меню (больше него)
   */
   onmousemove(x, y) {
+    this.lastIsPlace = this.isPlace;
     if (this.place.isHadPoint(x, y)) {
       this.isPlace = true;
     } else {
       this.isPlace = false;
     }
+    // console.log(this.isPlace);
   }
 
   draw(context) {
     super.draw(context);
-    // this.drawMask(context);
-    if (this.isPlace && SelectFragmentHelper.translatedFragmentId >= 0) {
+
+    // если взятый объект на меню, то подсветить меню
+    let ind = SelectFragmentHelper.translatedFragmentId;
+    if (this.isPlace && ind >= 0) {
       context.beginPath();
       context.rect(
         this.firstX,
@@ -93,6 +98,17 @@ class Menu extends Component {
 
       context.fillStyle = "rgba(12, 155,155,0.15)";
       context.fill();
+
+      // выделяет анимацией элемент
+      // if(this.isPlace != this.lastIsPlace) {
+      //   console.log("replace");
+      //   let selected = (arr[ind].group != null) ? arr[ind].group : arr[ind];
+      //   if(this.isPlace) {
+      //     selected.resizeSelect(false, -1);
+      //   } else {
+      //     selected.resizeSelect(false, 1);
+      //   }
+      // }
     }
   }
 

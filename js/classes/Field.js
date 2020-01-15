@@ -29,7 +29,7 @@ class Field extends Component {
 
     this.lastX = this.firstX + this.width;
     this.lastY = this.firstY + this.height;
-    for (var i = 1; i < imagesY; i++) {
+    for (var i = 1; i < imagesX; i++) {
       this.linesX.push(this.width / imagesX * i);
     }
     for (var i = 1; i < imagesY; i++) {

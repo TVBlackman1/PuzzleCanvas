@@ -20,10 +20,10 @@ function drawAll(canvas, context) {
 function initializeFragmentList(arr) {
   for (i = 0; i < countImages; i++) {
     var x = i % imagesX;
-    var y = Math.floor(i / imagesY);
+    var y = Math.floor(i / imagesX);
 
     var leftId = i % imagesX - 1;
-    var topId = i - imagesY;
+    var topId = i - imagesX;
 
     arr.push(
       new Fragment(
@@ -159,21 +159,20 @@ window.onload = function() {
 
       if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
         selectedFragment.onBottomPanel = true;
-      }
-
-      if (shouldConnect) {
+      } else if (shouldConnect) {
         FragmentList.lastVisualObject.value.connectTo();
       }
+
       SelectFragmentHelper.translatedFragmentId = -1;
     }
   }
 
-  document.addEventListener('mousedown', function(event) {
-    // if (lastDownTarget != event.target) {
-    //   showSilhouette = false;
-    // }
-    // lastDownTarget = event.target;
-  }, false);
+  // document.addEventListener('mousedown', function(event) {
+  //   if (lastDownTarget != event.target) {
+  //     showSilhouette = false;
+  //   }
+  //   lastDownTarget = event.target;
+  // }, false);
 
   document.addEventListener('keydown', function(event) {
     if (event.keyCode == KEY_shouldConnect) {

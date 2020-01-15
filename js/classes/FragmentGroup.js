@@ -131,10 +131,17 @@ class FragmentGroup {
     });
   }
 
-  animationConnect(this_gr = this) {
-    console.log(this_gr)
+  /**
+  * Выделяет группу изменением размера
+  *
+  * @param back - bool, стоит ли возвращать анимацию назад
+  *
+  * @param charact - увеличить или уменьшить (-1, 1)
+  *
+  */
+  resizeSelect(this_gr = this, back, charact=-1) {
     this_gr.fragments.forEach(function(fragment, ind, arr) {
-      fragment.resizeSelect();
+      fragment.resizeSelect(back, charact);
     });
   }
 }

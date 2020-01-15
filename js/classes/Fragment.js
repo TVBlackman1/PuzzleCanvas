@@ -1,6 +1,8 @@
 // Возможно стоит убрать подключение к smoothing объекту. а то проблем слишком дохуя??
 // на заметку, потом посмотрим
 
+// Давно уже убрал, но комент забавный я оставил, пусть будет на память как и "var hello = 4"
+
 
 var hello = 4;
 class Fragment {
@@ -86,7 +88,7 @@ class Fragment {
     if (this.top != null)
       this.top.bottom = this;
 
-    this.group = null; // ссылка на групп
+    this.group = null; // ссылка на группу
     this.listElem = null; // ссылка на элемент двусвязного списка
   }
 
@@ -129,10 +131,10 @@ class Fragment {
   // Отображает изображение в заданных координатах
   draw(context) {
     if (!showSilhouette) {
+      // не силуэт
       if (!this.onBottomPanel) {
         // изобразить элемент, если он не на панели
         let selected = (this.group != null) ? this.group : this;
-        // console.log(this.menuDX);
         context.drawImage(
           this.img,
           selected.mainFragment.x + this.menuDX,
@@ -140,32 +142,6 @@ class Fragment {
           this.current_width,
           this.current_height
         );
-        // if (selected.onMenu) {
-        //   // Menu
-        //   context.drawImage(
-        //     this.img,
-        //     selected.mainFragment.x + this.menuDX + Fragment.third_xPanel,
-        //     selected.mainFragment.y + this.menuDY + Fragment.third_yPanel,
-        //     Fragment.widthPanel,
-        //     Fragment.heightPanel
-        //   );
-        // } else {
-        //   // Обычное расположение на поле
-        //   context.drawImage(
-        //     this.img,
-        //     this.x,
-        //     this.y,
-        //     Fragment.widthScale,
-        //     Fragment.heightScale
-        //   );
-        //   context.drawImage(
-        //     this.imgB,
-        //     this.x,
-        //     this.y,
-        //     Fragment.widthScale,
-        //     Fragment.heightScale
-        //   );
-        // }
       }
     } else {
       // изобразить силуэт
@@ -245,7 +221,6 @@ class Fragment {
       );
     } else {
       // поставить в зависимости от главного, в меню
-      // this.mainFragment = fr;
       this.smoothResize(
         Fragment.widthScale, Fragment.heightScale,
         Fragment.widthPanel, Fragment.heightPanel
@@ -256,6 +231,7 @@ class Fragment {
   /*
    * Вызывается из smoothResize
    * для высчитывания нового положения фрагментов при изменении размеров
+   * Без плавного изменения размера выглядит слишком резко (неожиданно)
    *
    */
   setMenuD(this_fr, current_width, current_height) {
@@ -282,7 +258,6 @@ class Fragment {
   }
 
   moveToPanel() {
-    // edit
     var x = (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
       this.bottomPanelInd % canvas.panel.fragmentsCount)) + Fragment.widthPanel / 2 - Fragment.widthScale / 2;
     var y = canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel / 2 - Fragment.heightScale / 2;
@@ -290,10 +265,14 @@ class Fragment {
   }
 
   /**
+   * Функция работает с фрагментами или группами, объединяют их в одну группу
    *
    * @param selected - группа или фрагмент
+   *
    * @param other - группа или фрагмент
+   *
    * @param animate - анимация будет воспроизведена
+   *
    * @param animationDelay - анимация с задержкой
    *
    */
@@ -340,9 +319,7 @@ class Fragment {
       }
     }
     if (animate) {
-      console.log("animate");
-      console.log(selected.group);
-      setTimeout(selected.group.animationConnect, animationDelay, selected.group);
+      setTimeout(selected.group.resizeSelect, animationDelay, selected.group, true);
     }
 
   }
@@ -460,6 +437,8 @@ class Fragment {
   }
 
   /**
+   * Функция реализует присоединение к чему либо либо информирует о возможности этого события
+   *
    *  @param int  newInd - индекс фрагмента, для которого стоит проверить возможность присоединения,
    *                       по умолчанию выбирается индекс фрагмента, передвигаемого игроком (SelectFragmentHelper.translatedFragmentId).
    *                       Рассмотрение от других фрагментов нужно при проверке подсоединения для нескольких фрагментов от одной группы
@@ -497,7 +476,7 @@ class Fragment {
     let inner_this = this;
 
     let x = i % imagesX;
-    let y = Math.floor(i / imagesY);
+    let y = Math.floor(i / imagesX);
 
     /**
      *  @param int  needX, needY - необходимые конечные координаты пазла в изображении, соответствующие заданному углу
@@ -532,14 +511,21 @@ class Fragment {
 
 
     /**
-     *  @param Fragment other - фрагмент, к которому идет подсоединение
+     * Предназначено для заполнения массива ConnectArray,
+     * заполняет его объетами, хранящими расстояние до фрагмента
+     * а так же числа, необходимые добавить к координатам фрагмента
+     * для нормального присоединения одного к другому
      *
-     *  @param object getInfo - расстояние до другого фрагмента
+     *  @param other - фрагмент, к которому идет подсоединение
      *
-     *  @param object getCoordinates - координаты одного из углов другого фрагмента
+     *  @param getInfo - объект, показывающий о возможности присоединения
+     *                   фрагмента и расстояние до него
+     *  @param getCoordinates - объект с координатами одного из углов другого фрагмента
      *
-     *  @param int newX, newY - координаты, которые необходимо добавить к третьему аргументу
-     *                          для получения новых координат текущего фрагмента (this)
+     *  @param newX - число, необходимое добавить к getCoordinates.x для получения
+     *                новых координат для текущего фрагмента вдоль оси X
+     *  @param newY - число, необходимое добавить к getCoordinates.y для получения
+     *                новых координат для текущего фрагмента вдоль оси Y
      *
      */
     function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
@@ -558,10 +544,11 @@ class Fragment {
         })
       }
     }
-    if (topFragment != null)
+    if (topFragment != null) {
       connectToFragment(topFragment, topFragment.canConnectBottomFragment(),
         topFragment.leftBot(),
         -Fragment.third_x, -Fragment.third_y);
+      }
     if (leftFragment != null)
       connectToFragment(leftFragment, leftFragment.canConnectRightFragment(),
         leftFragment.rightTop(),
@@ -578,7 +565,7 @@ class Fragment {
         -Fragment.third_y);
 
     connectArray.sort(function(a, b) {
-      return a.range - b.range
+      return a.range - b.range;
     });
 
     if (connectArray.length > 0) {
@@ -619,7 +606,6 @@ class Fragment {
    *
    *  @param Fragment connectingFragment - фрагмент, к которому, возможно,
    *                                       подключается наш фрагмент
-   *
    *  @param bool shouldWorkGroups - должно ли сработать присоединение к
    *                                 несмотря на присутствие группы у фрагмента
    *                                 Срабатывает у одного фрагмента из всей
@@ -644,7 +630,7 @@ class Fragment {
     let dY = (newY - oldY) / (Fragment.tact);
     let this_fr = this; // сам фрагмент (отличие с this_frg)
 
-    //тактовая отрисовка
+    // рекурсивная функция вызываемая с задержкой в самой себе
     function reDraw() {
       this_fr.x += dX;
       this_fr.y += dY;
@@ -656,11 +642,12 @@ class Fragment {
         this_fr.x = newX;
         this_fr.y = newY;
         if (connectingFragment != null) {
-          // this_fr.resizeSelect()
           connectingFragment.setMenuD(connectingFragment, Fragment.widthScale, Fragment.heightScale);
-          if (this_fr.group == null || shouldWorkGroups) // для работы один раз, чтобы не выполнялось для каждого элемента в группе
-            this_fr.workGroups(this_fr, connectingFragment, true, 0); // для группы отдельно обрабатывается в группе
-          near.isConnecting = false; // !!
+          if (this_fr.group == null || shouldWorkGroups) // для работы один раз,
+                                                         // чтобы не выполнялось для каждого
+                                                         // элемента в группе
+            this_fr.workGroups(this_fr, connectingFragment, true, 0);
+          near.isConnecting = false;
         }
         this_frg.smoothing = false;
       }
@@ -679,13 +666,9 @@ class Fragment {
    * @param bool back - повторяет анимацию задонаперед при истинности
    *
    */
-  smoothResize(old_x, old_y, new_x, new_y, back = false) {
+  smoothResize(old_width, old_height, new_width, new_height, back = false) {
     let this_frg = (this.group == null) ? this : this.group;
     this_frg.resizing = true;
-    let old_width = old_x;
-    let old_height = old_y;
-    let new_width = new_x;
-    let new_height = new_y;
     let currentTact = 0;
     let dX = (new_width - old_width) / (Fragment.tact);
     let dY = (new_height - old_height) / (Fragment.tact);
@@ -695,6 +678,7 @@ class Fragment {
 
     let this_fr = this;
 
+    // рекурсивная функция вызываемая с задержкой в самой себе
     function resize() {
       current_width += dX;
       current_height += dY;
@@ -706,9 +690,8 @@ class Fragment {
       } else {
         this_fr.setMenuD(this_fr, new_width, new_height);
         if (back) {
-          // alert("!");
-          this_fr.smoothResize(new_x, new_y, old_x, old_y);
-          console.log("back");
+          // повторная анимация, возвращающая всё обратно
+          this_fr.smoothResize(new_width, new_height, old_width, old_height);
         } else {
           this_frg.resizing = false;
         }
@@ -717,11 +700,28 @@ class Fragment {
     resize();
   }
 
-  resizeSelect() {
-    this.smoothResize(
-      this.current_width, this.current_height,
-      this.current_width * 0.96, this.current_height * 0.96,
-      true
-    );
+  /**
+  * Вызывается из группы resizeSelect(this_gr)
+  *
+  * @param back - bool, стоит ли возвращать анимацию назад
+  *
+  * @param charact - увеличить или уменьшить (-1, 1)
+  *
+  */
+  resizeSelect(back, charact=-1) {
+    if(charact == -1) {
+      this.smoothResize(
+        this.current_width, this.current_height,
+        this.current_width * 0.66, this.current_height * 0.66,
+        back
+      );
+    }
+    else {
+      this.smoothResize(
+        this.current_width * 0.66, this.current_height * 0.66,
+        this.current_width, this.current_height,
+        back
+      );
+    }
   }
 }
