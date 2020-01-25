@@ -3,12 +3,15 @@
 
 <head>
   <title>PuzzleForTwo</title>
+  <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/header_style.css">
 
   <script type="text/javascript" src="js/lib/jQuery_3_4_1.js"></script>
   <script type="text/javascript" src="js/vars.js"></script>
 
   <script type="text/javascript" src="js/classes/base/Component.js"></script>
+  <script type="text/javascript" src="js/classes/base/Button.js"></script>
 
   <script type="text/javascript" src="js/classes/BlankField.js"></script>
   <script type="text/javascript" src="js/classes/Field.js"></script>
@@ -16,6 +19,8 @@
   <script type="text/javascript" src="js/classes/Panel.js"></script>
   <script type="text/javascript" src="js/classes/places/PanelPlace.js"></script>
   <script type="text/javascript" src="js/classes/PanelButton.js"></script>
+  <script type="text/javascript" src="js/classes/ControlPanel.js"></script>
+  <script type="text/javascript" src="js/classes/Timer.js"></script>
   <script type="text/javascript" src="js/classes/Menu.js"></script>
   <script type="text/javascript" src="js/classes/places/MenuPlace.js"></script>
   <script type="text/javascript" src="js/classes/FragmentGroup.js"></script>
@@ -28,7 +33,18 @@
 </head>
 
 <body>
-  <h1 id="caption-h1">Play with friend</h1>
+  <div class="header-container">
+    <div class="container header-list" id="header-list">
+      <ul class="row header-list">
+        <li class="col-lg-3 header-links">Главная</li>
+        <li class="col-lg-3 header-links">Пазлы</li>
+        <li class="col-lg-3 header-links">О нас</li>
+      </ul>
+    </div>
+    <a class="entrance" href="../../pages/entrance/entrance.php">Вход</a>
+  </div>
+
+  <!-- только canvas нужно переносить, на остальное плевать -->
   <canvas id="canvas-puzzle" width="2370" height="1080">
     <!-- <canvas id="canvas-puzzle" width="1920" height="1080"> -->
   </canvas>

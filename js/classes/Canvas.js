@@ -12,7 +12,7 @@
      this.field = null;
 
      this.fr_zones = [];
-     this.fr_zones.length = 4;
+     this.fr_zones.length = 5;
 
      this.blank_zones = [];
 
@@ -21,6 +21,7 @@
    initElements() {
      this.field = new Field();
      this.panel = new Panel(countImages, this);
+     this.control_panel = new ControlPanel();
      this.left_menu = new Menu(-1, this);
      this.right_menu = new Menu(1, this);
 
@@ -28,6 +29,7 @@
      this.fr_zones[1] = this.right_menu;
      this.fr_zones[2] = this.field;
      this.fr_zones[3] = this.panel;
+     this.fr_zones[4] = this.control_panel;
    }
 
    sortZonesByFirstX() {
@@ -88,6 +90,7 @@
      var zones = this.fr_zones;
      for (var i = 0; i < zones.length; i++) {
        if (zones[i].isHadPoint(x, y)) {
+         console.log("!");
          return true;
        }
      }
@@ -106,9 +109,6 @@
      var zones = this.fr_zones;
      for (var i = 0; i < zones.length; i++) {
        zones[i].draw(context)
-       if (zones[i] instanceof Menu) {
-
-       }
      }
 
    }

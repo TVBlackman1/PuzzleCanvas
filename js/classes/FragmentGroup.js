@@ -10,7 +10,16 @@ class FragmentGroup {
     this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
     // в уменьшенной группе в области меню и определения его новых координат
     this.onMenu = false;
-    this.onMenuLast = false;
+    this.onMenuLast = false; // нужно при editMenuCoords, проверьте сами, мне лень
+
+    /*
+    * Первые / последние координаты по осям X / Y
+    * Для ограничения перемещения, высчитывается быстро
+    */
+    this.firstX = -1;
+    this.lastX = -1;
+    this.firstY = -1;
+    this.lastY = -1;
   }
 
   isHadPoint(x, y) {
@@ -104,14 +113,16 @@ class FragmentGroup {
       // поставить по умолчанию
       this.smoothResize(
         Fragment.widthPanel, Fragment.heightPanel,
-        Fragment.widthScale, Fragment.heightScale
+        Fragment.widthScale, Fragment.heightScale,
+        false, true
       );
     } else {
       // поставить в зависимости от главного, в меню
       this.mainFragment = fr;
       this.smoothResize(
         Fragment.widthScale, Fragment.heightScale,
-        Fragment.widthPanel, Fragment.heightPanel
+        Fragment.widthPanel, Fragment.heightPanel,
+        false, true
       );
     }
   }
@@ -124,10 +135,12 @@ class FragmentGroup {
    *
    * @param bool back - повторяет анимацию задонаперед
    *
+   * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
+   *
    */
-  smoothResize(old_x, old_y, new_x, new_y, back) {
+  smoothResize(old_x, old_y, new_x, new_y, back=false, append_cursor=false) {
     this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.smoothResize(old_x, old_y, new_x, new_y, back);
+      fragment.smoothResize(old_x, old_y, new_x, new_y, back, append_cursor);
     });
   }
 

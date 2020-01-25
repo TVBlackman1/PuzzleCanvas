@@ -1,10 +1,10 @@
 // Возможно стоит убрать подключение к smoothing объекту. а то проблем слишком дохуя??
-// на заметку, потом посмотрим
+// на заметку, потом посмотрим - Михаил
 
 // Давно уже убрал, но комент забавный я оставил, пусть будет на память как и "var hello = 4"
+// Шёл третий месяц, а мне до сих пор смешно - Никита
 
-
-var hello = 4;
+var hello = 4; // - Атаман Кирилл
 class Fragment {
   static SCALE = -1;
   static downloadedImages = 0;
@@ -61,7 +61,6 @@ class Fragment {
      * при истинности хотя бы одной из них
      * запрещается подключаться к другим фрагментам (не считая самой анимации)
      * запрещается выделять объекты мышкой
-     *
      */
     this.smoothing = false; // плавное автоматическое перемещение, не зависящее от мыши
     this.isConnecting = false; // объект ждет подключения к нему другого объекта
@@ -148,22 +147,34 @@ class Fragment {
       let selected = (this.group != null) ? this.group : this;
       if (selected.onMenu) {
         context.beginPath();
+        // context.rect(
+        //   selected.mainFragment.x + this.menuDX + 2 * Fragment.third_xPanel,
+        //   selected.mainFragment.y + this.menuDY + 2 * Fragment.third_yPanel,
+        //   Fragment.widthPanel - 2 * Fragment.third_xPanel,
+        //   Fragment.heightPanel - 2 * Fragment.third_yPanel
+        // );
         context.rect(
-          selected.mainFragment.x + this.menuDX + 2 * Fragment.third_xPanel,
-          selected.mainFragment.y + this.menuDY + 2 * Fragment.third_yPanel,
-          Fragment.widthPanel - 2 * Fragment.third_xPanel,
-          Fragment.heightPanel - 2 * Fragment.third_yPanel
+          selected.mainFragment.x + this.menuDX,
+          selected.mainFragment.y + this.menuDY,
+          Fragment.widthPanel,
+          Fragment.heightPanel
         );
         context.lineWidth = "3";
         context.strokeStyle = "black";
         context.stroke();
       } else if (!this.onBottomPanel) {
         context.beginPath();
+        // context.rect(
+        //   this.x + Fragment.third_x,
+        //   this.y + Fragment.third_y,
+        //   Fragment.widthScale - 2 * Fragment.third_x,
+        //   Fragment.heightScale - 2 * Fragment.third_y
+        // );
         context.rect(
-          this.x + Fragment.third_x,
-          this.y + Fragment.third_y,
-          Fragment.widthScale - 2 * Fragment.third_x,
-          Fragment.heightScale - 2 * Fragment.third_y
+          selected.mainFragment.x + this.menuDX,
+          selected.mainFragment.y + this.menuDY,
+          Fragment.widthScale,
+          Fragment.heightScale
         );
         context.lineWidth = "5";
         context.strokeStyle = "black";
@@ -179,9 +190,11 @@ class Fragment {
       return (
         canvas.panel.fragmentsCount * (canvas.panel.list - 1) <= this.bottomPanelInd &&
         this.bottomPanelInd < canvas.panel.fragmentsCount * canvas.panel.list &&
-        x >= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
+        x >= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
+          (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
           this.bottomPanelInd % canvas.panel.fragmentsCount)) &&
-        x <= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
+        x <= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
+          (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
           this.bottomPanelInd % canvas.panel.fragmentsCount) + Fragment.widthPanel) &&
         y >= canvas.panel.firstY + canvas.panel.paddingY &&
         y <= canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel
@@ -214,33 +227,56 @@ class Fragment {
     }
     this.onMenuLast = this.onMenu;
     if (!this.onMenu) {
-      // поставить по умолчанию
+      // поставить по умолчанию относительно курсора
       this.smoothResize(
         Fragment.widthPanel, Fragment.heightPanel,
-        Fragment.widthScale, Fragment.heightScale
+        Fragment.widthScale, Fragment.heightScale,
+        false, true
       );
     } else {
       // поставить в зависимости от главного, в меню
+      // относительно курсора
       this.smoothResize(
         Fragment.widthScale, Fragment.heightScale,
-        Fragment.widthPanel, Fragment.heightPanel
+        Fragment.widthPanel, Fragment.heightPanel,
+        false, true
       );
     }
   }
 
-  /*
+  /**
    * Вызывается из smoothResize
    * для высчитывания нового положения фрагментов при изменении размеров
    * Без плавного изменения размера выглядит слишком резко (неожиданно)
    *
+   * @param this_fr - фрагмент, над которым выполняются действия
+   *
+   * @param current_width - текущая длина фрагмента
+   *
+   * @param current_height - текущая высота фрагмента
+   *
+   * @param append_cursor - стоит ли отталкиваться от положения курсора
+   *
+   *  Далее перечень аргументов, которые следует передать, т.к.
+   *  переменная меняется в smoothMove, которая может быть вызвана
+   *  при истинности append_cursor из smoothResize
+   *
+   * @param x - координата по оси x, равная this_fr.x,
+   *
+   * @param y - координата по оси y, равная this_fr.y
+   *
+   * @param mx - координата по оси y, равная selected.mainFragment.x
+   *
+   * @param my - координата по оси y, равная selected.mainFragment.y
+   *
    */
-  setMenuD(this_fr, current_width, current_height) {
+  setMenuD(this_fr, current_width, current_height, x, y, mx, my) {
     let selected = (this_fr.group != null) ? this_fr.group : this_fr;
     this_fr.menuDX = (
-      (this_fr.x - selected.mainFragment.x) / Fragment.widthScale * current_width
+      (x - mx) / Fragment.widthScale * current_width
     );
     this_fr.menuDY = (
-      (this_fr.y - selected.mainFragment.y) / Fragment.heightScale * current_height
+      (y - my) / Fragment.heightScale * current_height
     );
     this_fr.current_width = current_width;
     this_fr.current_height = current_height;
@@ -258,7 +294,8 @@ class Fragment {
   }
 
   moveToPanel() {
-    var x = (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX + (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
+    var x = (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
+      (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
       this.bottomPanelInd % canvas.panel.fragmentsCount)) + Fragment.widthPanel / 2 - Fragment.widthScale / 2;
     var y = canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel / 2 - Fragment.heightScale / 2;
     this.move(x, y);
@@ -289,7 +326,8 @@ class Fragment {
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на группу
         selected.listElem.src = null; // убрать путь до картинки, а то некрасиво
         selected.group.listElemGroup = selected.listElem;
-        other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись, т.к. он уже отрисовывается в группе
+        other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись,
+                                 // т.к. он уже отрисовывается в группе
 
         other.setMenuD(other, other.current_width, other.current_height);
       } else {
@@ -439,14 +477,18 @@ class Fragment {
   /**
    * Функция реализует присоединение к чему либо либо информирует о возможности этого события
    *
-   *  @param int  newInd - индекс фрагмента, для которого стоит проверить возможность присоединения,
-   *                       по умолчанию выбирается индекс фрагмента, передвигаемого игроком (SelectFragmentHelper.translatedFragmentId).
-   *                       Рассмотрение от других фрагментов нужно при проверке подсоединения для нескольких фрагментов от одной группы
+   *  @param int  newInd - индекс фрагмента, для которого стоит проверить возможность
+   *                       присоединения, по умолчанию выбирается индекс фрагмента,
+   *                       передвигаемого игроком (SelectFragmentHelper.translatedFragmentId).
+   *                       Рассмотрение от других фрагментов нужно при проверке подсоединения
+   *                       для нескольких фрагментов от одной группы
    *
    *  @param bool withConnect - выполнить присоединение после подтверждения соответствующей проверки,
    *                            по умолчанию присоединяет один фрагмент к другому
-   *                            Проверка необходима при подсоединении группы к фрагментам, где сначала узнается вся информация о возможных
-   *                            подсоединениях, а потом полученые данные сортируются по неубыванию, выполняя подсоединение к самому
+   *                            Проверка необходима при подсоединении группы к фрагментам,
+   *                            где сначала узнается вся информация о возможных
+   *                            подсоединениях, а потом полученые данные сортируются
+   *                            по неубыванию, выполняя подсоединение к самому
    *                            близкому из возможных
    *
    *  @return object {
@@ -479,11 +521,13 @@ class Fragment {
     let y = Math.floor(i / imagesX);
 
     /**
-     *  @param int  needX, needY - необходимые конечные координаты пазла в изображении, соответствующие заданному углу
+     *  @param int  needX, needY - необходимые конечные координаты пазла
+     *                             в изображении, соответствующие заданному углу
      *
      *  @param float range - расстояние до заданного угла
      *
-     *  @param int newX, newY - место, куда необходимо перенести пазл при выполнении всех условий
+     *  @param int newX, newY - место, куда необходимо перенести пазл при
+     *                          выполнении всех условий
      *
      */
     function connectToCorner(needX, needY, range, newX, newY) {
@@ -531,7 +575,7 @@ class Fragment {
     function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
       if (
         getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other)) &&
-        !other.onBottomPanel && (other.group != null && !other.group.onMenu || !other.onMenu)
+        !other.onBottomPanel && ((other.group != null && !other.group.onMenu) || (other.group == null && !other.onMenu))
       ) {
         // работает только на объекты, отсутствующие в группе, панели и меню
         connectArray.push({
@@ -622,7 +666,6 @@ class Fragment {
       near.isConnecting = true;
     }
 
-
     let oldX = this.x;
     let oldY = this.y;
     let currentTact = 0;
@@ -663,10 +706,11 @@ class Fragment {
    *
    * @param double - 4 длины пазлины, понятные из их названий
    *
-   * @param bool back - повторяет анимацию задонаперед при истинности
+   * @param back - стоит ли повторять анимацию задонаперед при истинности
    *
+   * @param append_cursor - стоит ли отталкиваться от местоположения курсора
    */
-  smoothResize(old_width, old_height, new_width, new_height, back = false) {
+  smoothResize(old_width, old_height, new_width, new_height, back = false, append_cursor=false) {
     let this_frg = (this.group == null) ? this : this.group;
     this_frg.resizing = true;
     let currentTact = 0;
@@ -678,25 +722,47 @@ class Fragment {
 
     let this_fr = this;
 
+    // для передачи в setMenuD, константные аргументы
+    // следует передать, т.к. могут быть изменены в smoothMove
+    // вызванной при истинности append_cursor
+    let x = this_fr.x;
+    let y = this_fr.y;
+    let mx = this_frg.mainFragment.x;
+    let my = this_frg.mainFragment.y;
+    console.log(x, y, mx, my);
+
+    if(append_cursor) {
+      // высчитывает на сколько стоит сместить объект, чтобы он якобы масштабировался
+      // относительно курсора
+      var b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
+      var b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
+      // console.log(b_x, b_y);
+      this_fr.smoothMove(this_fr.x+b_x, this_fr.y+b_y);
+      // setTimeout(this_fr.smoothMove, 0, this_fr.x+b_x, this_fr.y+b_y);
+      // это рекомендуемая строка, лучше обрабатывать в другом потоке дабы не было
+      // задержки, но это либо некрасиво в отдельной функции всё совместить
+      // либо как в данном случае this является window, это не фиксится
+    }
     // рекурсивная функция вызываемая с задержкой в самой себе
     function resize() {
       current_width += dX;
       current_height += dY;
-      this_fr.setMenuD(this_fr, current_width, current_height);
+      this_fr.setMenuD(this_fr, current_width, current_height, x, y, mx, my);
 
       if (currentTact < Fragment.tact - 1) {
         setTimeout(resize, Fragment.frame_time);
         currentTact++;
       } else {
-        this_fr.setMenuD(this_fr, new_width, new_height);
+        this_fr.setMenuD(this_fr, new_width, new_height, x, y, mx, my);
         if (back) {
           // повторная анимация, возвращающая всё обратно
-          this_fr.smoothResize(new_width, new_height, old_width, old_height);
+          this_fr.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
         } else {
           this_frg.resizing = false;
         }
       }
     }
+
     resize();
   }
 
@@ -712,13 +778,13 @@ class Fragment {
     if(charact == -1) {
       this.smoothResize(
         this.current_width, this.current_height,
-        this.current_width * 0.66, this.current_height * 0.66,
+        this.current_width * 0.95, this.current_height * 0.95,
         back
       );
     }
     else {
       this.smoothResize(
-        this.current_width * 0.66, this.current_height * 0.66,
+        this.current_width * 0.95, this.current_height * 0.95,
         this.current_width, this.current_height,
         back
       );

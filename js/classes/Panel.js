@@ -4,7 +4,7 @@
 class Panel extends Component {
   constructor(imagesCount, cnv) {
     super();
-    this.borderColor = "blue";
+    // this.borderColor = "blue";
 
     this.width = 900;
     this.height = 100;
@@ -23,7 +23,7 @@ class Panel extends Component {
     this.lists = null; // количество листов
     this.list = 1; // текущий лист
     this.buttonWidth = 80;
-    this.marginTop = 30;
+    this.marginTop = 120;
 
     this.place = new PanelPlace();
     this.place.height = this.height;
@@ -89,7 +89,6 @@ class Panel extends Component {
 
   draw(context) {
     super.draw(context);
-    // this.place.draw(context);
     for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].draw(context);
     }
@@ -115,7 +114,7 @@ class Panel extends Component {
       if (!fr.onBottomPanel) {
         // изобразить маску, если объект не на панели
         context.beginPath();
-        context.fillStyle = "rgba(255,255,255,0.5)";
+        context.fillStyle = "#f0f0f099";
         context.rect(
           this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
             i % this.fragmentsCount),

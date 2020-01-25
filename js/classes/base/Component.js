@@ -1,6 +1,7 @@
 class Component {
   constructor() {
-    this.borderColor = null;
+    this.borderColor = "#4e4e4e";
+    this.fillColor = "#f0f0f0"
 
     this.width = null;
     this.height = null;
@@ -31,5 +32,7 @@ class Component {
 
     context.strokeStyle = this.borderColor;
     context.stroke();
+    context.fillStyle = this.fillColor;
+    context.fill();
   }
 }

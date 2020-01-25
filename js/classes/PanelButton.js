@@ -21,7 +21,7 @@ class PanelButton {
       canvas.panel.buttonWidth,
       canvas.panel.height
     );
-    context.strokeStyle = "blue";
+    context.strokeStyle = "#4e4e4e";
     context.stroke();
   }
 

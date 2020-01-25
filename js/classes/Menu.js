@@ -3,7 +3,7 @@
 class Menu extends Component {
   constructor(type, cnv) {
     super();
-    this.borderColor = "red";
+    // this.borderColor = "red";
     // при создании ставятся значения по умолчанию. Следует создать пост-конструктор
 
     // type = 1 или type = -1 для левого/правого меню

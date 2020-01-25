@@ -6,6 +6,16 @@ function drawAll(canvas, context) {
     canvas.canvas.width,
     canvas.canvas.height
   );
+  context.beginPath();
+  context.rect(
+    0,
+    0,
+    canvas.canvas.width,
+    canvas.canvas.height
+  );
+  context.fillStyle = "#4e4e4e";
+  context.fill();
+  canvas.draw(context);
   canvas.panel.drawFragments(context);
   var lastSeenObject = FragmentList.firstVisualObject;
   do {
@@ -13,8 +23,7 @@ function drawAll(canvas, context) {
     lastSeenObject = lastSeenObject.next;
   } while (lastSeenObject != null)
 
-  canvas.drawBlank(context);
-  canvas.draw(context);
+  // canvas.drawBlank(context);
 }
 
 function initializeFragmentList(arr) {
@@ -28,8 +37,8 @@ function initializeFragmentList(arr) {
     arr.push(
       new Fragment(
         i,
-        DIRECTORY + (i + 1) + '.png',
-        DIRECTORY + (i + 1) + '_.png',
+        DIRECTORY + "puzzle/" + (i + 1) + '.png',
+        DIRECTORY + "puzzle/" + (i + 1) + '_.png',
         100, 100,
         (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null),
         i
@@ -56,6 +65,7 @@ function initializeSizes(fragment, img) {
 
   canvas.field.init();
   canvas.panel.init();
+  canvas.control_panel.init();
 
   canvas.left_menu.init();
   canvas.right_menu.init();
@@ -78,7 +88,7 @@ window.onload = function() {
   canvas.canvas.onmousemove = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      if (canvas.isInZones(loc.x, loc.y)) {
+      // if (canvas.isInZones(loc.x, loc.y)) {
         var newX = loc.x - SelectFragmentHelper.deltaX;
         var newY = loc.y - SelectFragmentHelper.deltaY;
         if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
@@ -90,7 +100,7 @@ window.onload = function() {
             arr[SelectFragmentHelper.translatedFragmentId]
           );
         }
-      }
+      // }
     }
 
     canvas.panel.onmousemove(loc.x, loc.y);
@@ -122,6 +132,7 @@ window.onload = function() {
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
             SelectFragmentHelper.translatedFragmentId = value.ind;
+            console.log(SelectFragmentHelper);
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
             break;
           }

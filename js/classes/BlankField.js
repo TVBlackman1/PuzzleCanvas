@@ -8,12 +8,12 @@ class BlankField extends Component{
     this.firstY = y;
     this.width = width;
     this.height = height;
-    this.borderColor = "rgba(152,152,192)";
+    this.borderColor = "#4e4e4e";
   }
 
   draw(context) {
     super.draw(context);
-    context.fillStyle = BlankField.fillColor;
+    context.fillStyle = "#4e4e4e";
     context.fill();
   }
 }

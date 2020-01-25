@@ -1,7 +1,7 @@
 class Field extends Component {
   constructor() {
     super();
-    this.borderColor = "steelblue"
+    // this.borderColor = "steelblue"
 
     this.all_width = null; // tmp-размеры для вмещения туда поля
     this.all_height = null;
@@ -24,8 +24,9 @@ class Field extends Component {
     this.width = Fragment.widthScale / 5 * 3 * imagesX;
     this.height = Fragment.heightScale / 5 * 3 * imagesY;
 
-    this.firstX = canvas.canvas.width / 2 - this.width / 2; // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
-    this.firstY = 40; // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
+    // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
+    this.firstX = canvas.canvas.width / 2 - this.width / 2;
+    this.firstY = 40;
 
     this.lastX = this.firstX + this.width;
     this.lastY = this.firstY + this.height;
