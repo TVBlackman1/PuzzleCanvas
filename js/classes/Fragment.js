@@ -141,6 +141,13 @@ class Fragment {
           this.current_width,
           this.current_height
         );
+        context.drawImage(
+          this.imgB,
+          selected.mainFragment.x + this.menuDX,
+          selected.mainFragment.y + this.menuDY,
+          this.current_width,
+          this.current_height
+        );
       }
     } else {
       // изобразить силуэт
@@ -255,8 +262,6 @@ class Fragment {
    *
    * @param current_height - текущая высота фрагмента
    *
-   * @param append_cursor - стоит ли отталкиваться от положения курсора
-   *
    *  Далее перечень аргументов, которые следует передать, т.к.
    *  переменная меняется в smoothMove, которая может быть вызвана
    *  при истинности append_cursor из smoothResize
@@ -308,12 +313,12 @@ class Fragment {
    *
    * @param other - группа или фрагмент
    *
-   * @param animate - анимация будет воспроизведена
+   * @param animated - анимация будет воспроизведена
    *
    * @param animationDelay - анимация с задержкой
    *
    */
-  workGroups(selected, other, animate = false, animationDelay = .0) {
+  workGroups(selected, other, animated = false, animationDelay = .0) {
     if (selected.group == null) {
       if (other.group == null) {
         // создание группы
@@ -328,8 +333,9 @@ class Fragment {
         selected.group.listElemGroup = selected.listElem;
         other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись,
                                  // т.к. он уже отрисовывается в группе
-
-        other.setMenuD(other, other.current_width, other.current_height);
+        other.setMenuD(other, other.current_width, other.current_height,
+          other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
+        );
       } else {
         // selected - not group;
         // other - group
@@ -338,7 +344,9 @@ class Fragment {
         selected.group.fragments.add(selected);
         selected.listElem.remove();
 
-        selected.setMenuD(selected, selected.current_width, selected.current_height);
+        selected.setMenuD(selected, selected.current_width, selected.current_height,
+          selected.x, selected.y, selected.group.mainFragment.x, selected.group.mainFragment.y
+        );
 
       }
     } else {
@@ -349,14 +357,16 @@ class Fragment {
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на чужую группу
         other.listElem.remove();
 
-        other.setMenuD(other, other.current_width, other.current_height);
+        other.setMenuD(other, other.current_width, other.current_height,
+          other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
+        );
 
       } else {
         selected.group.listElemGroup.remove();
         selected.group.changeGroup(other.group); //setMenuD внутри
       }
     }
-    if (animate) {
+    if (animated) {
       setTimeout(selected.group.resizeSelect, animationDelay, selected.group, true);
     }
 
@@ -685,7 +695,7 @@ class Fragment {
         this_fr.x = newX;
         this_fr.y = newY;
         if (connectingFragment != null) {
-          connectingFragment.setMenuD(connectingFragment, Fragment.widthScale, Fragment.heightScale);
+          // connectingFragment.setMenuD(connectingFragment, Fragment.widthScale, Fragment.heightScale);
           if (this_fr.group == null || shouldWorkGroups) // для работы один раз,
                                                          // чтобы не выполнялось для каждого
                                                          // элемента в группе
@@ -729,19 +739,14 @@ class Fragment {
     let y = this_fr.y;
     let mx = this_frg.mainFragment.x;
     let my = this_frg.mainFragment.y;
-    console.log(x, y, mx, my);
 
     if(append_cursor) {
       // высчитывает на сколько стоит сместить объект, чтобы он якобы масштабировался
       // относительно курсора
+      // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
       var b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
       var b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
-      // console.log(b_x, b_y);
       this_fr.smoothMove(this_fr.x+b_x, this_fr.y+b_y);
-      // setTimeout(this_fr.smoothMove, 0, this_fr.x+b_x, this_fr.y+b_y);
-      // это рекомендуемая строка, лучше обрабатывать в другом потоке дабы не было
-      // задержки, но это либо некрасиво в отдельной функции всё совместить
-      // либо как в данном случае this является window, это не фиксится
     }
     // рекурсивная функция вызываемая с задержкой в самой себе
     function resize() {

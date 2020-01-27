@@ -74,7 +74,10 @@ class FragmentGroup {
     this.fragments.forEach(function(fragment, ind, arr) {
       fragment.group = newGroup;
       newGroup.fragments.add(fragment);
-      fragment.setMenuD(fragment, fragment.current_width, fragment.current_height);
+      fragment.setMenuD(fragment, fragment.current_width, fragment.current_height,
+        fragment.x, fragment.y, fragment.group.mainFragment.x,
+        fragment.group.mainFragment.y
+      );
     });
   }
 
@@ -139,9 +142,20 @@ class FragmentGroup {
    *
    */
   smoothResize(old_x, old_y, new_x, new_y, back=false, append_cursor=false) {
+    // append_cursor для группы обрабатывается отдельной
+    // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
+    // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
+    // изображение сместится, баг
     this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.smoothResize(old_x, old_y, new_x, new_y, back, append_cursor);
+      fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
     });
+    if(append_cursor) {
+      this.fragments.forEach(function(fragment, ind, arr) {
+        var b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
+        var b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+        fragment.smoothMove(fragment.x+b_x, fragment.y+b_y);
+      });
+    }
   }
 
   /**

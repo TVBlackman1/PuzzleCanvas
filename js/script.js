@@ -13,7 +13,7 @@ function drawAll(canvas, context) {
     canvas.canvas.width,
     canvas.canvas.height
   );
-  context.fillStyle = "#4e4e4e";
+  context.fillStyle = "#3b3b3b";
   context.fill();
   canvas.draw(context);
   canvas.panel.drawFragments(context);
@@ -88,7 +88,6 @@ window.onload = function() {
   canvas.canvas.onmousemove = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      // if (canvas.isInZones(loc.x, loc.y)) {
         var newX = loc.x - SelectFragmentHelper.deltaX;
         var newY = loc.y - SelectFragmentHelper.deltaY;
         if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
