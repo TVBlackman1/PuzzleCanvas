@@ -17,9 +17,14 @@ class ControlPanel extends Component {
     this.paddingTop = 10;
     this.space = 52;
 
-    for (var i = 0; i < ControlPanel.buttonsNames.length; i++) {
-      this.buttons[i] = new Button(ControlPanel.buttonsNames[i]);
-    }
+    this.buttons.length = ControlPanel.buttonsNames.length;
+    this.buttons[0] = new ButtonDelete(ControlPanel.buttonsNames[0]);
+    this.buttons[1] = new ButtonDeleteAll(ControlPanel.buttonsNames[1]);
+    this.buttons[2] = new ButtonBack(ControlPanel.buttonsNames[2]);
+    this.buttons[3] = new ButtonPlay(ControlPanel.buttonsNames[3]);
+    this.buttons[4] = new ButtonAddFriend(ControlPanel.buttonsNames[4]);
+    this.buttons[5] = new ButtonMute(ControlPanel.buttonsNames[5]);
+
     this.timer = new Timer();
   }
 
@@ -50,7 +55,6 @@ class ControlPanel extends Component {
 
   isHadPoint(x, y) {
     if(super.isHadPoint(x, y)) {
-      console.log("1");
       for (var i = 0; i < ControlPanel.buttonsNames.length; i++) {
         if(this.buttons[i].isHadPoint(x, y)) {
           this.buttons[i].func();

@@ -108,7 +108,6 @@ window.onload = function() {
             ranges = value.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
-            console.log("script:", ranges.x, ranges.y);
             SelectFragmentHelper.translatedFragmentId = value.ind;
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
             break;
@@ -124,7 +123,6 @@ window.onload = function() {
             ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
-            console.log("script:", ranges.x, ranges.y);
             SelectFragmentHelper.translatedFragmentId = value.mainFragment.ind;
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
             break;
@@ -158,10 +156,13 @@ window.onload = function() {
   };
 
   canvas.canvas.onmouseup = function(e) {
+    var loc = canvas.getCoords(e.clientX, e.clientY);
+    if(canvas.control_panel.isHadPoint(loc.x, loc.y)) {
+      return;
+    }
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       canvas.onMenuZone() // проверка на вхождение в зону меню + изменение состояния объектов
 
-      var loc = canvas.getCoords(e.clientX, e.clientY);
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
 
       if (selectedFragment.group != null) {

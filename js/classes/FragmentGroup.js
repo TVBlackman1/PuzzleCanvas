@@ -13,7 +13,7 @@ class FragmentGroup {
     this.onMenuLast = false; // нужно при editMenuCoords, проверьте сами, мне лень
 
     /*
-     * Первые / последние координаты по осям X / Y
+     * Первые и последние координаты по осям X и Y
      * Для ограничения перемещения, высчитывается быстро
      */
     this.firstX = -1;
@@ -167,12 +167,8 @@ class FragmentGroup {
       this.fragments.forEach(function(fragment, ind, arr) {
         var b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
         var b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-        // console.log(b_x, b_y);
         fragment.smoothMove(fragment.x + b_x, fragment.y + b_y);
       });
-      console.log(SelectFragmentHelper.translatedFragmentId,
-        SelectFragmentHelper.deltaX, SelectFragmentHelper.deltaY);
-      console.log("------------------");
     }
   }
 

@@ -293,10 +293,6 @@ class Fragment {
   // в координатах, обеспечивая тем самым отсутствие рывков
   rangeToStartImage(x, y) {
     let selected = (this.group != null) ? this.group : this;
-    // console.log(
-    //   x - selected.mainFragment.x - this.menuDX,
-    //   y - selected.mainFragment.y - this.menuDY
-    // );
     return {
       x: x - selected.mainFragment.x - this.menuDX,
       y: y - selected.mainFragment.y - this.menuDY

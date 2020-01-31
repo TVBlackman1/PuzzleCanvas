@@ -4,9 +4,7 @@ class Button extends Component {
   static width = 40;
   static height = 40;
 
-  static function_delete() {
-  }
-  constructor(name, x, y) {
+  constructor(name) {
     super();
     this.name = name;
     this.fillColor = "#fff";
