@@ -13,7 +13,7 @@ function drawAll(canvas, context) {
     canvas.canvas.width,
     canvas.canvas.height
   );
-  context.fillStyle = "#3b3b3b";
+  context.fillStyle = "#373737";
   context.fill();
   canvas.draw(context);
   canvas.panel.drawFragments(context);
@@ -70,7 +70,7 @@ function initializeSizes(fragment, img) {
   canvas.left_menu.init();
   canvas.right_menu.init();
 
-  canvas.createBlankZones();
+  // canvas.createBlankZones();
 
   for(i = 0; i < countImages; i++) {
     arr[i].current_width = Fragment.widthScale;
@@ -84,28 +84,6 @@ window.onload = function() {
   canvas = new Canvas("canvas-puzzle", countImages);
   canvas.initElements();
   initializeFragmentList(arr);
-
-  canvas.canvas.onmousemove = function(e) {
-    var loc = canvas.getCoords(e.clientX, e.clientY);
-    if (SelectFragmentHelper.translatedFragmentId >= 0) {
-        var newX = loc.x - SelectFragmentHelper.deltaX;
-        var newY = loc.y - SelectFragmentHelper.deltaY;
-        if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
-          arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
-
-        } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
-          arr[SelectFragmentHelper.translatedFragmentId].group.move(
-            newX, newY,
-            arr[SelectFragmentHelper.translatedFragmentId]
-          );
-        }
-      // }
-    }
-
-    canvas.panel.onmousemove(loc.x, loc.y);
-    canvas.left_menu.onmousemove(loc.x, loc.y);
-    canvas.right_menu.onmousemove(loc.x, loc.y);
-  };
 
   canvas.canvas.onmousedown = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
@@ -130,8 +108,8 @@ window.onload = function() {
             ranges = value.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
+            console.log("script:", ranges.x, ranges.y);
             SelectFragmentHelper.translatedFragmentId = value.ind;
-            console.log(SelectFragmentHelper);
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
             break;
           }
@@ -140,10 +118,14 @@ window.onload = function() {
         if (objInCoords > -1) {
           if (!value.smoothing && !value.isConnecting && !value.resizing) {
             // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-            ranges = arr[objInCoords].rangeToStartImage(loc.x, loc.y);
+            // расчитывает расстояние от mainFragment группы, а потому
+            // delta значения могут быть очень большими или даже отрицательными
+            // взятым фрагментом в этом случае считается mainFragment группы
+            ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
-            SelectFragmentHelper.translatedFragmentId = objInCoords;
+            console.log("script:", ranges.x, ranges.y);
+            SelectFragmentHelper.translatedFragmentId = value.mainFragment.ind;
             lastSeenObject.replaceToTop(); // отображать поверх других объектов
             break;
           }
@@ -153,6 +135,27 @@ window.onload = function() {
     } while (lastSeenObject != null)
   }
 
+  canvas.canvas.onmousemove = function(e) {
+    var loc = canvas.getCoords(e.clientX, e.clientY);
+    if (SelectFragmentHelper.translatedFragmentId >= 0) {
+        var newX = loc.x - SelectFragmentHelper.deltaX;
+        var newY = loc.y - SelectFragmentHelper.deltaY;
+        if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
+          arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
+
+        } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+          arr[SelectFragmentHelper.translatedFragmentId].group.move(
+            newX, newY,
+            arr[SelectFragmentHelper.translatedFragmentId]
+          );
+        }
+      // }
+    }
+
+    canvas.panel.onmousemove(loc.x, loc.y);
+    canvas.left_menu.onmousemove(loc.x, loc.y);
+    canvas.right_menu.onmousemove(loc.x, loc.y);
+  };
 
   canvas.canvas.onmouseup = function(e) {
     if (SelectFragmentHelper.translatedFragmentId >= 0) {

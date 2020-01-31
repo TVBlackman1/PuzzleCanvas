@@ -9,8 +9,8 @@ class Button extends Component {
   constructor(name, x, y) {
     super();
     this.name = name;
-    this.fillColor = "#000000";
-    this.src = DIRECTORY + "icons/" + "icon-"+ this.name + ".png";
+    this.fillColor = "#fff";
+    this.src = DIRECTORY + "icons/" + "icon-"+ this.name + "4.png";
     this.width = 40;
     this.height = 40;
     this.img = new Image();

@@ -292,9 +292,14 @@ class Fragment {
   // Левым верхним углом к положению курсора, а так к тому положению прибавляется разница
   // в координатах, обеспечивая тем самым отсутствие рывков
   rangeToStartImage(x, y) {
+    let selected = (this.group != null) ? this.group : this;
+    // console.log(
+    //   x - selected.mainFragment.x - this.menuDX,
+    //   y - selected.mainFragment.y - this.menuDY
+    // );
     return {
-      x: x - this.x,
-      y: y - this.y
+      x: x - selected.mainFragment.x - this.menuDX,
+      y: y - selected.mainFragment.y - this.menuDY
     };
   }
 
@@ -515,7 +520,7 @@ class Fragment {
       i = newInd;
     }
 
-    if (arr[i].onMenu) {
+    if (arr[i].onMenu || (arr[i].group != null && arr[i].group.onMenu)) {
       return;
     }
 

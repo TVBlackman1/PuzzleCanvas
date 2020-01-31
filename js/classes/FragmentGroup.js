@@ -13,9 +13,9 @@ class FragmentGroup {
     this.onMenuLast = false; // нужно при editMenuCoords, проверьте сами, мне лень
 
     /*
-    * Первые / последние координаты по осям X / Y
-    * Для ограничения перемещения, высчитывается быстро
-    */
+     * Первые / последние координаты по осям X / Y
+     * Для ограничения перемещения, высчитывается быстро
+     */
     this.firstX = -1;
     this.lastX = -1;
     this.firstY = -1;
@@ -35,6 +35,17 @@ class FragmentGroup {
     return ind_ans;
   }
 
+  /**
+   * Перемещает все фрагменты зависимо от того, куда переместился один из них
+   *
+   * @param x - координата по оси x выбранного фрагмента
+   *
+   * @param y - координата по оси y выбранного фрагмента
+   *
+   * @param selected - выбранный фрагмент, который перемещается.
+   *                   относительно него вычисляются координаты других фрагментов
+   *                   чтобы изображение не ломалось
+   */
   move(x, y, selected) {
     this.fragments.forEach(function(fragment, ind, arr) {
       if (fragment !== selected) {
@@ -88,9 +99,10 @@ class FragmentGroup {
 
       // для каждого из фрагментов смотрим, можем ли мы присоединить его к другим фрагментам вне группы
       var res = fragment.connectTo(fragment.ind, false); // информация о возможности присоединения БЕЗ самого присоединения
+      // res - null при объекте в меню или наведенном на меню => не стоит присоединяться
 
       // сортировка по расстоянию, если есть возможность присоединить. Выбор минимального из расстояний
-      if (res.res) {
+      if (res && res.res) {
         if (minRange == -1) {
           minRange = res.range;
           minFragment = fragment;
@@ -141,32 +153,38 @@ class FragmentGroup {
    * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
    *
    */
-  smoothResize(old_x, old_y, new_x, new_y, back=false, append_cursor=false) {
+  smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
     // append_cursor для группы обрабатывается отдельной
     // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
     // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
     // изображение сместится, баг
+    // Друггими словами, сначала требуется изменить размер всех пазлов,
+    // а потом переместить их. Это происходит быстро и без видимых проблем
     this.fragments.forEach(function(fragment, ind, arr) {
       fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
     });
-    if(append_cursor) {
+    if (append_cursor) {
       this.fragments.forEach(function(fragment, ind, arr) {
         var b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
         var b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-        fragment.smoothMove(fragment.x+b_x, fragment.y+b_y);
+        // console.log(b_x, b_y);
+        fragment.smoothMove(fragment.x + b_x, fragment.y + b_y);
       });
+      console.log(SelectFragmentHelper.translatedFragmentId,
+        SelectFragmentHelper.deltaX, SelectFragmentHelper.deltaY);
+      console.log("------------------");
     }
   }
 
   /**
-  * Выделяет группу изменением размера
-  *
-  * @param back - bool, стоит ли возвращать анимацию назад
-  *
-  * @param charact - увеличить или уменьшить (-1, 1)
-  *
-  */
-  resizeSelect(this_gr = this, back, charact=-1) {
+   * Выделяет группу изменением размера
+   *
+   * @param back - bool, стоит ли возвращать анимацию назад
+   *
+   * @param charact - увеличить или уменьшить (-1, 1)
+   *
+   */
+  resizeSelect(this_gr = this, back, charact = -1) {
     this_gr.fragments.forEach(function(fragment, ind, arr) {
       fragment.resizeSelect(back, charact);
     });
