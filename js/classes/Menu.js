@@ -9,8 +9,9 @@ class Menu extends Component {
     // type = 1 или type = -1 для левого/правого меню
     this.type = type;
     this.place = new MenuPlace();
-    this.width = 400;
+    this.width = 430;
     this.placeCoef = 1.18;
+    this.margin = 15;
 
 
   }
@@ -23,12 +24,12 @@ class Menu extends Component {
 
     this.place.width = this.width * this.placeCoef;
     if (this.type == 1) {
-      this.firstX = this.center + (canvas.field.width / 2) + 20;
+      this.firstX = this.center + (canvas.field.width / 2) + this.margin;
       this.lastX = this.firstX + this.width;
       this.place.firstX = this.firstX - (this.placeCoef - 1) * this.width;
 
     } else if (this.type == -1) {
-      this.lastX = this.center - (canvas.field.width / 2) - 20;
+      this.lastX = this.center - (canvas.field.width / 2) - this.margin;
       this.firstX = this.lastX - this.width;
       this.place.firstX = this.firstX
     }
@@ -79,7 +80,6 @@ class Menu extends Component {
     } else {
       this.isPlace = false;
     }
-    // console.log(this.isPlace);
   }
 
   draw(context) {

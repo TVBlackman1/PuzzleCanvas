@@ -48,6 +48,7 @@ class Fragment {
     this.img.src = this.src;
     this.imgB.src = this.srcB;
     this.ind = ind;
+    this.connectedToCorner = false;
     this.onBottomPanel = true;
     this.onMenu = false;
     this.onMenuLast = false; // проверка на нахождение в меню, выполненная ранее
@@ -190,8 +191,18 @@ class Fragment {
     }
   }
 
-  // Проверяет, есть ли в границах изображения заданная точка или нет
-  // Нужно для проверки наведения курсора мыши на изображение
+  /**
+   * Проверяет, есть ли точка с координатами x, y внутри фрагмента
+   * универсально работает как для фрагмента, находящегося на главном поле
+   * сборки, так и для фрагмента, находящегося внутри меню или на нижней панели.
+   * Работает только для видимой части пазла
+   *
+   * @param x - координата по оси X
+   *
+   * @param y - координата по оси Y
+   *
+   * @return bool - лежит ли точка внутри видимой части фрагмента
+   */
   isHadPoint(x, y) {
     if (this.onBottomPanel) {
       return (
@@ -199,10 +210,10 @@ class Fragment {
         this.bottomPanelInd < canvas.panel.fragmentsCount * canvas.panel.list &&
         x >= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
           (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
-          this.bottomPanelInd % canvas.panel.fragmentsCount)) &&
+            this.bottomPanelInd % canvas.panel.fragmentsCount)) &&
         x <= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
           (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
-          this.bottomPanelInd % canvas.panel.fragmentsCount) + Fragment.widthPanel) &&
+            this.bottomPanelInd % canvas.panel.fragmentsCount) + Fragment.widthPanel) &&
         y >= canvas.panel.firstY + canvas.panel.paddingY &&
         y <= canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel
       )
@@ -302,7 +313,7 @@ class Fragment {
   moveToPanel() {
     var x = (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
       (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
-      this.bottomPanelInd % canvas.panel.fragmentsCount)) + Fragment.widthPanel / 2 - Fragment.widthScale / 2;
+        this.bottomPanelInd % canvas.panel.fragmentsCount)) + Fragment.widthPanel / 2 - Fragment.widthScale / 2;
     var y = canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel / 2 - Fragment.heightScale / 2;
     this.move(x, y);
   }
@@ -329,11 +340,39 @@ class Fragment {
         selected.group.fragments.add(other);
         selected.group.mainFragment = this;
 
+        // если другой фрагмент присоединен к углу, то вся группа в итоге будет
+        // к нему присоединена
+        selected.group.connectedToCorner = other.connectedToCorner;
+        /*
+         * Дальнейшие элементы oneX, oneY, twoX, twoY
+         * являются координатами данных элементов в цельном изображении.
+         * Они сортируются для получения максимальных/минимальных крайних
+         * элементов группы.
+         */
+        let oneX = selected.ind % imagesX;
+        let twoX = other.ind % imagesX;
+        let oneY = Math.floor(selected.ind / imagesX);
+        let twoY = Math.floor(other.ind / imagesX);
+        if (oneX < twoX) {
+          selected.group.leftFragmentInd = oneX;
+          selected.group.rightFragmentInd = twoX;
+        } else {
+          selected.group.leftFragmentInd = twoX;
+          selected.group.rightFragmentInd = oneX;
+        }
+        if (oneY < twoY) {
+          selected.group.bottomFragmentInd = oneY;
+          selected.group.topFragmentInd = twoY;
+        } else {
+          selected.group.bottomFragmentInd = twoY;
+          selected.group.topFragmentInd = oneY;
+        }
+
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на группу
         selected.listElem.src = null; // убрать путь до картинки, а то некрасиво
         selected.group.listElemGroup = selected.listElem;
         other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись,
-                                 // т.к. он уже отрисовывается в группе
+        // т.к. он уже отрисовывается в группе
         other.setMenuD(other, other.current_width, other.current_height,
           other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
         );
@@ -345,6 +384,26 @@ class Fragment {
         selected.group.fragments.add(selected);
         selected.listElem.remove();
 
+        /*
+         * Дальнейшие элементы oneX, oneY
+         * являются координатами selected фрагмента в цельном изображении.
+         * В ходе следующей части кода меняются крайние индексы для группы
+         */
+        let oneX = selected.ind % imagesX;
+        let oneY = Math.floor(selected.ind / imagesX);
+        if (oneX > selected.group.rightFragmentInd) {
+          selected.group.rightFragmentInd = oneX;
+        }
+        if (oneX < selected.group.leftFragmentInd) {
+          selected.group.leftFragmentInd = oneX;
+        }
+        if (oneY > selected.group.topFragmentInd) {
+          selected.group.topFragmentInd = oneY;
+        }
+        if (oneY < selected.group.bottomFragmentInd) {
+          selected.group.bottomFragmentInd = oneY;
+        }
+
         selected.setMenuD(selected, selected.current_width, selected.current_height,
           selected.x, selected.y, selected.group.mainFragment.x, selected.group.mainFragment.y
         );
@@ -354,20 +413,59 @@ class Fragment {
       if (other.group == null) {
         other.group = selected.group;
         selected.group.fragments.add(other);
+        selected.group.connectedToCorner = other.connectedToCorner;
+        // если другой фрагмент присоединен к углу, то вся группа в итоге
+        // будет присоединена к этому углу
 
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на чужую группу
         other.listElem.remove();
+
+        /*
+         * Дальнейшие элементы oneX, oneY
+         * являются координатами selected фрагмента в цельном изображении.
+         * В ходе следующей части кода меняются крайние индексы для группы
+         */
+        let twoX = other.ind % imagesX;
+        let twoY = Math.floor(other.ind / imagesX);
+        if (twoX > selected.group.rightFragmentInd) {
+          selected.group.rightFragmentInd = twoX;
+        }
+        if (twoX < selected.group.leftFragmentInd) {
+          selected.group.leftFragmentInd = twoX;
+        }
+        if (twoY > selected.group.topFragmentInd) {
+          selected.group.topFragmentInd = twoY;
+        }
+        if (twoY < selected.group.bottomFragmentInd) {
+          selected.group.bottomFragmentInd = twoY;
+        }
 
         other.setMenuD(other, other.current_width, other.current_height,
           other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
         );
 
       } else {
+        // в ходе кода группа selected удаляется
+        // остается группа other
+        if(other.group.rightFragmentInd < selected.group.rightFragmentInd) {
+          other.group.rightFragmentInd = selected.group.rightFragmentInd;
+        }
+        if(other.group.leftFragmentInd > selected.group.leftFragmentInd) {
+          other.group.leftFragmentInd = selected.group.leftFragmentInd;
+        }
+        if(other.group.topFragmentInd < selected.group.topFragmentInd) {
+          other.group.topFragmentInd = selected.group.topFragmentInd;
+        }
+        if(other.group.bottomFragmentInd > selected.group.bottomFragmentInd) {
+          other.group.bottomFragmentInd = selected.group.bottomFragmentInd;
+        }
         selected.group.listElemGroup.remove();
         selected.group.changeGroup(other.group); //setMenuD внутри
+        // т.к. элементы становятся членами другой группы, то нет необходимости
+        // заботиться об connectedToCorner. Он всегда определяется other.
       }
     }
-    if (animated) {
+    if (animated && !other.group.connectedToCorner) {
       setTimeout(selected.group.resizeSelect, animationDelay, selected.group, true);
     }
 
@@ -567,7 +665,7 @@ class Fragment {
 
     /**
      * Предназначено для заполнения массива ConnectArray,
-     * заполняет его объетами, хранящими расстояние до фрагмента
+     * заполняет его объектами, хранящими расстояние до фрагмента
      * а так же числа, необходимые добавить к координатам фрагмента
      * для нормального присоединения одного к другому
      *
@@ -603,7 +701,7 @@ class Fragment {
       connectToFragment(topFragment, topFragment.canConnectBottomFragment(),
         topFragment.leftBot(),
         -Fragment.third_x, -Fragment.third_y);
-      }
+    }
     if (leftFragment != null)
       connectToFragment(leftFragment, leftFragment.canConnectRightFragment(),
         leftFragment.rightTop(),
@@ -629,6 +727,12 @@ class Fragment {
         if (near.fr == null) {
           // идет присоединение к углу, а не к фрагменту
           this.smoothmoveOneOrGroup(this, near.x, near.y);
+          if (this.group != null) {
+            this.group.connectedToCorner = true;
+          } else {
+            this.connectedToCorner = true;
+          }
+
         } else {
           // подсоединение к фрагменту
           let near_frg = (near.fr.group == null) ? near.fr : near.fr.group;
@@ -666,7 +770,7 @@ class Fragment {
    *                                 Срабатывает у одного фрагмента из всей
    *                                 группы, нет повторений
    */
-  smoothMove(newX, newY, connectingFragment=null, shouldWorkGroups=false) {
+  smoothMove(newX, newY, connectingFragment = null, shouldWorkGroups = false) {
     let near = null;
     let this_frg = (this.group == null) ? this : this.group;
     // группа или одиночный фрагмент, к которому идет подключение
@@ -698,8 +802,8 @@ class Fragment {
         if (connectingFragment != null) {
           // connectingFragment.setMenuD(connectingFragment, Fragment.widthScale, Fragment.heightScale);
           if (this_fr.group == null || shouldWorkGroups) // для работы один раз,
-                                                         // чтобы не выполнялось для каждого
-                                                         // элемента в группе
+            // чтобы не выполнялось для каждого
+            // элемента в группе
             this_fr.workGroups(this_fr, connectingFragment, true, 0);
           near.isConnecting = false;
         }
@@ -721,7 +825,7 @@ class Fragment {
    *
    * @param append_cursor - стоит ли отталкиваться от местоположения курсора
    */
-  smoothResize(old_width, old_height, new_width, new_height, back = false, append_cursor=false) {
+  smoothResize(old_width, old_height, new_width, new_height, back = false, append_cursor = false) {
     let this_frg = (this.group == null) ? this : this.group;
     this_frg.resizing = true;
     let currentTact = 0;
@@ -741,13 +845,13 @@ class Fragment {
     let mx = this_frg.mainFragment.x;
     let my = this_frg.mainFragment.y;
 
-    if(append_cursor) {
+    if (append_cursor) {
       // высчитывает на сколько стоит сместить объект, чтобы он якобы масштабировался
       // относительно курсора
       // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
       var b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
       var b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
-      this_fr.smoothMove(this_fr.x+b_x, this_fr.y+b_y);
+      this_fr.smoothMove(this_fr.x + b_x, this_fr.y + b_y);
     }
     // рекурсивная функция вызываемая с задержкой в самой себе
     function resize() {
@@ -773,24 +877,25 @@ class Fragment {
   }
 
   /**
-  * Вызывается из группы resizeSelect(this_gr)
-  *
-  * @param back - bool, стоит ли возвращать анимацию назад
-  *
-  * @param charact - увеличить или уменьшить (-1, 1)
-  *
-  */
-  resizeSelect(back, charact=-1) {
-    if(charact == -1) {
+   * Вызывается из группы resizeSelect(this_gr)
+   *
+   * @param back - bool, стоит ли возвращать анимацию назад
+   *
+   * @param charact - увеличить или уменьшить (-1, 1)
+   *
+   * @param scale - double, во сколько раз стоит уменьшить/увеличить изображение
+   *
+   */
+  resizeSelect(back, charact = -1, scale = .95) {
+    if (charact == -1) {
       this.smoothResize(
         this.current_width, this.current_height,
-        this.current_width * 0.95, this.current_height * 0.95,
+        this.current_width * scale, this.current_height * scale,
         back
       );
-    }
-    else {
+    } else {
       this.smoothResize(
-        this.current_width * 0.95, this.current_height * 0.95,
+        this.current_width * scale, this.current_height * scale,
         this.current_width, this.current_height,
         back
       );

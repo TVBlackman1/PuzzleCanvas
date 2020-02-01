@@ -11,7 +11,7 @@ class ControlPanel extends Component {
     super();
     this.fillColor = "#796c6c";
     this.width = 900;
-    this.marginTop = 20;
+    this.marginTop = 15;
     this.height = 60;
     this.buttons = [];
     this.paddingTop = 10;

@@ -105,6 +105,7 @@ window.onload = function() {
               value.onBottomPanel = false;
               value.moveToPanel();
             }
+            value.connectedToCorner = false;
             ranges = value.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;
@@ -120,6 +121,7 @@ window.onload = function() {
             // расчитывает расстояние от mainFragment группы, а потому
             // delta значения могут быть очень большими или даже отрицательными
             // взятым фрагментом в этом случае считается mainFragment группы
+            value.connectedToCorner = false;
             ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
             SelectFragmentHelper.deltaX = ranges.x;
             SelectFragmentHelper.deltaY = ranges.y;

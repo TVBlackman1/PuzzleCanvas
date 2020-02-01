@@ -26,7 +26,7 @@ class Field extends Component {
 
     // ИЗМЕНИТЬ ДЛЯ МЕСТОПОЛОЖЕНИЯ ОКНА СБОРКИ
     this.firstX = canvas.canvas.width / 2 - this.width / 2;
-    this.firstY = 40;
+    this.firstY = 25;
 
     this.lastX = this.firstX + this.width;
     this.lastY = this.firstY + this.height;

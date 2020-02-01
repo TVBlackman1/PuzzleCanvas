@@ -5,6 +5,7 @@ class FragmentGroup {
     // В противном случае нужно чёто рассматривать а мне лень
     this.smoothing = false;
     this.resizing = false;
+    this.connectedToCorner = false;
 
     this.listElemGroup = null;
     this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
@@ -13,13 +14,16 @@ class FragmentGroup {
     this.onMenuLast = false; // нужно при editMenuCoords, проверьте сами, мне лень
 
     /*
-     * Первые и последние координаты по осям X и Y
-     * Для ограничения перемещения, высчитывается быстро
+     * Нужны крайние значения
+     * с помощью них можно получить крайние значения по осям X и Y для группы
+     * и ограничить её перемещение по полю, а так же изменяет scale у resizeSelect
+     * для меньшего изменения размера для каждого фрагмента. Т.е. чем больше длина
+     * и высота фрагмента, тем меньше изменение размера
      */
-    this.firstX = -1;
-    this.lastX = -1;
-    this.firstY = -1;
-    this.lastY = -1;
+    this.leftFragmentInd = -1;
+    this.rightFragmentInd = -1;
+    this.topFragmentInd = -1;
+    this.bottomFragmentInd = -1;
   }
 
   isHadPoint(x, y) {
@@ -179,10 +183,16 @@ class FragmentGroup {
    *
    * @param charact - увеличить или уменьшить (-1, 1)
    *
+   * @param scale - double, во сколько раз стоит уменьшить/увеличить изображение
+   *
    */
-  resizeSelect(this_gr = this, back, charact = -1) {
+  resizeSelect(this_gr=this, back=true, charact=-1,scale=0.95) {
+    let scaleForFragment = 1 - (1-scale)/(this_gr.rightFragmentInd - this_gr.leftFragmentInd);
+    // формула для нормального изменения размера всей группы.
+    // Если поставить scale, то при большой длине или высоте изменения размера
+    // в пиксилях будут велики, а в данном случае они будут одинаковы.
     this_gr.fragments.forEach(function(fragment, ind, arr) {
-      fragment.resizeSelect(back, charact);
+      fragment.resizeSelect(back, charact, scaleForFragment);
     });
   }
 }
