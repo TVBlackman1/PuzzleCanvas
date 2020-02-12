@@ -11,46 +11,30 @@ class ControlPanel extends Component {
     super();
     this.fillColor = "#796c6c";
     this.width = 900;
-    this.marginTop = 15;
+    this.marginTop = 20;
     this.height = 60;
     this.buttons = [];
     this.paddingTop = 10;
     this.space = 52;
 
-    this.buttons.length = ControlPanel.buttonsNames.length;
-    this.buttons[0] = new ButtonDelete(ControlPanel.buttonsNames[0]);
-    this.buttons[1] = new ButtonDeleteAll(ControlPanel.buttonsNames[1]);
-    this.buttons[2] = new ButtonBack(ControlPanel.buttonsNames[2]);
-    this.buttons[3] = new ButtonPlay(ControlPanel.buttonsNames[3]);
-    this.buttons[4] = new ButtonAddFriend(ControlPanel.buttonsNames[4]);
-    this.buttons[5] = new ButtonMute(ControlPanel.buttonsNames[5]);
+    this.buttons.length = 3;
+    this.buttons[0] = new ButtonBack();
+    this.buttons[1] = new ButtonPlay();
+    this.buttons[2] = new ButtonDeleteAll();
 
     this.timer = new Timer();
   }
 
   init() {
-    this.firstX = canvas.canvas.width / 2 - this.width / 2; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-    this.firstY = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-    this.timer.init(canvas.canvas.width / 2 - Timer.width / 2, this.firstY + this.paddingTop);
+    this.x = canvas.canvas.width / 2 - this.width / 2; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.y = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.timer.init(canvas.canvas.width / 2 - Timer.width / 2, this.y + this.paddingTop);
 
-    var i = 0;
-    var pos = 1; //  для местоположения, i не обнулится для другого цикла,
-                 //  а pos обнулится, это вся разница
-    this.buttons.length = ControlPanel.buttonsNames.length;
-    for (i = 0; i < Math.floor(ControlPanel.buttonsNames.length / 2); i++) {
+    for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].init(
-        this.timer.firstX - (pos++) * (this.space + Button.width), this.firstY + this.paddingTop
+        this.timer.x - (i+1) * (this.space + Button.width), this.y + this.paddingTop
       );
     }
-    pos = 1; // обещанное обнуление
-    for (; i < ControlPanel.buttonsNames.length; i++) {
-      this.buttons[i].init(
-        this.timer.lastX + (pos++) * (this.space + Button.width) - Button.width, this.firstY + this.paddingTop
-      );
-    }
-    // местоположение определяется от центра, а потому во втором случае в
-    // вычислениях участвует Buttom.width
-
   }
 
   isHadPoint(x, y) {
@@ -68,7 +52,7 @@ class ControlPanel extends Component {
 
   draw(context) {
     super.draw(context);
-    for (var i = 0; i < ControlPanel.buttonsNames.length; i++) {
+    for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].draw(context);
     }
     this.timer.draw(context);

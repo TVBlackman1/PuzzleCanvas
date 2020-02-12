@@ -3,8 +3,11 @@ const imagesX = 4;
 const imagesY = 4;
 const countImages = imagesX * imagesY;
 
-const FIELD_WIDTH = 3 / 5; // Размеры поля
-const FIELD_HEIGHT = 9 / 11; // Местоположение поля в Field.js -> (27, 28) строки
+const FIELD_WIDTH = 10 / 11; // Размеры поля
+const FIELD_HEIGHT = 10 / 11; // Местоположение поля в Field.js -> (27, 28) строки
+
+// const FIELD_WIDTH = 3 / 5; // Размеры поля
+// const FIELD_HEIGHT = 9 / 11; // Местоположение поля в Field.js -> (27, 28) строки
 
 const KEY_showSilhouette = 83; // S
 const KEY_shouldConnect = 32; // SPACE

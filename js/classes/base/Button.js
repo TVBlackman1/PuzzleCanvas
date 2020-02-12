@@ -3,10 +3,14 @@
 class Button extends Component {
   static width = 40;
   static height = 40;
+  static name = null; // название, используемое для идентификации кнопки
+                      // и для пути до исходного изображения
 
-  constructor(name) {
+  constructor() {
     super();
-    this.name = name;
+    this.name = this.constructor.name; // получить название, статично прописанное
+                                       // в классе. Такой подход работает и при
+                                       // работе с производными классами
     this.fillColor = "#fff";
     this.src = DIRECTORY + "icons/" + "icon-"+ this.name + "4.png";
     this.width = 40;

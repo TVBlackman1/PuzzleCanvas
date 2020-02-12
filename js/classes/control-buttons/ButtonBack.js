@@ -1,6 +1,8 @@
 class ButtonBack extends Button {
-  constructor(name) {
-    super(name);
+  static name = "back";
+  
+  constructor() {
+    super();
   }
   func() {
     super.func();

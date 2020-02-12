@@ -5,7 +5,7 @@
 // Шёл третий месяц, а мне до сих пор смешно - Никита
 
 var hello = 4; // - Атаман Кирилл
-class Fragment {
+class Fragment extends Component {
   static SCALE = -1;
   static downloadedImages = 0;
   static width = -1;
@@ -23,11 +23,8 @@ class Fragment {
   static widthWithoutSpacesPanel = -1;
   static heightWithoutSpacesPanel = -1;
 
-  static tact = 21;
-  static frame_time = 1000 / FRAMES / Fragment.tact;
-
-
   constructor(ind, src, srcBorder, x, y, left, top, bottomInd) {
+    super();
     this.src = src; // путь до изображения пазла
     this.srcB = srcBorder; // путь до изображения с границами изображения
     this.x = x;
@@ -172,12 +169,6 @@ class Fragment {
         context.stroke();
       } else if (!this.onBottomPanel) {
         context.beginPath();
-        // context.rect(
-        //   this.x + Fragment.third_x,
-        //   this.y + Fragment.third_y,
-        //   Fragment.widthScale - 2 * Fragment.third_x,
-        //   Fragment.heightScale - 2 * Fragment.third_y
-        // );
         context.rect(
           selected.mainFragment.x + this.menuDX,
           selected.mainFragment.y + this.menuDY,
@@ -208,14 +199,14 @@ class Fragment {
       return (
         canvas.panel.fragmentsCount * (canvas.panel.list - 1) <= this.bottomPanelInd &&
         this.bottomPanelInd < canvas.panel.fragmentsCount * canvas.panel.list &&
-        x >= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
+        x >= (canvas.panel.x + canvas.panel.buttonWidth + canvas.panel.paddingX +
           (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
             this.bottomPanelInd % canvas.panel.fragmentsCount)) &&
-        x <= (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
+        x <= (canvas.panel.x + canvas.panel.buttonWidth + canvas.panel.paddingX +
           (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
             this.bottomPanelInd % canvas.panel.fragmentsCount) + Fragment.widthPanel) &&
-        y >= canvas.panel.firstY + canvas.panel.paddingY &&
-        y <= canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel
+        y >= canvas.panel.y + canvas.panel.paddingY &&
+        y <= canvas.panel.y + canvas.panel.paddingY + Fragment.heightPanel
       )
     }
 
@@ -235,7 +226,6 @@ class Fragment {
       x <= (this.x + Fragment.widthScale - Fragment.third_x) &&
       y >= (this.y + Fragment.third_y) &&
       y <= (this.y + Fragment.heightScale - Fragment.third_y)
-
     )
   }
 
@@ -287,6 +277,7 @@ class Fragment {
    *
    */
   setMenuD(this_fr, current_width, current_height, x, y, mx, my) {
+    super.setSizes(this_fr, current_width, current_height);
     let selected = (this_fr.group != null) ? this_fr.group : this_fr;
     this_fr.menuDX = (
       (x - mx) / Fragment.widthScale * current_width
@@ -294,8 +285,6 @@ class Fragment {
     this_fr.menuDY = (
       (y - my) / Fragment.heightScale * current_height
     );
-    this_fr.current_width = current_width;
-    this_fr.current_height = current_height;
   }
 
   // Расстояниме от курсора мыши до старта изображения в левом верхнем углу в пикселях.
@@ -311,10 +300,10 @@ class Fragment {
   }
 
   moveToPanel() {
-    var x = (canvas.panel.firstX + canvas.panel.buttonWidth + canvas.panel.paddingX +
+    var x = (canvas.panel.x + canvas.panel.buttonWidth + canvas.panel.paddingX +
       (canvas.panel.fragmentSpace + Fragment.widthPanel) * (
         this.bottomPanelInd % canvas.panel.fragmentsCount)) + Fragment.widthPanel / 2 - Fragment.widthScale / 2;
-    var y = canvas.panel.firstY + canvas.panel.paddingY + Fragment.heightPanel / 2 - Fragment.heightScale / 2;
+    var y = canvas.panel.y + canvas.panel.paddingY + Fragment.heightPanel / 2 - Fragment.heightScale / 2;
     this.move(x, y);
   }
 
@@ -447,16 +436,16 @@ class Fragment {
       } else {
         // в ходе кода группа selected удаляется
         // остается группа other
-        if(other.group.rightFragmentInd < selected.group.rightFragmentInd) {
+        if (other.group.rightFragmentInd < selected.group.rightFragmentInd) {
           other.group.rightFragmentInd = selected.group.rightFragmentInd;
         }
-        if(other.group.leftFragmentInd > selected.group.leftFragmentInd) {
+        if (other.group.leftFragmentInd > selected.group.leftFragmentInd) {
           other.group.leftFragmentInd = selected.group.leftFragmentInd;
         }
-        if(other.group.topFragmentInd < selected.group.topFragmentInd) {
+        if (other.group.topFragmentInd < selected.group.topFragmentInd) {
           other.group.topFragmentInd = selected.group.topFragmentInd;
         }
-        if(other.group.bottomFragmentInd > selected.group.bottomFragmentInd) {
+        if (other.group.bottomFragmentInd > selected.group.bottomFragmentInd) {
           other.group.bottomFragmentInd = selected.group.bottomFragmentInd;
         }
         selected.group.listElemGroup.remove();
@@ -649,17 +638,17 @@ class Fragment {
         });
       }
     }
-    connectToCorner(0, 0, this.rangeFromLeftTop(canvas.field.firstX, canvas.field.firstY),
-      canvas.field.firstX - Fragment.third_x,
-      canvas.field.firstY - Fragment.third_y);
-    connectToCorner(imagesX - 1, 0, this.rangeFromRightTop(canvas.field.lastX, canvas.field.firstY),
+    connectToCorner(0, 0, this.rangeFromLeftTop(canvas.field.x, canvas.field.y),
+      canvas.field.x - Fragment.third_x,
+      canvas.field.y - Fragment.third_y);
+    connectToCorner(imagesX - 1, 0, this.rangeFromRightTop(canvas.field.lastX, canvas.field.y),
       canvas.field.lastX + Fragment.third_x - Fragment.widthScale,
-      canvas.field.firstY - Fragment.third_y);
+      canvas.field.y - Fragment.third_y);
     connectToCorner(imagesX - 1, imagesY - 1, this.rangeFromRightBottom(canvas.field.lastX, canvas.field.lastY),
       canvas.field.lastX + Fragment.third_x - Fragment.widthScale,
       canvas.field.lastY + Fragment.third_y - Fragment.heightScale);
-    connectToCorner(0, imagesY - 1, this.rangeFromLeftBottom(canvas.field.firstX, canvas.field.lastY),
-      canvas.field.firstX - Fragment.third_x,
+    connectToCorner(0, imagesY - 1, this.rangeFromLeftBottom(canvas.field.x, canvas.field.lastY),
+      canvas.field.x - Fragment.third_x,
       canvas.field.lastY + Fragment.third_y - Fragment.heightScale);
 
 
@@ -752,11 +741,6 @@ class Fragment {
     };
   }
 
-  move(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
 
   /**
    *  @param int newX - новая координата x
@@ -774,46 +758,30 @@ class Fragment {
     let near = null;
     let this_frg = (this.group == null) ? this : this.group;
     // группа или одиночный фрагмент, к которому идет подключение
-
+    let this_fr = this; // сам фрагмент
     this_frg.smoothing = true;
     if (connectingFragment != null) {
       near = (connectingFragment.group == null) ? connectingFragment : connectingFragment.group;
       near.isConnecting = true;
     }
 
-    let oldX = this.x;
-    let oldY = this.y;
-    let currentTact = 0;
-    let dX = (newX - oldX) / (Fragment.tact);
-    let dY = (newY - oldY) / (Fragment.tact);
-    let this_fr = this; // сам фрагмент (отличие с this_frg)
-
-    // рекурсивная функция вызываемая с задержкой в самой себе
-    function reDraw() {
-      this_fr.x += dX;
-      this_fr.y += dY;
-
-      if (currentTact < Fragment.tact - 1) {
-        setTimeout(reDraw, Fragment.frame_time);
-        currentTact++;
-      } else {
-        this_fr.x = newX;
-        this_fr.y = newY;
-        if (connectingFragment != null) {
-          // connectingFragment.setMenuD(connectingFragment, Fragment.widthScale, Fragment.heightScale);
-          if (this_fr.group == null || shouldWorkGroups) // для работы один раз,
-            // чтобы не выполнялось для каждого
-            // элемента в группе
-            this_fr.workGroups(this_fr, connectingFragment, true, 0);
-          near.isConnecting = false;
-        }
-        this_frg.smoothing = false;
+    super.smoothMove(newX, newY, function() {
+      // при окончании перемещения требуется проверить, стоит ли объединить
+      // фрагменты в единую группу
+      if (connectingFragment != null) {
+        if (this_fr.group == null || shouldWorkGroups) // для работы один раз,
+          // чтобы не выполнялось для каждого
+          // элемента в группе
+          this_fr.workGroups(this_fr, connectingFragment, true, 0);
+        near.isConnecting = false;
       }
-    }
-    reDraw();
+      this_frg.smoothing = false;
+    });
   }
 
   /**
+   * Самописная, хотя и есть одноименная функция в суперклассе
+   *
    * Вызывается из группы или фрагмента в процессе onmouseup
    * Меняет относительные координаты у фрагментов группы для
    * нормального уменьшения / увеличения изображения при добавлении в группу
@@ -829,8 +797,8 @@ class Fragment {
     let this_frg = (this.group == null) ? this : this.group;
     this_frg.resizing = true;
     let currentTact = 0;
-    let dX = (new_width - old_width) / (Fragment.tact);
-    let dY = (new_height - old_height) / (Fragment.tact);
+    let dX = (new_width - old_width) / (Component.tact);
+    let dY = (new_height - old_height) / (Component.tact);
 
     var current_width = old_width;
     var current_height = old_height;
@@ -859,8 +827,8 @@ class Fragment {
       current_height += dY;
       this_fr.setMenuD(this_fr, current_width, current_height, x, y, mx, my);
 
-      if (currentTact < Fragment.tact - 1) {
-        setTimeout(resize, Fragment.frame_time);
+      if (currentTact < Component.tact - 1) {
+        setTimeout(resize, Component.frame_time);
         currentTact++;
       } else {
         this_fr.setMenuD(this_fr, new_width, new_height, x, y, mx, my);

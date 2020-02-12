@@ -1,3 +1,10 @@
+/*
+  Главный файл, управляющий работой канваса
+  Здесь установлены слушатели, а так же глобальные функции отрисовки,
+  скачивания изображений, работы с различными классами и типами данных и
+  инициализация размеров всех компонентов канваса.
+
+*/
 function drawAll(canvas, context) {
   context.lineWidth = "1";
 
@@ -45,7 +52,8 @@ function initializeFragmentList(arr) {
       )
     );
 
-    canvas.panel.fragments[i] = i;
+    canvas.panel.fragments[i] = i; // для заполнения порядка индексов
+                                   // фрагментов у нижней панели
 
     if (FragmentList.lastVisualObject == null) {
       FragmentList.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
@@ -149,7 +157,6 @@ window.onload = function() {
             arr[SelectFragmentHelper.translatedFragmentId]
           );
         }
-      // }
     }
 
     canvas.panel.onmousemove(loc.x, loc.y);
@@ -183,6 +190,11 @@ window.onload = function() {
     }
   }
 
+  canvas.canvas.onmousewheel = function(e) {
+    return;
+    canvas.left_menu.onmousewheel(e.wheelDelta);
+  }
+
   // document.addEventListener('mousedown', function(event) {
   //   if (lastDownTarget != event.target) {
   //     showSilhouette = false;
@@ -201,16 +213,18 @@ window.onload = function() {
       showSilhouette = true;
     }
     if (event.keyCode == 49) {
-      var lastSeenObject = FragmentList.lastVisualObject;
-      do {
-        console.log(lastSeenObject);
-        lastSeenObject = lastSeenObject.prev;
-      } while (lastSeenObject != null)
-      console.log("\nEND\n")
+      canvas.left_menu.smoothMove(0,0);
+      // var lastSeenObject = FragmentList.lastVisualObject;
+      // do {
+      //   console.log(lastSeenObject);
+      //   lastSeenObject = lastSeenObject.prev;
+      // } while (lastSeenObject != null)
+      // console.log("\nEND\n")
     }
 
     if (event.keyCode == 50) {
-      console.log(canvas.blank_zones);
+      canvas.left_menu.smoothMove(400,300);
+      // console.log(canvas.blank_zones);
     }
   }, false);
 

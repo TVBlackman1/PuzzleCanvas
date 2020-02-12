@@ -1,6 +1,7 @@
 class ButtonPlay extends Button {
-  constructor(name) {
-    super(name);
+  static name = "play";
+  constructor() {
+    super();
   }
   func() {
     super.func();

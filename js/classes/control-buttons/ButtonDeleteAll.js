@@ -1,6 +1,8 @@
 class ButtonDeleteAll extends Button {
-  constructor(name) {
-    super(name);
+  static name = "delete-all";
+  
+  constructor() {
+    super();
   }
   func() {
     super.func();

@@ -8,16 +8,17 @@ class PanelButton {
     return (
       x >= this.getPos() &&
       x <= this.getPos() + canvas.panel.buttonWidth &&
-      y >= canvas.panel.firstY &&
-      y <= canvas.panel.firstY + canvas.panel.height
+      y >= canvas.panel.y &&
+      y <= canvas.panel.y + canvas.panel.height
     )
   }
 
   draw(context) {
+    //  данном случае нецелочисленное значение улучшает резкость
     context.beginPath();
     context.rect(
-      this.getPos(),
-      canvas.panel.firstY,
+      this.getPos() + 0.5,
+      canvas.panel.y + 0.5,
       canvas.panel.buttonWidth,
       canvas.panel.height
     );

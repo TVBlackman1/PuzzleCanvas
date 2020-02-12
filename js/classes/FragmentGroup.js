@@ -158,13 +158,14 @@ class FragmentGroup {
    *
    */
   smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
-    // append_cursor для группы обрабатывается отдельной
+    // append_cursor для группы обрабатывается отдельно
     // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
     // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
     // изображение сместится, баг
-    // Друггими словами, сначала требуется изменить размер всех пазлов,
+    // Другими словами, сначала требуется изменить размер всех пазлов,
     // а потом переместить их. Это происходит быстро и без видимых проблем
     this.fragments.forEach(function(fragment, ind, arr) {
+      // false - append_cursor здесь не рассматривается из-за if-а дальше
       fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
     });
     if (append_cursor) {
@@ -187,7 +188,9 @@ class FragmentGroup {
    *
    */
   resizeSelect(this_gr=this, back=true, charact=-1,scale=0.95) {
-    let scaleForFragment = 1 - (1-scale)/(this_gr.rightFragmentInd - this_gr.leftFragmentInd);
+    let maxDif = Math.max(this_gr.rightFragmentInd - this_gr.leftFragmentInd,
+      this_gr.topFragmentInd - this_gr.bottomFragmentInd);
+    let scaleForFragment = 1 - (1-scale)/maxDif;
     // формула для нормального изменения размера всей группы.
     // Если поставить scale, то при большой длине или высоте изменения размера
     // в пиксилях будут велики, а в данном случае они будут одинаковы.

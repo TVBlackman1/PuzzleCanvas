@@ -7,12 +7,12 @@ class Panel extends Component {
     // this.borderColor = "blue";
 
     this.width = 900;
-    this.height = 100;
+    this.height = 85;
 
-    this.firstX = 200;
+    this.x = 200;
     this.lastX = 900;
 
-    this.firstY = null;
+    this.y = null;
     this.lastY = null;
 
     this.paddingX = 0;
@@ -23,17 +23,17 @@ class Panel extends Component {
     this.lists = null; // количество листов
     this.list = 1; // текущий лист
     this.buttonWidth = 80;
-    this.marginTop = 120;
+    this.marginTop = 85;
 
     this.place = new PanelPlace();
     this.place.height = this.height;
 
     var th = this;
     this.leftButton = new PanelButton(-1, function() {
-      return th.firstX
+      return th.x;
     });
     this.rightButton = new PanelButton(1, function() {
-      return th.lastX - th.buttonWidth
+      return th.lastX - th.buttonWidth;
     });
 
     this.buttons = [this.leftButton, this.rightButton]
@@ -44,26 +44,29 @@ class Panel extends Component {
   }
 
   init() {
-    this.width = canvas.field.width * 1.6; // ШИРИНА ПАНЕЛИ
+    this.width = Math.floor(canvas.field.width * 1.64); // ШИРИНА ПАНЕЛИ
     this.place.width = this.width;
 
-    this.firstX = canvas.canvas.width / 2 - this.width / 2; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-    this.place.firstX = this.firstX;
+    this.x = Math.floor(canvas.canvas.width / 2 - this.width / 2); // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.place.x = this.x;
 
-    this.firstY = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-    this.place.firstY = this.firstY;
+    this.y = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.place.y = this.y;
 
-    this.lastX = this.firstX + this.width;
-    this.lastY = this.firstY + this.height;
-    this.mainWidth = this.width - 2 * this.buttonWidth - 2 * this.paddingX;
+    this.lastX = this.x + this.width;
+    this.lastY = this.y + this.height;
+    this.mainWidth = Math.floor(this.width - 2 * this.buttonWidth - 2 * this.paddingX);
 
-    Fragment.heightPanel = this.height - 2 * this.paddingY;
-    Fragment.widthPanel = Fragment.heightPanel / Fragment.height * Fragment.width;
+    Fragment.heightPanel = Math.floor(this.height - 2 * this.paddingY);
+    Fragment.widthPanel = Math.floor(Fragment.heightPanel / Fragment.height * Fragment.width);
 
-    Fragment.third_xPanel = Fragment.widthPanel / 5;
-    Fragment.third_yPanel = Fragment.heightPanel / 5;
+    Fragment.third_xPanel = Math.floor(Fragment.widthPanel / 5);
+    Fragment.third_yPanel = Math.floor(Fragment.heightPanel / 5);
     this.fragmentsCount = Math.floor(this.mainWidth / Fragment.widthPanel);
-    this.fragmentSpace = (this.mainWidth - this.fragmentsCount * Fragment.widthPanel) / (this.fragmentsCount - 1);
+    this.fragmentSpace = Math.floor(
+      (this.mainWidth - this.fragmentsCount * Fragment.widthPanel) /
+      (this.fragmentsCount - 1)
+    );
 
     this.lists = Math.floor(countImages / this.fragmentsCount) + 1;
   }
@@ -98,15 +101,17 @@ class Panel extends Component {
     var start = this.fragmentsCount * (this.list - 1);
     var end = this.fragmentsCount * this.list;
     if (this.list == this.lists) {
+      //  в случае, если на последнем листе неполное количество фрагментов
+      // как правило это именно так
       end = start + this.fragments.length % this.fragmentsCount;
     }
     for (var i = start; i < end; i++) {
       var fr = arr[this.fragments[i]];
       context.drawImage(
         fr.img,
-        this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
+        this.x + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
           i % this.fragmentsCount),
-        this.firstY + this.paddingY,
+        this.y + this.paddingY,
         Fragment.widthPanel,
         Fragment.heightPanel
       );
@@ -116,9 +121,9 @@ class Panel extends Component {
         context.beginPath();
         context.fillStyle = "#f0f0f099";
         context.rect(
-          this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
+          this.x + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
             i % this.fragmentsCount),
-          this.firstY + this.paddingY,
+          this.y + this.paddingY,
           Fragment.widthPanel,
           Fragment.heightPanel
         );
@@ -127,9 +132,9 @@ class Panel extends Component {
         // если объект на панели, то нарисовать обводку вокруг него
         context.drawImage(
           fr.imgB,
-          this.firstX + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
+          this.x + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
             i % this.fragmentsCount),
-          this.firstY + this.paddingY,
+          this.y + this.paddingY,
           Fragment.widthPanel,
           Fragment.heightPanel
         );

@@ -7,36 +7,42 @@ class Menu extends Component {
     // при создании ставятся значения по умолчанию. Следует создать пост-конструктор
 
     // type = 1 или type = -1 для левого/правого меню
+    this.fillColor = "#cdcbcb"
+
     this.type = type;
     this.place = new MenuPlace();
-    this.width = 430;
-    this.placeCoef = 1.18;
-    this.margin = 15;
+    this.width = 500;
+    this.placeCoef = 1.0; // на сколько заходит onmouse за зону Menu
+    this.margin = 10;
+
+    this.show = false; // меню скрыто изначально
 
 
   }
 
   init() {
-    this.center = canvas.canvas.width / 2;
-    this.height = canvas.field.height * .85;
-    this.firstY = canvas.field.firstY + canvas.field.height * .1;
-    this.lastY = canvas.field.firstY + canvas.field.height * .95;
+    this.center = Math.floor(canvas.canvas.width / 2);
+    this.height = Math.floor(canvas.field.height * .85); // высота
+    this.y = Math.floor(canvas.field.y + canvas.field.height * .1); // отступ сверху
+    this.lastY = Math.floor(canvas.field.y + canvas.field.height * .95);
 
     this.place.width = this.width * this.placeCoef;
     if (this.type == 1) {
-      this.firstX = this.center + (canvas.field.width / 2) + this.margin;
-      this.lastX = this.firstX + this.width;
-      this.place.firstX = this.firstX - (this.placeCoef - 1) * this.width;
+      this.x = Math.floor(this.center + (canvas.field.width / 2) + this.margin);
+      this.lastX = this.x + this.width;
+      this.place.x = this.x - (this.placeCoef - 1) * this.width;
 
     } else if (this.type == -1) {
-      this.lastX = this.center - (canvas.field.width / 2) - this.margin;
-      this.firstX = this.lastX - this.width;
-      this.place.firstX = this.firstX
+      this.lastX = Math.floor(this.center - (canvas.field.width / 2) - this.margin);
+      this.x = this.lastX - this.width;
+      this.place.x = this.x;
     }
+
+    this.stationar_x = this.x // стандартные координаты для возврата после анимации
 
     this.isPlace = false;
     this.lastIsPlace = false;
-    this.place.firstY = this.firstY;
+    this.place.y = this.y;
     this.place.height = this.height;
   }
 
@@ -82,6 +88,20 @@ class Menu extends Component {
     }
   }
 
+  onmousewheel(wheel) {
+    if (wheel < 0 && !this.show) {
+      // вниз
+      this.show = true;
+      // canvas.canvas.width / 2 - this.width / 2
+      this.smoothMove(0, this.y);
+    } else {
+      if (wheel > 0 && this.show) {
+        // вверх
+        this.show = false;
+        this.smoothMove(this.stationar_x, this.y);
+      }
+    }
+  }
   draw(context) {
     super.draw(context);
 
@@ -90,8 +110,8 @@ class Menu extends Component {
     if (this.isPlace && ind >= 0) {
       context.beginPath();
       context.rect(
-        this.firstX,
-        this.firstY,
+        this.x,
+        this.y,
         this.width,
         this.height
       );
@@ -120,8 +140,8 @@ class Menu extends Component {
   drawMask(context) {
     context.beginPath();
     context.rect(
-      this.firstX,
-      this.firstY,
+      this.x,
+      this.y,
       this.width,
       this.height
     );

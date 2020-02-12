@@ -7,11 +7,11 @@ class Timer extends Component {
   }
 
   init(x, y) {
-    this.firstX = x;
-    this.firstY = y;
+    this.x = x;
+    this.y = y;
     this.width = Timer.width;
     this.height = Timer.height;
-    this.lastX = this.firstX + this.width;
-    this.lastY = this.firstY + this.height;
+    this.lastX = this.x + this.width;
+    this.lastY = this.y + this.height;
   }
 }
