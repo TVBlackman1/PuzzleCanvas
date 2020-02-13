@@ -33,8 +33,8 @@ const achievements = [
     color: "rgb(125, 241, 101)"
   },
   {
-    name: "Выделываться новым словом",
-    description: "Модальное окно это, вы глупые?!",
+    name: "Узнал новое слово",
+    description: "Модальное окно это, глупые?!",
     img: "images/achievements/second.png",
     color: "rgb(221, 241, 101)"
   },
@@ -61,6 +61,156 @@ const achievements = [
     description: "Не вместилось сори никита =(",
     img: "images/achievements/third.png",
     color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
+  },
+  {
+    name: "NONAME",
+    description: "Не вместилось сори никита =(",
+    img: "images/achievements/third.png",
+    color: "rgb(177, 177, 177)"
   }
 ];
 
@@ -68,6 +218,7 @@ new Vue({
   el: '#right-menu',
   data: {
     people: people,
-    achievements: achievements
+    achievements: achievements,
+    current_time: "17:40"
   }
 });

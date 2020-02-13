@@ -73,10 +73,7 @@ function initializeSizes(fragment, img) {
 
   canvas.field.init();
   canvas.panel.init();
-  canvas.control_panel.init();
-
   canvas.left_menu.init();
-  canvas.right_menu.init();
 
   // canvas.createBlankZones();
 
@@ -161,14 +158,11 @@ window.onload = function() {
 
     canvas.panel.onmousemove(loc.x, loc.y);
     canvas.left_menu.onmousemove(loc.x, loc.y);
-    canvas.right_menu.onmousemove(loc.x, loc.y);
   };
 
   canvas.canvas.onmouseup = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
-    if(canvas.control_panel.isHadPoint(loc.x, loc.y)) {
-      return;
-    }
+
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       canvas.onMenuZone() // проверка на вхождение в зону меню + изменение состояния объектов
 
@@ -191,7 +185,7 @@ window.onload = function() {
   }
 
   canvas.canvas.onmousewheel = function(e) {
-    return;
+    // return;
     canvas.left_menu.onmousewheel(e.wheelDelta);
   }
 
@@ -213,18 +207,12 @@ window.onload = function() {
       showSilhouette = true;
     }
     if (event.keyCode == 49) {
-      canvas.left_menu.smoothMove(0,0);
-      // var lastSeenObject = FragmentList.lastVisualObject;
-      // do {
-      //   console.log(lastSeenObject);
-      //   lastSeenObject = lastSeenObject.prev;
-      // } while (lastSeenObject != null)
-      // console.log("\nEND\n")
+      canvas.field.normalDecrease();
+      canvas.panel.show();
     }
-
     if (event.keyCode == 50) {
-      canvas.left_menu.smoothMove(400,300);
-      // console.log(canvas.blank_zones);
+      canvas.field.normalIncrease();
+      canvas.panel.hide();
     }
   }, false);
 

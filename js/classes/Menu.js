@@ -1,42 +1,34 @@
 // init in Fragment.js
 
 class Menu extends Component {
-  constructor(type, cnv) {
+  constructor(cnv) {
     super();
-    // this.borderColor = "red";
-    // при создании ставятся значения по умолчанию. Следует создать пост-конструктор
+    this.fillColor = "#e3e3e3"
 
-    // type = 1 или type = -1 для левого/правого меню
-    this.fillColor = "#cdcbcb"
-
-    this.type = type;
     this.place = new MenuPlace();
-    this.width = 500;
+    this.startShowedWidth = 30; // пикселей длины показано в свёрнутом виде
+    this.width = 1420;
+    this.current_width = this.width;
     this.placeCoef = 1.0; // на сколько заходит onmouse за зону Menu
     this.margin = 10;
 
-    this.show = false; // меню скрыто изначально
+    this.shown = false; // меню скрыто изначально
 
 
   }
 
   init() {
     this.center = Math.floor(canvas.canvas.width / 2);
-    this.height = Math.floor(canvas.field.height * .85); // высота
-    this.y = Math.floor(canvas.field.y + canvas.field.height * .1); // отступ сверху
-    this.lastY = Math.floor(canvas.field.y + canvas.field.height * .95);
+    this.height = Math.floor(canvas.field.height * .86); // высота
+    this.current_height = this.height;
+    this.y = Math.floor(canvas.field.y + canvas.field.height * .07); // отступ сверху
+    this.lastY = Math.floor(canvas.field.y + canvas.field.height * 1.0);
 
     this.place.width = this.width * this.placeCoef;
-    if (this.type == 1) {
-      this.x = Math.floor(this.center + (canvas.field.width / 2) + this.margin);
-      this.lastX = this.x + this.width;
-      this.place.x = this.x - (this.placeCoef - 1) * this.width;
 
-    } else if (this.type == -1) {
-      this.lastX = Math.floor(this.center - (canvas.field.width / 2) - this.margin);
-      this.x = this.lastX - this.width;
-      this.place.x = this.x;
-    }
+    this.lastX = this.startShowedWidth;
+    this.x = this.lastX - this.width;
+    this.place.x = this.x;
 
     this.stationar_x = this.x // стандартные координаты для возврата после анимации
 
@@ -89,18 +81,28 @@ class Menu extends Component {
   }
 
   onmousewheel(wheel) {
-    if (wheel < 0 && !this.show) {
+    if (wheel < 0 && !this.shown) {
       // вниз
-      this.show = true;
+      this.shown = true;
       // canvas.canvas.width / 2 - this.width / 2
       this.smoothMove(0, this.y);
     } else {
-      if (wheel > 0 && this.show) {
+      if (wheel > 0 && this.shown) {
         // вверх
-        this.show = false;
+        this.shown = false;
         this.smoothMove(this.stationar_x, this.y);
       }
     }
+  }
+
+  smoothMove(newX, newY) {
+    this.smoothing = true;
+    let menu = this;
+    super.smoothMove(newX, newY, function() {
+      menu.smoothing = false;
+    });
+    this.place.smoothMove(newX, newY);
+
   }
   draw(context) {
     super.draw(context);
@@ -116,7 +118,7 @@ class Menu extends Component {
         this.height
       );
 
-      context.fillStyle = "rgba(12, 155,155,0.15)";
+      context.fillStyle = "rgba(33, 157, 157, 0.05)";
       context.fill();
 
       // выделяет анимацией элемент

@@ -3,9 +3,9 @@
 <head>
   <title>PuzzleForTwo</title>
   <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/top-panel.css">
-  <link rel="stylesheet" href="css/bottom-panel.css">
+  <link rel="stylesheet" href="css/style/style.css">
+  <link rel="stylesheet" href="css/top-panel/top-panel.css">
+  <link rel="stylesheet" href="css/bottom-panel/bottom-panel.css">
   <link rel="stylesheet" href="css/header_style.css">
 
   <!-- <script type="text/javascript" src="js/lib/jQuery_3_4_1.js"></script> -->
@@ -13,13 +13,6 @@
 </head>
 
 <body>
-  <!-- <div id="control-panel">
-    <div class="button">
-    </div>
-    <div id="timer">
-      17:38
-    </div>
-  </div> -->
   <div class="header-container">
     <div class="container header-list" id="header-list">
       <ul class="row header-list">
@@ -30,10 +23,6 @@
     </div>
     <a class="entrance" href="../../pages/entrance/entrance.php">Вход</a>
   </div>
-
-  <!-- только canvas нужно переносить, на остальное плевать -->
-  <!-- <canvas id="canvas-puzzle" width="2370" height="1080"> -->
-  <!-- <canvas id="canvas-puzzle" width="1800" height="820"> -->
   <div id="main">
     <canvas id="canvas-puzzle" width="1490" height="820"></canvas>
     <div id="right-menu">
@@ -62,7 +51,13 @@
       </div>
       <div id="right-menu-bottom">
         <div id="control-panel">
-          17:40
+          <div class="button-place">
+            <div id="button-exit"></div>
+          </div>
+          <div id="timer">17:40</div>
+          <div class="button-place">
+            <div id="button-play"></div>
+          </div>
         </div>
         <div id="achiev-list">
           <ul>

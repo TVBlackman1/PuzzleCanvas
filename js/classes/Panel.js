@@ -8,8 +8,10 @@ class Panel extends Component {
 
     this.width = 900;
     this.height = 85;
+    this.current_height = this.height;
 
     this.x = 200;
+    this.stationar_x = this.x;
     this.lastX = 900;
 
     this.y = null;
@@ -23,7 +25,7 @@ class Panel extends Component {
     this.lists = null; // количество листов
     this.list = 1; // текущий лист
     this.buttonWidth = 80;
-    this.marginTop = 85;
+    this.marginTop = 5;
 
     this.place = new PanelPlace();
     this.place.height = this.height;
@@ -45,12 +47,17 @@ class Panel extends Component {
 
   init() {
     this.width = Math.floor(canvas.field.width * 1.64); // ШИРИНА ПАНЕЛИ
+    this.current_width = this.width;
+
     this.place.width = this.width;
 
     this.x = Math.floor(canvas.canvas.width / 2 - this.width / 2); // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.stationar_x = this.x;
     this.place.x = this.x;
 
     this.y = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
+    this.stationar_y = this.y;
+
     this.place.y = this.y;
 
     this.lastX = this.x + this.width;
@@ -69,6 +76,20 @@ class Panel extends Component {
     );
 
     this.lists = Math.floor(countImages / this.fragmentsCount) + 1;
+  }
+
+  hide() {
+    this.smoothing = true;
+    this.smoothMove(this.x, this.y + 100, function() {
+      this.smoothing = false;;
+    });
+  }
+
+  show() {
+    this.smoothing = true;
+    this.smoothMove(this.x, this.stationar_y, function() {
+      this.smoothing = false;;
+    });
   }
 
   onmousedown(loc) {

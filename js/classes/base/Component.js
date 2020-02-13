@@ -6,20 +6,25 @@ class Component {
     this.borderColor = "#4e4e4e";
     this.fillColor = "#f0f0f0"
 
-    this.width = null;
+    this.smoothing = false; // для отсутствия взаимодействия при анимациях
+
+    this.width = null; // размер
     this.height = null;
 
-    this.x = null;
+    this.current_width = null; // текущий размер с учетом функций его изменения
+    this.current_height = null;
+
+    this.x = null; // расположение
     this.y = null;
 
-    this.lastX = null;
+    this.lastX = null; // конечное расположение
     this.lastY = null;
   }
 
   isHadPoint(x, y) {
     return (
-      x >= this.x && x <= this.x + this.width &&
-      y >= this.y && y <= this.y + this.height
+      x >= this.x && x <= this.x + this.current_width &&
+      y >= this.y && y <= this.y + this.current_height
     )
   }
 
@@ -42,7 +47,7 @@ class Component {
    *                                завершению анимации
    *
    */
-  smoothMove(newX, newY, endFunction = function() {}) {
+   smoothMove(newX, newY, endFunction = function() {}) {
     let oldX = this.x;
     let oldY = this.y;
     let currentTact = 0;
@@ -76,7 +81,7 @@ class Component {
    * @param back - стоит ли повторять анимацию задонаперед при истинности
    *
    */
-  smoothResize(old_width, old_height, new_width, new_height, back = false) {
+   smoothResize(old_width, old_height, new_width, new_height, back = false) {
     let currentTact = 0;
     let dX = (new_width - old_width) / (Component.tact);
     let dY = (new_height - old_height) / (Component.tact);
@@ -129,8 +134,8 @@ class Component {
     context.rect(
       this.x,
       this.y,
-      this.width,
-      this.height
+      this.current_width,
+      this.current_height
     );
 
     context.strokeStyle = this.borderColor;
