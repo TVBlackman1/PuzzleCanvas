@@ -69,8 +69,6 @@ class Component {
         setTimeout(reDraw, Component.frameTime);
         currentTact++;
       } else {
-        // component.x = newX;
-        // component.y = newY;
         component.move(newX, newY);
         endFunction();
       }

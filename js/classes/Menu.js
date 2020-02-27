@@ -13,7 +13,7 @@ class Menu extends Component {
     this.margin = 10;
 
     this.shown = false; // меню скрыто изначально
-    this.fragmentList = 
+    this.fragmentList = new FragmentList(); // все элементы в меню
 
 
   }
@@ -84,7 +84,6 @@ class Menu extends Component {
     } else {
       this.isPlace = false;
     }
-    console.log(this.isPlace);
   }
 
   onmousewheel(wheel) {
@@ -105,13 +104,55 @@ class Menu extends Component {
   smoothMove(newX, newY) {
     this.smoothing = true;
     let menu = this;
+
+    // Значения меняются раньше, чем используются. Сохранение для передвижения
+    // фрагментов в цикле ниже
+    let lastX = menu.x;
+    let lastY = menu.y;
     super.smoothMove(newX, newY, function() {
       menu.smoothing = false;
     });
     this.place.smoothMove(newX, newY);
+
+    // переместить все элементы меню как и само меню
+    var lastSeenObject = this.fragmentList.lastVisualObject;
+    if (lastSeenObject != null)
+      do {
+
+        // если объект взят пользователем, то анимацией не следует его убирать
+        if (lastSeenObject.value.mainFragment.ind == SelectFragmentHelper.translatedFragmentId) {
+          lastSeenObject = lastSeenObject.prev;
+          continue;
+        }
+
+        // иначе убираем его
+        if (lastSeenObject.value instanceof Fragment) {
+          lastSeenObject.value.smoothMove(
+            lastSeenObject.value.x + newX - lastX,
+            lastSeenObject.value.y + newY - lastY,
+          );
+        } else if (lastSeenObject.value instanceof FragmentGroup) {
+          // перемещение группы относительно mainFragment
+          lastSeenObject.value.smoothMove(
+            lastSeenObject.value.mainFragment.x + newX - lastX,
+            lastSeenObject.value.mainFragment.y + newY - lastY,
+            lastSeenObject.value.mainFragment
+          );
+        }
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
   }
   draw(context) {
     super.draw(context);
+
+    // условие потом
+    // отрисовка элементов на меню
+    var lastSeenObject = this.fragmentList.firstVisualObject;
+    if (lastSeenObject != null) // может не быть элементов
+      do {
+        lastSeenObject.value.draw(context);
+        lastSeenObject = lastSeenObject.next;
+      } while (lastSeenObject != null)
 
     // если взятый объект на меню, то подсветить меню
     let ind = SelectFragmentHelper.translatedFragmentId;

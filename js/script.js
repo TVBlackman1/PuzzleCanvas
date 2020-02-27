@@ -24,15 +24,16 @@ function drawAll(canvas, context) {
   context.fill();
   canvas.draw(context);
   canvas.panel.drawFragments(context);
-  var lastSeenObject = FragmentListElem.firstVisualObject;
-  do {
-    lastSeenObject.value.draw(context);
-    lastSeenObject = lastSeenObject.next;
-  } while (lastSeenObject != null)
-  // canvas.drawBlank(context);
+  if(arr[SelectFragmentHelper.translatedFragmentId])
+  if (SelectFragmentHelper.translatedFragmentId >= 0) {
+    let el = arr[SelectFragmentHelper.translatedFragmentId]
+    let selected = (el.group != null) ? el.group : el;
+    selected.draw(context);
+  }
+
 }
 
-function initializeFragmentListElem(arr) {
+function initializeFragmentList(arr) {
   for (i = 0; i < countImages; i++) {
     var x = i % imagesX;
     var y = Math.floor(i / imagesX);
@@ -52,14 +53,18 @@ function initializeFragmentListElem(arr) {
     );
 
     canvas.panel.fragments[i] = i; // для заполнения порядка индексов
-                                   // фрагментов у нижней панели
+    // фрагментов у нижней панели
 
-    if (FragmentListElem.lastVisualObject == null) {
-      FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], null);
-      FragmentListElem.firstVisualObject = FragmentListElem.lastVisualObject;
-    } else {
-      FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], FragmentListElem.lastVisualObject);
-    }
+    canvas.field.fragmentList.appendElem(new FragmentListElem(
+      arr[arr.length - 1]
+    ));
+    // if (frgList.lastVisualObject == null) {
+    //   FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], null);
+    //   FragmentListElem.firstVisualObject = FragmentListElem.lastVisualObject;
+    // } else {
+    //
+    //   FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], FragmentListElem.lastVisualObject);
+    // }
   }
 }
 
@@ -76,7 +81,7 @@ function initializeSizes(fragment, img) {
 
   // canvas.createBlankZones();
 
-  for(i = 0; i < countImages; i++) {
+  for (i = 0; i < countImages; i++) {
     arr[i].current_width = Fragment.widthScale;
     arr[i].current_height = Fragment.heightScale;
   }
@@ -87,7 +92,7 @@ window.onload = function() {
   console.log("Started");
   canvas = new Canvas("canvas-puzzle", countImages);
   canvas.initElements();
-  initializeFragmentListElem(arr);
+  initializeFragmentList(arr);
 
   canvas.canvas.onmousedown = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
@@ -97,62 +102,71 @@ window.onload = function() {
       return;
     }
 
-    var lastSeenObject = FragmentListElem.lastVisualObject;
-    do {
+    let iterFunction = function(lastSeenObject) {
       var value = lastSeenObject.value;
       var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
-      if (value instanceof Fragment) {
-        if (objInCoords) {
-          if (!value.smoothing && !value.isConnecting && !value.resizing) {
-            // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-            if (value.onBottomPanel) {
-              value.onBottomPanel = false;
-              value.moveToPanel();
-            }
-            value.connectedToCorner = false;
-            ranges = value.rangeToStartImage(loc.x, loc.y);
-            SelectFragmentHelper.deltaX = ranges.x;
-            SelectFragmentHelper.deltaY = ranges.y;
-            SelectFragmentHelper.translatedFragmentId = value.ind;
-            lastSeenObject.replaceToTop(); // отображать поверх других объектов
-            break;
+      if (objInCoords) {
+        if (!value.smoothing && !value.isConnecting && !value.resizing) {
+          /*
+           * объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
+           * если рассматривается группа фрагментов (FragmentGroup), то:
+           *  -- расчитывает расстояние от mainFragment группы, а потому
+           *  -- delta значения могут быть очень большими или даже отрицательными
+           *  -- взятым фрагментом в этом случае считается mainFragment группы
+           *
+           */
+
+          // не имеет смысла для групп, undefined для них, не выполняется
+          if (value.onBottomPanel) {
+            value.onBottomPanel = false;
+            value.moveToPanel();
           }
-        }
-      } else if (value instanceof FragmentGroup) {
-        if (objInCoords > -1) {
-          if (!value.smoothing && !value.isConnecting && !value.resizing) {
-            // объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-            // расчитывает расстояние от mainFragment группы, а потому
-            // delta значения могут быть очень большими или даже отрицательными
-            // взятым фрагментом в этом случае считается mainFragment группы
-            value.connectedToCorner = false;
-            ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
-            SelectFragmentHelper.deltaX = ranges.x;
-            SelectFragmentHelper.deltaY = ranges.y;
-            SelectFragmentHelper.translatedFragmentId = value.mainFragment.ind;
-            lastSeenObject.replaceToTop(); // отображать поверх других объектов
-            break;
-          }
+          value.connectedToCorner = false;
+          ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
+          SelectFragmentHelper.deltaX = ranges.x;
+          SelectFragmentHelper.deltaY = ranges.y;
+          SelectFragmentHelper.translatedFragmentId = value.mainFragment.ind;
+          lastSeenObject.replaceToTop(); // отображать поверх других объектов
+          return true; // если сработал объект - вернуть истину, обрабатывается далее
         }
       }
-      lastSeenObject = lastSeenObject.prev;
-    } while (lastSeenObject != null)
+    }
+
+    var lastSeenObject = canvas.field.fragmentList.lastVisualObject;
+    if (lastSeenObject != null)
+      do {
+        // если этот объект подходит под условия, то цикл останавливается
+        if (iterFunction(lastSeenObject))
+          break;
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
+
+    // TODO выход из функции при выполнении верхнего блока
+    lastSeenObject = canvas.left_menu.fragmentList.lastVisualObject;
+    if (lastSeenObject != null)
+      do {
+        // если этот объект подходит под условия, то цикл останавливается
+        if (iterFunction(lastSeenObject))
+          break;
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
+
   }
 
   canvas.canvas.onmousemove = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-        var newX = loc.x - SelectFragmentHelper.deltaX;
-        var newY = loc.y - SelectFragmentHelper.deltaY;
-        if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
-          arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
+      var newX = loc.x - SelectFragmentHelper.deltaX;
+      var newY = loc.y - SelectFragmentHelper.deltaY;
+      if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
+        arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
 
-        } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
-          arr[SelectFragmentHelper.translatedFragmentId].group.move(
-            newX, newY,
-            arr[SelectFragmentHelper.translatedFragmentId]
-          );
-        }
+      } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+        arr[SelectFragmentHelper.translatedFragmentId].group.move(
+          newX, newY,
+          arr[SelectFragmentHelper.translatedFragmentId]
+        );
+      }
     }
 
     canvas.panel.onmousemove(loc.x, loc.y);
@@ -161,6 +175,10 @@ window.onload = function() {
 
   canvas.canvas.onmouseup = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
+
+    canvas.left_menu.onmousemove(loc.x, loc.y);
+    // проверка, если мы не двигали элемент, но под ним что-то изменилось
+    // например, ушло меню в сторону или, наоборот, появилось
 
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       canvas.onMenuZone() // проверка на вхождение в зону меню + изменение состояния объектов
@@ -176,7 +194,9 @@ window.onload = function() {
       if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
         selectedFragment.onBottomPanel = true;
       } else if (shouldConnect) {
-        FragmentListElem.lastVisualObject.value.connectTo();
+        let selected = (selectedFragment.group != null) ? selectedFragment.group : selectedFragment;
+        selected.connectTo(); // проверка и дальнейшая попытка
+
       }
 
       SelectFragmentHelper.translatedFragmentId = -1;
@@ -214,7 +234,7 @@ window.onload = function() {
       canvas.panel.hide();
     }
     if (event.keyCode == 51) {
-      console.log(canvas.left_menu.place);
+      console.log(canvas.field.fragmentList.lastVisualObject.value.listElem);
     }
   }, false);
 

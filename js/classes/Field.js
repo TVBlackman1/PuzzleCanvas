@@ -12,6 +12,8 @@ class Field extends Component {
     this.linesColor = "rgba(155,155,155, 0.7)";
     this.scale = 0.9; // во сколько раз стоит уменьшить поле
     this.bigType = false;
+    this.fragmentList = new FragmentList(); // все элементы на поле, кроме меню
+    // формально принадлежат полю, если не принадлежат меню
 
   }
 
@@ -90,5 +92,14 @@ class Field extends Component {
       context.lineTo(this.x + this.width * scale, y);
     }
     context.stroke();
+
+    // фрагменты поля отрисовываются отдельно, по логике они могут быть не только
+    // на нём
+    var lastSeenObject = canvas.field.fragmentList.firstVisualObject;
+    if (lastSeenObject != null)
+      do {
+        lastSeenObject.value.draw(context);
+        lastSeenObject = lastSeenObject.next;
+      } while (lastSeenObject != null)
   }
 }

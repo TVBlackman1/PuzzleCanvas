@@ -112,10 +112,9 @@ class Canvas {
   }
 
   draw(context) {
-    var zones = this.fr_zones;
-    for (var i = 0; i < zones.length; i++) {
-      zones[i].draw(context)
-    }
+    this.field.draw(context);
+    this.left_menu.draw(context);
+    this.panel.draw(context);
 
   }
 

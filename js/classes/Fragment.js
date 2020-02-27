@@ -38,7 +38,7 @@ class Fragment extends Component {
     this.current_width = -1;
     this.current_height = -1;
 
-    this.mainFragment = this;
+    this.mainFragment = this; // для поддержки алгоритмов по работе с группами
 
     this.downloadImage();
 
@@ -236,6 +236,11 @@ class Fragment extends Component {
     this.onMenuLast = this.onMenu;
     if (!this.onMenu) {
       // поставить по умолчанию относительно курсора
+
+      let tmp = this.listElem;
+      this.listElem.remove(); // удалиться из прошлого листа
+      canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
+
       this.smoothResize(
         Fragment.widthPanel, Fragment.heightPanel,
         Fragment.widthScale, Fragment.heightScale,
@@ -244,6 +249,11 @@ class Fragment extends Component {
     } else {
       // поставить в зависимости от главного, в меню
       // относительно курсора
+
+      let tmp = this.listElem;
+      this.listElem.remove(); // удалиться из прошлого листа
+      canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
+
       this.smoothResize(
         Fragment.widthScale, Fragment.heightScale,
         Fragment.widthPanel, Fragment.heightPanel,
@@ -359,7 +369,7 @@ class Fragment extends Component {
 
         selected.listElem.value = selected.group; // ссылка на фрагмент заменяется на ссылку на группу
         selected.listElem.src = null; // убрать путь до картинки, а то некрасиво
-        selected.group.listElemGroup = selected.listElem;
+        selected.group.listElem = selected.listElem;
         other.listElem.remove(); // удаление "лишнего" объекта из очереди на запись,
         // т.к. он уже отрисовывается в группе
         other.setMenuD(other, other.current_width, other.current_height,
@@ -448,7 +458,7 @@ class Fragment extends Component {
         if (other.group.bottomFragmentInd > selected.group.bottomFragmentInd) {
           other.group.bottomFragmentInd = selected.group.bottomFragmentInd;
         }
-        selected.group.listElemGroup.remove();
+        selected.group.listElem.remove();
         selected.group.changeGroup(other.group); //setMenuD внутри
         // т.к. элементы становятся членами другой группы, то нет необходимости
         // заботиться об connectedToCorner. Он всегда определяется other.

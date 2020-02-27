@@ -7,7 +7,7 @@ class FragmentGroup {
     this.resizing = false;
     this.connectedToCorner = false;
 
-    this.listElemGroup = null;
+    this.listElem = null; // ссылка на соответстующий элемент в листе
     this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
     // в уменьшенной группе в области меню и определения его новых координат
     this.onMenu = false;
@@ -26,17 +26,21 @@ class FragmentGroup {
     this.bottomFragmentInd = -1;
   }
 
+  /**
+   * Прошлые версии возвращали индекс, в этой не стоит, т.к.
+   * сейчас взятым фрагментом считается mainFragment, а не по-настоящему взятый
+   * это решается несколько проблем с "телепортацией" группы при работе с
+   * увеличением и уменьшением элементов
+   *
+   * @return bool found
+   *
+   */
   isHadPoint(x, y) {
     var found = false;
-    var ind_ans = -1;
     this.fragments.forEach(function(fragment, ind, arr) {
-      if (found)
-        return;
-      found = fragment.isHadPoint(x, y);
-      if (found)
-        ind_ans = fragment.ind;
+      found = found || fragment.isHadPoint(x, y); // если нашлось, не проверяется
     });
-    return ind_ans;
+    return found;
   }
 
   /**
@@ -134,6 +138,11 @@ class FragmentGroup {
     this.onMenuLast = this.onMenu;
     if (!this.onMenu) {
       // поставить по умолчанию
+
+      let tmp = this.listElem;
+      this.listElem.remove(); // удалиться из прошлого листа
+      canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
+
       this.smoothResize(
         Fragment.widthPanel, Fragment.heightPanel,
         Fragment.widthScale, Fragment.heightScale,
@@ -141,6 +150,11 @@ class FragmentGroup {
       );
     } else {
       // поставить в зависимости от главного, в меню
+
+      let tmp = this.listElem;
+      this.listElem.remove(); // удалиться из прошлого листа
+      canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
+
       this.mainFragment = fr;
       this.smoothResize(
         Fragment.widthScale, Fragment.heightScale,
@@ -191,10 +205,10 @@ class FragmentGroup {
    * @param scale - double, во сколько раз стоит уменьшить/увеличить изображение
    *
    */
-  resizeSelect(this_gr=this, back=true, charact=-1,scale=0.95) {
+  resizeSelect(this_gr = this, back = true, charact = -1, scale = 0.95) {
     let maxDif = Math.max(this_gr.rightFragmentInd - this_gr.leftFragmentInd,
       this_gr.topFragmentInd - this_gr.bottomFragmentInd);
-    let scaleForFragment = 1 - (1-scale)/maxDif;
+    let scaleForFragment = 1 - (1 - scale) / maxDif;
     // формула для нормального изменения размера всей группы.
     // Если поставить scale, то при большой длине или высоте изменения размера
     // в пиксилях будут велики, а в данном случае они будут одинаковы.
