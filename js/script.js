@@ -24,16 +24,15 @@ function drawAll(canvas, context) {
   context.fill();
   canvas.draw(context);
   canvas.panel.drawFragments(context);
-  var lastSeenObject = FragmentList.firstVisualObject;
+  var lastSeenObject = FragmentListElem.firstVisualObject;
   do {
     lastSeenObject.value.draw(context);
     lastSeenObject = lastSeenObject.next;
   } while (lastSeenObject != null)
-
   // canvas.drawBlank(context);
 }
 
-function initializeFragmentList(arr) {
+function initializeFragmentListElem(arr) {
   for (i = 0; i < countImages; i++) {
     var x = i % imagesX;
     var y = Math.floor(i / imagesX);
@@ -55,11 +54,11 @@ function initializeFragmentList(arr) {
     canvas.panel.fragments[i] = i; // для заполнения порядка индексов
                                    // фрагментов у нижней панели
 
-    if (FragmentList.lastVisualObject == null) {
-      FragmentList.lastVisualObject = new FragmentList(arr[arr.length - 1], null);
-      FragmentList.firstVisualObject = FragmentList.lastVisualObject;
+    if (FragmentListElem.lastVisualObject == null) {
+      FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], null);
+      FragmentListElem.firstVisualObject = FragmentListElem.lastVisualObject;
     } else {
-      FragmentList.lastVisualObject = new FragmentList(arr[arr.length - 1], FragmentList.lastVisualObject);
+      FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], FragmentListElem.lastVisualObject);
     }
   }
 }
@@ -88,7 +87,7 @@ window.onload = function() {
   console.log("Started");
   canvas = new Canvas("canvas-puzzle", countImages);
   canvas.initElements();
-  initializeFragmentList(arr);
+  initializeFragmentListElem(arr);
 
   canvas.canvas.onmousedown = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
@@ -98,7 +97,7 @@ window.onload = function() {
       return;
     }
 
-    var lastSeenObject = FragmentList.lastVisualObject;
+    var lastSeenObject = FragmentListElem.lastVisualObject;
     do {
       var value = lastSeenObject.value;
       var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
@@ -177,7 +176,7 @@ window.onload = function() {
       if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
         selectedFragment.onBottomPanel = true;
       } else if (shouldConnect) {
-        FragmentList.lastVisualObject.value.connectTo();
+        FragmentListElem.lastVisualObject.value.connectTo();
       }
 
       SelectFragmentHelper.translatedFragmentId = -1;
@@ -213,6 +212,9 @@ window.onload = function() {
     if (event.keyCode == 50) {
       canvas.field.normalIncrease();
       canvas.panel.hide();
+    }
+    if (event.keyCode == 51) {
+      console.log(canvas.left_menu.place);
     }
   }, false);
 

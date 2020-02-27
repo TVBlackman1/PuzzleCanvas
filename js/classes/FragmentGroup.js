@@ -122,6 +122,10 @@ class FragmentGroup {
 
   }
 
+  /*
+   * Меняет размер, если объект на меню
+   *
+   */
   editMenuCoords(fr) {
     // fr - фрагмент, который мы взяли. Относительно него будут строиться остальные
     if (this.onMenuLast == this.onMenu) {

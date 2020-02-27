@@ -31,6 +31,8 @@ class Component {
   move(x, y) {
     this.x = x;
     this.y = y;
+    this.lastX = x + this.current_width;
+    this.lastY = y + this.current_height;
   }
 
   /**
@@ -57,15 +59,19 @@ class Component {
 
     // рекурсивная функция вызываемая с задержкой в самой себе
     function reDraw() {
-      component.x += dX;
-      component.y += dY;
+      component.move(
+        component.x+dX,
+        component.y+dY
+      );
+
 
       if (currentTact < Component.tact - 1) {
         setTimeout(reDraw, Component.frameTime);
         currentTact++;
       } else {
-        component.x = newX;
-        component.y = newY;
+        // component.x = newX;
+        // component.y = newY;
+        component.move(newX, newY);
         endFunction();
       }
     }
@@ -102,6 +108,7 @@ class Component {
         currentTact++;
       } else {
         component.setSizes(component, new_width, new_height);
+        component.move(component.x, component.y);
         if (back) {
           // повторная анимация, возвращающая всё обратно
           component.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);

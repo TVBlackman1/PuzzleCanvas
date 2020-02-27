@@ -6,7 +6,7 @@ class Panel extends Component {
     super();
     // this.borderColor = "blue";
 
-    this.width = 900;
+    this.width = 1400;
     this.height = 85;
     this.current_height = this.height;
 
@@ -25,10 +25,12 @@ class Panel extends Component {
     this.lists = null; // количество листов
     this.list = 1; // текущий лист
     this.buttonWidth = 80;
-    this.marginTop = 5;
+    this.marginBottom = 5;
 
     this.place = new PanelPlace();
     this.place.height = this.height;
+    this.mark = new Component(); // мелкая пипка сверху
+    this.shown = true; // показано или скрыто меню
 
     var th = this;
     this.leftButton = new PanelButton(-1, function() {
@@ -38,7 +40,7 @@ class Panel extends Component {
       return th.lastX - th.buttonWidth;
     });
 
-    this.buttons = [this.leftButton, this.rightButton]
+    this.buttons = [this.leftButton, this.rightButton];
     this.fragments = []; // id нужных фрагментов, может быть заданно в случайном порядке (теоретически)
     this.fragments.length = imagesCount;
 
@@ -46,7 +48,7 @@ class Panel extends Component {
   }
 
   init() {
-    this.width = Math.floor(canvas.field.width * 1.64); // ШИРИНА ПАНЕЛИ
+    // this.width = Math.floor(canvas.field.width * 1.64); // ШИРИНА ПАНЕЛИ
     this.current_width = this.width;
 
     this.place.width = this.width;
@@ -55,13 +57,14 @@ class Panel extends Component {
     this.stationar_x = this.x;
     this.place.x = this.x;
 
-    this.y = canvas.field.lastY + this.marginTop; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
-    this.stationar_y = this.y;
-
-    this.place.y = this.y;
+    this.lastY = canvas.canvas.height - this.marginBottom; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
 
     this.lastX = this.x + this.width;
-    this.lastY = this.y + this.height;
+
+    this.y = this.lastY - this.height;
+    this.stationar_y = this.y;
+    this.place.y = this.y;
+
     this.mainWidth = Math.floor(this.width - 2 * this.buttonWidth - 2 * this.paddingX);
 
     Fragment.heightPanel = Math.floor(this.height - 2 * this.paddingY);
@@ -76,20 +79,46 @@ class Panel extends Component {
     );
 
     this.lists = Math.floor(countImages / this.fragmentsCount) + 1;
+
+    this.markInit();
+  }
+
+  markInit() {
+    this.mark.height = 12;
+    this.mark.current_height = this.mark.height;
+
+    this.mark.width = 100;
+    this.mark.current_width = this.mark.width;
+
+    this.mark.x = Math.floor(canvas.canvas.width / 2 - this.mark.width / 2);
+    this.mark.lastY = this.y;
+    this.mark.y = this.mark.lastY - this.mark.current_height;
+    this.mark.stationar_y = this.mark.y;
   }
 
   hide() {
+
+    if(!this.shown)
+      return;
     this.smoothing = true;
-    this.smoothMove(this.x, this.y + 100, function() {
-      this.smoothing = false;;
+    let panel = this;
+    this.smoothMove(this.x, this.y + 90, function() {
+      panel.smoothing = false;
     });
+    this.mark.smoothMove(this.mark.x, this.mark.y + 90);
+    this.shown = false;
   }
 
   show() {
+    if(this.shown)
+      return;
     this.smoothing = true;
+    let panel = this;
     this.smoothMove(this.x, this.stationar_y, function() {
-      this.smoothing = false;;
+      panel.smoothing = false;
     });
+    this.mark.smoothMove(this.mark.x, this.mark.stationar_y);
+    this.shown = true;
   }
 
   onmousedown(loc) {
@@ -113,6 +142,7 @@ class Panel extends Component {
 
   draw(context) {
     super.draw(context);
+    this.mark.draw(context);
     for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].draw(context);
     }

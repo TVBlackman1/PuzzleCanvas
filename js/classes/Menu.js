@@ -5,7 +5,7 @@ class Menu extends Component {
     super();
     this.fillColor = "#e3e3e3"
 
-    this.place = new MenuPlace();
+    this.place = new MenuPlace(); // чтобы улавливать коннект при близком наведении
     this.startShowedWidth = 30; // пикселей длины показано в свёрнутом виде
     this.width = 1420;
     this.current_width = this.width;
@@ -13,6 +13,7 @@ class Menu extends Component {
     this.margin = 10;
 
     this.shown = false; // меню скрыто изначально
+    this.fragmentList = 
 
 
   }
@@ -24,18 +25,23 @@ class Menu extends Component {
     this.y = Math.floor(canvas.field.y + canvas.field.height * .07); // отступ сверху
     this.lastY = Math.floor(canvas.field.y + canvas.field.height * 1.0);
 
-    this.place.width = this.width * this.placeCoef;
 
     this.lastX = this.startShowedWidth;
     this.x = this.lastX - this.width;
-    this.place.x = this.x;
-
     this.stationar_x = this.x // стандартные координаты для возврата после анимации
 
     this.isPlace = false;
-    this.lastIsPlace = false;
-    this.place.y = this.y;
+    this.lastIsPlace = false; // не помню причину добавления ???
+
     this.place.height = this.height;
+    this.place.width = this.width * this.placeCoef;
+    this.place.current_width = this.place.width;
+    this.place.current_height = this.place.height;
+
+    this.place.x = this.x;
+    this.place.lastX = this.lastX;
+    this.place.y = this.y;
+    this.place.lastY = this.lastY;
   }
 
   /*
@@ -78,6 +84,7 @@ class Menu extends Component {
     } else {
       this.isPlace = false;
     }
+    console.log(this.isPlace);
   }
 
   onmousewheel(wheel) {
@@ -102,7 +109,6 @@ class Menu extends Component {
       menu.smoothing = false;
     });
     this.place.smoothMove(newX, newY);
-
   }
   draw(context) {
     super.draw(context);
@@ -121,7 +127,7 @@ class Menu extends Component {
       context.fillStyle = "rgba(33, 157, 157, 0.05)";
       context.fill();
 
-      // выделяет анимацией элемент
+      // выделяет анимацией элемент, не работает
       // if(this.isPlace != this.lastIsPlace) {
       //   console.log("replace");
       //   let selected = (arr[ind].group != null) ? arr[ind].group : arr[ind];
@@ -132,6 +138,17 @@ class Menu extends Component {
       //   }
       // }
     }
+    // context.beginPath();
+    // context.rect(
+    //   this.place.x,
+    //   this.place.y,
+    //   this.place.width,
+    //   this.place.height
+    // );
+    //
+    // context.fillStyle = "rgb(19, 235, 235)";
+    // context.fill();
+
   }
 
   /*
