@@ -103,7 +103,10 @@ class Canvas {
     return false;
   }
 
-  onMenuZone() {
+  // переносить объект между меню и общим полем
+  checkMoveBetweenLists() {
+    if (this.left_menu.smoothing)
+      return;
     if (this.left_menu.isPlace) {
       Menu.includeInMenu();
     } else {
@@ -118,10 +121,10 @@ class Canvas {
 
   }
 
-  drawBlank(context) {
-    var zones = this.blank_zones;
-    for (var i = 0; i < zones.length; i++) {
-      zones[i].draw(context)
-    }
-  }
+  // drawBlank(context) {
+  //   var zones = this.blank_zones;
+  //   for (var i = 0; i < zones.length; i++) {
+  //     zones[i].draw(context)
+  //   }
+  // }
 }

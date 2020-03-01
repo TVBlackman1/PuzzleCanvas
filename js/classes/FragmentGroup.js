@@ -11,7 +11,7 @@ class FragmentGroup {
     this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
     // в уменьшенной группе в области меню и определения его новых координат
     this.onMenu = false;
-    this.onMenuLast = false; // нужно при editMenuCoords, проверьте сами, мне лень
+    this.onMenuLast = false; // нужно при tryMoveBeetwenLists, проверьте сами, мне лень
 
     /*
      * Нужны крайние значения
@@ -72,9 +72,8 @@ class FragmentGroup {
     });
   }
 
-  smoothMove(x, y, selected, connectingFragment) {
+  smoothMove(x, y, selected, connectingFragment = null) {
     // connectingFragment - фрагмент, к которому я конекчусь.
-    // при измнении его координат мои подстраиваются
     this.fragments.forEach(function(fragment, ind, arr) {
       if (fragment !== selected) {
         fragment.smoothMove(
@@ -130,7 +129,7 @@ class FragmentGroup {
    * Меняет размер, если объект на меню
    *
    */
-  editMenuCoords(fr) {
+  tryMoveBeetwenLists(fr) {
     // fr - фрагмент, который мы взяли. Относительно него будут строиться остальные
     if (this.onMenuLast == this.onMenu) {
       return;
@@ -143,9 +142,10 @@ class FragmentGroup {
       this.listElem.remove(); // удалиться из прошлого листа
       canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
 
+      this.scale = canvas.field.bigType ? 1 : canvas.field.scale;
       this.smoothResize(
         Fragment.widthPanel, Fragment.heightPanel,
-        Fragment.widthScale, Fragment.heightScale,
+        Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
         false, true
       );
     } else {
@@ -157,10 +157,11 @@ class FragmentGroup {
 
       this.mainFragment = fr;
       this.smoothResize(
-        Fragment.widthScale, Fragment.heightScale,
+        fr.current_width, fr.current_height,
         Fragment.widthPanel, Fragment.heightPanel,
         false, true
       );
+      console.log();
     }
   }
 
@@ -188,8 +189,10 @@ class FragmentGroup {
     });
     if (append_cursor) {
       this.fragments.forEach(function(fragment, ind, arr) {
-        var b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
-        var b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+        let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
+        let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+        // SelectFragmentHelper.deltaX -= b_x;
+        // SelectFragmentHelper.deltaY -= b_y;
         fragment.smoothMove(fragment.x + b_x, fragment.y + b_y);
       });
     }

@@ -101,6 +101,14 @@ class Menu extends Component {
     }
   }
 
+  toogleMenu() {
+    if (this.shown)
+      this.smoothMove(this.stationar_x, this.y);
+    else
+      this.smoothMove(0, this.y);
+    this.shown = !this.shown;
+  }
+
   smoothMove(newX, newY) {
     this.smoothing = true;
     let menu = this;

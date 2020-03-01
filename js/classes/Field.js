@@ -7,6 +7,8 @@ class Field extends Component {
     this.all_height = null;
     this.stationar_x = null;
 
+    this.smoothing = false;
+
     this.linesX = [];
     this.linesY = [];
     this.linesColor = "rgba(155,155,155, 0.7)";
@@ -45,28 +47,118 @@ class Field extends Component {
   }
 
   /*
-  *  Функция для нормального уменьшения поля. Уменьшает поле на определенный
-  *  процент, уменьшая и все пазлы, находящиеся на нём в это время.
-  *  Так же поле переносится вверх.
-  */
+   *  Функция для нормального уменьшения поля. Уменьшает поле на определенный
+   *  процент, уменьшая и все пазлы, находящиеся на нём в это время.
+   *  Так же поле переносится вверх.
+   */
   normalDecrease() {
-    if(!this.bigType)
+    if (!this.bigType || this.smoothing)
       return;
+
+    var lastSeenObject = this.fragmentList.lastVisualObject;
+    if (lastSeenObject != null)
+      do {
+
+        // если объект взят пользователем, то анимация другая используется
+        // уменьшение идет от курсора, а изменения положения нет (кроме как от курсора)
+        if (lastSeenObject.value.mainFragment.ind == SelectFragmentHelper.translatedFragmentId) {
+          lastSeenObject.value.smoothResize(
+            lastSeenObject.value.mainFragment.current_width,
+            lastSeenObject.value.mainFragment.current_height,
+            Fragment.widthScale * this.scale,
+            Fragment.heightScale * this.scale,
+            false, true
+          );
+          lastSeenObject = lastSeenObject.prev;
+          continue;
+        }
+
+        lastSeenObject.value.smoothResize(
+          lastSeenObject.value.mainFragment.current_width,
+          lastSeenObject.value.mainFragment.current_height,
+          Fragment.widthScale * this.scale,
+          Fragment.heightScale * this.scale
+        );
+
+        if (lastSeenObject.value instanceof Fragment)
+          lastSeenObject.value.smoothMove(
+            (lastSeenObject.value.mainFragment.x - this.x) * this.scale + this.x,
+            (lastSeenObject.value.mainFragment.y - this.y) * this.scale + this.y
+          );
+        else if (lastSeenObject.value instanceof FragmentGroup)
+          lastSeenObject.value.smoothMove(
+            (lastSeenObject.value.mainFragment.x - this.x) * this.scale + this.x,
+            (lastSeenObject.value.mainFragment.y - this.y) * this.scale + this.y,
+            lastSeenObject.value.mainFragment
+          );
+
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
+
     super.smoothResize(this.width, this.height, this.width * this.scale, this.height * this.scale);
-    super.smoothMove(Math.floor(canvas.canvas.width / 2 - this.width * this.scale / 2), this.y);
+    this.smoothing = true;
+    // super.smoothMove(Math.floor(canvas.canvas.width / 2 - this.width * this.scale / 2), this.y);
+    super.smoothMove(this.x, this.y, function() {
+      canvas.field.smoothing = false;
+    });
     this.bigType = false;
   }
 
   /*
-  *  Функция для нормального увеличения поля. Увеличивает поле на определенный
-  *  процент, увеличивая и все пазлы, находящиеся на нём в это время.
-  *  Так же поле переносится вверх.
-  */
+   *  Функция для нормального увеличения поля. Увеличивает поле на определенный
+   *  процент, увеличивая и все пазлы, находящиеся на нём в это время.
+   *  Так же поле переносится вверх.
+   */
   normalIncrease() {
-    if(this.bigType)
+    if (this.bigType || this.smoothing)
       return;
+
+    var lastSeenObject = this.fragmentList.lastVisualObject;
+    if (lastSeenObject != null)
+      do {
+
+        // если объект взят пользователем, то анимация другая используется
+        // уменьшение идет от курсора, а изменения положения нет (кроме как от курсора)
+        if (lastSeenObject.value.mainFragment.ind == SelectFragmentHelper.translatedFragmentId) {
+          lastSeenObject.value.smoothResize(
+            lastSeenObject.value.mainFragment.current_width,
+            lastSeenObject.value.mainFragment.current_height,
+            Fragment.widthScale,
+            Fragment.heightScale,
+            false, true
+          );
+          lastSeenObject = lastSeenObject.prev;
+          continue;
+        }
+
+        // уменьшаем выбранный фрагмент
+        lastSeenObject.value.smoothResize(
+          lastSeenObject.value.mainFragment.current_width,
+          lastSeenObject.value.mainFragment.current_height,
+          Fragment.widthScale,
+          Fragment.heightScale
+        );
+
+        if (lastSeenObject.value instanceof Fragment)
+          lastSeenObject.value.smoothMove(
+            (lastSeenObject.value.mainFragment.x - this.x) / this.scale + this.x,
+            (lastSeenObject.value.mainFragment.y - this.y) / this.scale + this.y
+          );
+        else if (lastSeenObject.value instanceof FragmentGroup)
+          lastSeenObject.value.smoothMove(
+            (lastSeenObject.value.mainFragment.x - this.x) / this.scale + this.x,
+            (lastSeenObject.value.mainFragment.y - this.y) / this.scale + this.y,
+            lastSeenObject.value.mainFragment
+          );
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
+
     super.smoothResize(this.width * this.scale, this.height * this.scale, this.width, this.height);
-    super.smoothMove(this.stationar_x, this.y);
+    // super.smoothMove(this.stationar_x, this.y);
+    this.smoothing = true;
+    super.smoothMove(this.x, this.y, function() {
+      canvas.field.smoothing = false;
+    });
     this.bigType = true;
   }
 

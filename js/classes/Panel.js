@@ -97,8 +97,7 @@ class Panel extends Component {
   }
 
   hide() {
-
-    if(!this.shown)
+    if(!this.shown || this.smoothing)
       return;
     this.smoothing = true;
     let panel = this;
@@ -107,10 +106,11 @@ class Panel extends Component {
     });
     this.mark.smoothMove(this.mark.x, this.mark.y + 90);
     this.shown = false;
+
   }
 
   show() {
-    if(this.shown)
+    if(this.shown || this.smoothing)
       return;
     this.smoothing = true;
     let panel = this;
@@ -170,7 +170,7 @@ class Panel extends Component {
       if (!fr.onBottomPanel) {
         // изобразить маску, если объект не на панели
         context.beginPath();
-        context.fillStyle = "#f0f0f099";
+        context.fillStyle = this.fillColor + "99"; // прозрачность
         context.rect(
           this.x + this.buttonWidth + this.paddingX + (this.fragmentSpace + Fragment.widthPanel) * (
             i % this.fragmentsCount),

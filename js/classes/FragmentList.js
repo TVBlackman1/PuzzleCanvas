@@ -5,6 +5,9 @@ class FragmentList {
   }
 
   appendElem(element) {
+    // очистка на случай получения объекта из другого FragmentList
+    element.prev = null;
+    element.next = null;
     if (this.lastVisualObject == null) {
       // если нет последнего, то нет и первого, ибо инициализация проходит у обоих
       this.lastVisualObject = element;

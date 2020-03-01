@@ -54,6 +54,16 @@ class Fragment extends Component {
     // в области меню
     this.bottomPanelInd = bottomInd;
 
+    // координаты, нужные при уменьшении размера поля. Ведь в таком случае
+    // элементы незначительно перемещаются. Может быть определенная погрешность
+    // при постоянном нажимании на изменение размера поля. Не страшно, но могут
+    // быть различия у нескольких игроков
+    // Координаты изменяются только при увеличении, не работают при изменении
+    // положения фрагментов после изменения размера и используются только
+    // в случае уменьшения изображения обратно, учитывая предыдущее условие
+    this.stationar_x = -1;
+    this.stationar_y = -1;
+
     /*
      * Для следуюих переменных в блоке
      * при истинности хотя бы одной из них
@@ -229,7 +239,7 @@ class Fragment extends Component {
     )
   }
 
-  editMenuCoords() {
+  tryMoveBeetwenLists() {
     if (this.onMenuLast == this.onMenu) {
       return;
     }
@@ -241,9 +251,10 @@ class Fragment extends Component {
       this.listElem.remove(); // удалиться из прошлого листа
       canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
 
+      this.scale = canvas.field.bigType ? 1 : canvas.field.scale;
       this.smoothResize(
         Fragment.widthPanel, Fragment.heightPanel,
-        Fragment.widthScale, Fragment.heightScale,
+        Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
         false, true
       );
     } else {
@@ -255,7 +266,7 @@ class Fragment extends Component {
       canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
 
       this.smoothResize(
-        Fragment.widthScale, Fragment.heightScale,
+        this.current_width, this.current_height,
         Fragment.widthPanel, Fragment.heightPanel,
         false, true
       );
@@ -827,8 +838,10 @@ class Fragment extends Component {
       // высчитывает на сколько стоит сместить объект, чтобы он якобы масштабировался
       // относительно курсора
       // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
-      var b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
-      var b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
+      let b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
+      let b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
+      // SelectFragmentHelper.deltaX -= b_x;
+      // SelectFragmentHelper.deltaY -= b_y;
       this_fr.smoothMove(this_fr.x + b_x, this_fr.y + b_y);
     }
     // рекурсивная функция вызываемая с задержкой в самой себе
@@ -838,7 +851,7 @@ class Fragment extends Component {
       this_fr.setMenuD(this_fr, current_width, current_height, x, y, mx, my);
 
       if (currentTact < Component.tact - 1) {
-        setTimeout(resize, Component.frame_time);
+        setTimeout(resize, Component.frameTime);
         currentTact++;
       } else {
         this_fr.setMenuD(this_fr, new_width, new_height, x, y, mx, my);

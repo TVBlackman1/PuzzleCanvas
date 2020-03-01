@@ -24,12 +24,12 @@ function drawAll(canvas, context) {
   context.fill();
   canvas.draw(context);
   canvas.panel.drawFragments(context);
-  if(arr[SelectFragmentHelper.translatedFragmentId])
-  if (SelectFragmentHelper.translatedFragmentId >= 0) {
-    let el = arr[SelectFragmentHelper.translatedFragmentId]
-    let selected = (el.group != null) ? el.group : el;
-    selected.draw(context);
-  }
+  if (arr[SelectFragmentHelper.translatedFragmentId])
+    if (SelectFragmentHelper.translatedFragmentId >= 0) {
+      let el = arr[SelectFragmentHelper.translatedFragmentId]
+      let selected = (el.group != null) ? el.group : el;
+      selected.draw(context);
+    }
 
 }
 
@@ -55,16 +55,10 @@ function initializeFragmentList(arr) {
     canvas.panel.fragments[i] = i; // для заполнения порядка индексов
     // фрагментов у нижней панели
 
+    // инициализация двусвязного списка фрагментов
     canvas.field.fragmentList.appendElem(new FragmentListElem(
       arr[arr.length - 1]
     ));
-    // if (frgList.lastVisualObject == null) {
-    //   FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], null);
-    //   FragmentListElem.firstVisualObject = FragmentListElem.lastVisualObject;
-    // } else {
-    //
-    //   FragmentListElem.lastVisualObject = new FragmentListElem(arr[arr.length - 1], FragmentListElem.lastVisualObject);
-    // }
   }
 }
 
@@ -82,8 +76,8 @@ function initializeSizes(fragment, img) {
   // canvas.createBlankZones();
 
   for (i = 0; i < countImages; i++) {
-    arr[i].current_width = Fragment.widthScale;
-    arr[i].current_height = Fragment.heightScale;
+    arr[i].current_width = Fragment.widthScale * canvas.field.scale;
+    arr[i].current_height = Fragment.heightScale * canvas.field.scale;
   }
 }
 
@@ -132,6 +126,20 @@ window.onload = function() {
       }
     }
 
+    lastSeenObject = canvas.left_menu.fragmentList.lastVisualObject;
+    if (lastSeenObject != null)
+      do {
+        // если этот объект подходит под условия, то цикл останавливается
+        if (iterFunction(lastSeenObject))
+          break;
+        lastSeenObject = lastSeenObject.prev;
+      } while (lastSeenObject != null)
+
+    // Если жмякаем по меню, то фрагменты далее не будут обрабатываться
+    // т.е. из-под меню их не достать, собственно без проверки они достаются
+    if (canvas.left_menu.isHadPoint(loc.x, loc.y))
+      return;
+
     var lastSeenObject = canvas.field.fragmentList.lastVisualObject;
     if (lastSeenObject != null)
       do {
@@ -142,15 +150,6 @@ window.onload = function() {
       } while (lastSeenObject != null)
 
     // TODO выход из функции при выполнении верхнего блока
-    lastSeenObject = canvas.left_menu.fragmentList.lastVisualObject;
-    if (lastSeenObject != null)
-      do {
-        // если этот объект подходит под условия, то цикл останавливается
-        if (iterFunction(lastSeenObject))
-          break;
-        lastSeenObject = lastSeenObject.prev;
-      } while (lastSeenObject != null)
-
   }
 
   canvas.canvas.onmousemove = function(e) {
@@ -181,14 +180,14 @@ window.onload = function() {
     // например, ушло меню в сторону или, наоборот, появилось
 
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      canvas.onMenuZone() // проверка на вхождение в зону меню + изменение состояния объектов
+      canvas.checkMoveBetweenLists() // проверка на вхождение в зону меню + изменение состояния объектов
 
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
 
       if (selectedFragment.group != null) {
-        selectedFragment.group.editMenuCoords(selectedFragment);
+        selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
       } else {
-        selectedFragment.editMenuCoords();
+        selectedFragment.tryMoveBeetwenLists();
       }
 
       if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
@@ -224,6 +223,9 @@ window.onload = function() {
     }
     if (event.keyCode == KEY_showSilhouette) {
       showSilhouette = true;
+    }
+    if (event.keyCode == 9) {
+      canvas.left_menu.toogleMenu();
     }
     if (event.keyCode == 49) {
       canvas.field.normalDecrease();

@@ -3,8 +3,8 @@ class Component {
   static frameTime = 1000 / FRAMES / Component.tact; // задержка перед
   // следующим тактом
   constructor() {
-    this.borderColor = "#4e4e4e";
-    this.fillColor = "#f0f0f0"
+    this.borderColor = "#282828";
+    this.fillColor = "#e4e4e4"
 
     this.smoothing = false; // для отсутствия взаимодействия при анимациях
 
@@ -17,7 +17,7 @@ class Component {
     this.x = null; // расположение
     this.y = null;
 
-    this.lastX = null; // конечное расположение
+    this.lastX = null; // конечные координаты
     this.lastY = null;
   }
 
@@ -49,7 +49,7 @@ class Component {
    *                                завершению анимации
    *
    */
-   smoothMove(newX, newY, endFunction = function() {}) {
+  smoothMove(newX, newY, endFunction = function() {}) {
     let oldX = this.x;
     let oldY = this.y;
     let currentTact = 0;
@@ -60,10 +60,9 @@ class Component {
     // рекурсивная функция вызываемая с задержкой в самой себе
     function reDraw() {
       component.move(
-        component.x+dX,
-        component.y+dY
+        component.x + dX,
+        component.y + dY
       );
-
 
       if (currentTact < Component.tact - 1) {
         setTimeout(reDraw, Component.frameTime);
@@ -85,28 +84,29 @@ class Component {
    * @param back - стоит ли повторять анимацию задонаперед при истинности
    *
    */
-   smoothResize(old_width, old_height, new_width, new_height, back = false) {
+  smoothResize(old_width, old_height, new_width, new_height, back = false) {
     let currentTact = 0;
     let dX = (new_width - old_width) / (Component.tact);
     let dY = (new_height - old_height) / (Component.tact);
-
-    var current_width = old_width;
-    var current_height = old_height;
 
     let component = this;
 
     // рекурсивная функция вызываемая с задержкой в самой себе
     function resize() {
-      current_width += dX;
-      current_height += dY;
-      component.setSizes(component, current_width, current_height);
+      component.setSizes(component,
+        component.current_width + dX,
+        component.current_height + dY
+      );
 
       if (currentTact < Component.tact - 1) {
-        setTimeout(resize, Component.frame_time);
+        setTimeout(resize, Component.frameTime);
         currentTact++;
       } else {
         component.setSizes(component, new_width, new_height);
-        component.move(component.x, component.y);
+        component.move(component.x, component.y); // при resize меняются размеры
+        // эта функция никуда не перемещает объект, но перезаписывает крайние координаты
+        // которые зависят от размеров самого объекта
+
         if (back) {
           // повторная анимация, возвращающая всё обратно
           component.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
