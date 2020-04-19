@@ -46,14 +46,20 @@ class Field extends Component {
     }
   }
 
-  /*
-   *  Функция для нормального уменьшения поля. Уменьшает поле на определенный
-   *  процент, уменьшая и все пазлы, находящиеся на нём в это время.
-   *  Так же поле переносится вверх.
+  /**
+   * Функция для вызова из normalIncrease и normalDecrease. Создана чисто чтобы
+   * уменьшить количество одинакового кода. Суть её в изменении размера поля
+   * и всех элементов, находящихся на нём.
+   *
+   * @param needToResize - bool, если изменить размер, то это true
+   *
    */
-  normalDecrease() {
-    if (!this.bigType || this.smoothing)
-      return;
+  normalResize(needToResize) {
+    // если необходимо изменить размер, то scale присутствует
+    let scale = needToResize ? this.scale : 1;
+    // используется ниже в smoothMove
+    let scale2 = needToResize ? this.scale : 1 / this.scale;
+    console.log(scale, scale2);
 
     var lastSeenObject = this.fragmentList.lastVisualObject;
     if (lastSeenObject != null)
@@ -65,8 +71,8 @@ class Field extends Component {
           lastSeenObject.value.smoothResize(
             lastSeenObject.value.mainFragment.current_width,
             lastSeenObject.value.mainFragment.current_height,
-            Fragment.widthScale * this.scale,
-            Fragment.heightScale * this.scale,
+            Fragment.widthScale * scale,
+            Fragment.heightScale * scale,
             false, true
           );
           lastSeenObject = lastSeenObject.prev;
@@ -76,32 +82,50 @@ class Field extends Component {
         lastSeenObject.value.smoothResize(
           lastSeenObject.value.mainFragment.current_width,
           lastSeenObject.value.mainFragment.current_height,
-          Fragment.widthScale * this.scale,
-          Fragment.heightScale * this.scale
+          Fragment.widthScale * scale,
+          Fragment.heightScale * scale
         );
 
-        if (lastSeenObject.value instanceof Fragment)
-          lastSeenObject.value.smoothMove(
-            (lastSeenObject.value.mainFragment.x - this.x) * this.scale + this.x,
-            (lastSeenObject.value.mainFragment.y - this.y) * this.scale + this.y
-          );
-        else if (lastSeenObject.value instanceof FragmentGroup)
-          lastSeenObject.value.smoothMove(
-            (lastSeenObject.value.mainFragment.x - this.x) * this.scale + this.x,
-            (lastSeenObject.value.mainFragment.y - this.y) * this.scale + this.y,
-            lastSeenObject.value.mainFragment
-          );
+        let third_argument = null;
+        if (lastSeenObject.value instanceof FragmentGroup) {
+          // если группа, то необходимо передать фрагмент, относительно которого
+          // следует перемещать группу фрагментов. Если же это не группа фрагментов,
+          // а просто фрагмент, то передается null, это аргумент по-умолчанию для
+          // метода класса Fragment.
+          third_argument = lastSeenObject.value.mainFragment;
+        }
+
+        lastSeenObject.value.smoothMove(
+          (lastSeenObject.value.mainFragment.x - this.x) * scale2 + this.x,
+          (lastSeenObject.value.mainFragment.y - this.y) * scale2 + this.y,
+          third_argument
+        );
 
         lastSeenObject = lastSeenObject.prev;
       } while (lastSeenObject != null)
 
-    super.smoothResize(this.width, this.height, this.width * this.scale, this.height * this.scale);
+    if (needToResize) {
+      super.smoothResize(this.width, this.height, this.width * this.scale, this.height * this.scale);
+    } else {
+      super.smoothResize(this.width * this.scale, this.height * this.scale, this.width, this.height);
+    }
     this.smoothing = true;
     // super.smoothMove(Math.floor(canvas.canvas.width / 2 - this.width * this.scale / 2), this.y);
     super.smoothMove(this.x, this.y, function() {
       canvas.field.smoothing = false;
     });
-    this.bigType = false;
+    this.bigType = !this.bigType;
+  }
+
+  /*
+   *  Функция для нормального уменьшения поля. Уменьшает поле на определенный
+   *  процент, уменьшая и все пазлы, находящиеся на нём в это время.
+   *  Так же поле переносится вверх.
+   */
+  normalDecrease() {
+    if (!this.bigType || this.smoothing)
+      return;
+    this.normalResize(true);
   }
 
   /*
@@ -112,54 +136,7 @@ class Field extends Component {
   normalIncrease() {
     if (this.bigType || this.smoothing)
       return;
-
-    var lastSeenObject = this.fragmentList.lastVisualObject;
-    if (lastSeenObject != null)
-      do {
-
-        // если объект взят пользователем, то анимация другая используется
-        // уменьшение идет от курсора, а изменения положения нет (кроме как от курсора)
-        if (lastSeenObject.value.mainFragment.ind == SelectFragmentHelper.translatedFragmentId) {
-          lastSeenObject.value.smoothResize(
-            lastSeenObject.value.mainFragment.current_width,
-            lastSeenObject.value.mainFragment.current_height,
-            Fragment.widthScale,
-            Fragment.heightScale,
-            false, true
-          );
-          lastSeenObject = lastSeenObject.prev;
-          continue;
-        }
-
-        // уменьшаем выбранный фрагмент
-        lastSeenObject.value.smoothResize(
-          lastSeenObject.value.mainFragment.current_width,
-          lastSeenObject.value.mainFragment.current_height,
-          Fragment.widthScale,
-          Fragment.heightScale
-        );
-
-        if (lastSeenObject.value instanceof Fragment)
-          lastSeenObject.value.smoothMove(
-            (lastSeenObject.value.mainFragment.x - this.x) / this.scale + this.x,
-            (lastSeenObject.value.mainFragment.y - this.y) / this.scale + this.y
-          );
-        else if (lastSeenObject.value instanceof FragmentGroup)
-          lastSeenObject.value.smoothMove(
-            (lastSeenObject.value.mainFragment.x - this.x) / this.scale + this.x,
-            (lastSeenObject.value.mainFragment.y - this.y) / this.scale + this.y,
-            lastSeenObject.value.mainFragment
-          );
-        lastSeenObject = lastSeenObject.prev;
-      } while (lastSeenObject != null)
-
-    super.smoothResize(this.width * this.scale, this.height * this.scale, this.width, this.height);
-    // super.smoothMove(this.stationar_x, this.y);
-    this.smoothing = true;
-    super.smoothMove(this.x, this.y, function() {
-      canvas.field.smoothing = false;
-    });
-    this.bigType = true;
+    this.normalResize(false);
   }
 
   draw(context) {

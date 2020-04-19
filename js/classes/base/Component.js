@@ -1,6 +1,6 @@
 class Component {
   static tact = 21; // кол-во тактов анимации для всех компонентов канваса
-  static frameTime = 1000 / FRAMES / Component.tact; // задержка перед
+  static frameTime = 10000 / FRAMES / Component.tact; // задержка перед
   // следующим тактом
   constructor() {
     this.borderColor = "#282828";

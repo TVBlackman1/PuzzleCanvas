@@ -13,6 +13,10 @@ class FragmentGroup {
     this.onMenu = false;
     this.onMenuLast = false; // нужно при tryMoveBeetwenLists, проверьте сами, мне лень
 
+    this.createdInBigType = canvas.field.bigType; // false или true, создана ли группа при увеличенном
+    // поле или уменьшенном. Ебаный костыль для подсчёта setMenu
+    // идея неплоха, но сука дерьмо ебаное, перепишу завтра
+
     /*
      * Нужны крайние значения
      * с помощью них можно получить крайние значения по осям X и Y для группы
@@ -73,9 +77,12 @@ class FragmentGroup {
   }
 
   smoothMove(x, y, selected, connectingFragment = null) {
+    console.log("!smoothmoveGroup");
     // connectingFragment - фрагмент, к которому я конекчусь.
     this.fragments.forEach(function(fragment, ind, arr) {
-      if (fragment !== selected) {
+      console.log(fragment.src);
+      if (fragment != selected) {
+        console.log(fragment.src);
         fragment.smoothMove(
           x - selected.x + fragment.x,
           y - selected.y + fragment.y,
@@ -84,6 +91,7 @@ class FragmentGroup {
       }
     });
     selected.smoothMove(x, y, connectingFragment, true);
+    console.log(selected.src);
     // true, можно работать с группой
 
   }
@@ -185,14 +193,15 @@ class FragmentGroup {
     // а потом переместить их. Это происходит быстро и без видимых проблем
     this.fragments.forEach(function(fragment, ind, arr) {
       // false - append_cursor здесь не рассматривается из-за if-а дальше
+      // ведь должно обрабатываться одноразово
       fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
     });
     if (append_cursor) {
+      let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
+      let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+      SelectFragmentHelper.deltaX -= b_x;
+      SelectFragmentHelper.deltaY -= b_y;
       this.fragments.forEach(function(fragment, ind, arr) {
-        let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
-        let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-        // SelectFragmentHelper.deltaX -= b_x;
-        // SelectFragmentHelper.deltaY -= b_y;
         fragment.smoothMove(fragment.x + b_x, fragment.y + b_y);
       });
     }

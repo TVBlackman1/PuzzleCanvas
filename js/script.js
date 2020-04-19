@@ -8,15 +8,14 @@
 function drawAll(canvas, context) {
   context.lineWidth = "1";
 
-  context.clearRect(0,
-    0,
+  context.clearRect(
+    0, 0,
     canvas.canvas.width,
     canvas.canvas.height
   );
   context.beginPath();
   context.rect(
-    0,
-    0,
+    0, 0,
     canvas.canvas.width,
     canvas.canvas.height
   );
@@ -25,6 +24,7 @@ function drawAll(canvas, context) {
   canvas.draw(context);
   canvas.panel.drawFragments(context);
   if (arr[SelectFragmentHelper.translatedFragmentId])
+    // рисование выбранного фрагмента поверх всего, рисует повторно
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
       let el = arr[SelectFragmentHelper.translatedFragmentId]
       let selected = (el.group != null) ? el.group : el;
@@ -76,8 +76,13 @@ function initializeSizes(fragment, img) {
   // canvas.createBlankZones();
 
   for (i = 0; i < countImages; i++) {
+    // изначально уменьшены, т.к. окно тоже изначально уменьшено
     arr[i].current_width = Fragment.widthScale * canvas.field.scale;
     arr[i].current_height = Fragment.heightScale * canvas.field.scale;
+
+    // устанавливает треть объекта в зависимости
+    arr[i].current_third_x = arr[i].current_width / 5;
+    arr[i].current_third_y = arr[i].current_height / 5;
   }
 }
 
@@ -174,6 +179,7 @@ window.onload = function() {
 
   canvas.canvas.onmouseup = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
+    console.log(loc.x, loc.y);
 
     canvas.left_menu.onmousemove(loc.x, loc.y);
     // проверка, если мы не двигали элемент, но под ним что-то изменилось
