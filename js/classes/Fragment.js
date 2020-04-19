@@ -136,15 +136,15 @@ class Fragment extends Component {
         let selected = (this.group != null) ? this.group : this;
         context.drawImage(
           this.img,
-          selected.mainFragment.x + this.menuDX,
-          selected.mainFragment.y + this.menuDY,
+          this.x,
+          this.y,
           this.current_width,
           this.current_height
         );
         context.drawImage(
           this.imgB,
-          selected.mainFragment.x + this.menuDX,
-          selected.mainFragment.y + this.menuDY,
+          this.x,
+          this.y,
           this.current_width,
           this.current_height
         );
@@ -157,16 +157,16 @@ class Fragment extends Component {
         context.lineWidth = "3";
         context.strokeStyle = "black";
         context.rect(
-          selected.mainFragment.x + this.menuDX + 2 * Fragment.third_xPanel,
-          selected.mainFragment.y + this.menuDY + 2 * Fragment.third_yPanel,
+          this.x + 2 * Fragment.third_xPanel,
+          this.y + 2 * Fragment.third_yPanel,
           Fragment.widthPanel - 2 * Fragment.third_xPanel,
           Fragment.heightPanel - 2 * Fragment.third_yPanel
         );
         context.stroke();
         context.beginPath();
         context.rect(
-          selected.mainFragment.x + this.menuDX,
-          selected.mainFragment.y + this.menuDY,
+          this.x,
+          this.y,
           Fragment.widthPanel,
           Fragment.heightPanel
         );
@@ -174,8 +174,8 @@ class Fragment extends Component {
       } else if (!this.onBottomPanel) {
         context.beginPath();
         context.rect(
-          selected.mainFragment.x + this.menuDX + this.current_third_x,
-          selected.mainFragment.y + this.menuDY + this.current_third_y,
+          this.x + this.current_third_x,
+          this.y + this.current_third_y,
           this.current_width - 2 * this.current_third_x,
           this.current_height - 2 * this.current_third_y
         );
@@ -240,20 +240,20 @@ class Fragment extends Component {
     let selected = (this.group != null) ? this.group : this;
     if (selected.onMenu) {
       return (
-        x >= (selected.mainFragment.x + this.menuDX + Fragment.third_xPanel) &&
-        x <= (selected.mainFragment.x + this.menuDX + Fragment.widthPanel - Fragment.third_xPanel) &&
-        y >= (selected.mainFragment.y + this.menuDY + Fragment.third_yPanel) &&
-        y <= (selected.mainFragment.y + this.menuDY + Fragment.heightPanel - Fragment.third_yPanel)
+        x >= (this.x + Fragment.third_xPanel) &&
+        x <= (this.x + Fragment.widthPanel - Fragment.third_xPanel) &&
+        y >= (this.y + Fragment.third_yPanel) &&
+        y <= (this.y + Fragment.heightPanel - Fragment.third_yPanel)
 
       )
     }
 
     // изменить???
     return (
-      x >= selected.mainFragment.x + this.menuDX + this.current_third_x &&
-      x <= (selected.mainFragment.x + this.menuDX + this.current_width - this.current_third_x) &&
-      y >= (selected.mainFragment.y + this.menuDY + this.current_third_y) &&
-      y <= (selected.mainFragment.y + this.menuDY + this.current_height - this.current_third_y)
+      x >= this.x + this.current_third_x &&
+      x <= (this.x + this.current_width - this.current_third_x) &&
+      y >= (this.y + this.current_third_y) &&
+      y <= (this.y + this.current_height - this.current_third_y)
     )
   }
 
@@ -292,59 +292,26 @@ class Fragment extends Component {
   }
 
   /**
-   * Вызывается из smoothResize
-   * для высчитывания нового положения фрагментов при изменении размеров
-   * Без плавного изменения размера выглядит слишком резко (неожиданно)
-   *
-   * @param this_fr - фрагмент, над которым выполняются действия
-   *
-   * @param current_width - текущая длина фрагмента
-   *
-   * @param current_height - текущая высота фрагмента
-   *
-   *  Далее перечень аргументов, которые следует передать, т.к.
-   *  переменная меняется в smoothMove, которая может быть вызвана
-   *  при истинности append_cursor из smoothResize
-   *
-   * @param x - координата по оси x, равная this_fr.x,
-   *
-   * @param y - координата по оси y, равная this_fr.y
-   *
-   * @param mx - координата по оси y, равная selected.mainFragment.x
-   *
-   * @param my - координата по оси y, равная selected.mainFragment.y
-   *
+   * Добавляет отступ для элементов группы.
+   * Необходимо при увеличении или уменьшении (в таком случае отступ отрицательный)
+   * фрагмента. Тогда увеличенная группа увеличивается в размерах, правые фрагменты
+   * перемещаются вправо, в этом суть
+   * В аргументах - бывшие и новые размеры фрагмента для высчитывания отступа
    */
-  setMenuD(this_fr, current_width, current_height, x, y, mx, my) {
-    // todoist, добавить аргумент при вызове из создания групп, как идея
-    super.setSizes(this_fr, current_width, current_height);
-    // this_fr.current_third_x = this_fr.current_width / 5;
-    // this_fr.current_third_y = this_fr.current_height / 5;
-    // this_fr.scale = canvas.field.bigType ? 1 : canvas.field.scale;
-    // if (this_fr.group != null) {
-    //   if (this_fr.group.createdInBigType != canvas.field.bigType) {
-    //     this_fr.scale = canvas.field.bigType ? canvas.field.scale : 1;
-    //   }
-    // }
-    // if(this_fr.group != null) {
-    //   this_fr.scale = canvas.field.scale; // можно не учитывать bigType поля,
-    //   // всегда равно canvas.field.scale
-    //   // Но это работает только с группами, без понятия почему, логику
-    //   // прописывать на листочке не было времени
-    // }
-    // this_fr.scale = 1;
-    // this_fr.menuDX = (
-    //   (x - mx) / Fragment.widthScale / this_fr.scale * this_fr.current_width
-    // );
-    // this_fr.menuDY = (
-    //   (y - my) / Fragment.heightScale / this_fr.scale * this_fr.current_height
-    // );
-    this_fr.menuDX = (
-      (x - mx) / Fragment.widthScale * this_fr.current_width
-    );
-    this_fr.menuDY = (
-      (y - my) / Fragment.heightScale * this_fr.current_height
-    );
+  appendMargin(old_width, old_height, new_width, new_height) {
+    let this_fr = this;
+    if (this_fr.group == null) {
+      return;
+    }
+    let oneX = this_fr.ind % imagesX;
+    let oneY = Math.floor(this_fr.ind / imagesX);
+
+    let twoX = this_fr.group.mainFragment.ind % imagesX;
+    let twoY = Math.floor(this_fr.group.mainFragment.ind / imagesX);
+
+    let dx = (oneX - twoX) * (new_width - old_width) / 5 * 3;
+    let dy = (oneY - twoY) * (new_height - old_height) / 5 * 3;
+    this_fr.smoothShift(dx, dy);
   }
 
   // Расстояниме от курсора мыши до старта изображения в левом верхнем углу в пикселях.
@@ -354,8 +321,8 @@ class Fragment extends Component {
   rangeToStartImage(x, y) {
     let selected = (this.group != null) ? this.group : this;
     return {
-      x: x - selected.mainFragment.x - this.menuDX,
-      y: y - selected.mainFragment.y - this.menuDY
+      x: x - this.x,
+      y: y - this.y
     };
   }
 
@@ -446,17 +413,17 @@ class Fragment extends Component {
         // }
 
         // console.log((other.x + other.group.mainFragment.x * (canvas.field.scale - 1)) / canvas.field.scale - other.x);
-        if (!canvas.field.bigType) {
-          other.move(
-            (other.x + other.group.mainFragment.x * (canvas.field.scale - 1)) / canvas.field.scale,
-            (other.y + other.group.mainFragment.y * (canvas.field.scale - 1)) / canvas.field.scale
-          );
-        }
+        // if (!canvas.field.bigType) {
+        //   other.move(
+        //     (other.x + other.group.mainFragment.x * (canvas.field.scale - 1)) / canvas.field.scale,
+        //     (other.y + other.group.mainFragment.y * (canvas.field.scale - 1)) / canvas.field.scale
+        //   );
+        // }
 
 
-        other.setMenuD(other, other.current_width, other.current_height,
-          other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
-        );
+        // other.setMenuD(other, other.current_width, other.current_height,
+        //   other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
+        // );
       } else {
         console.log("!!!!");
         // selected - not group;
@@ -500,16 +467,16 @@ class Fragment extends Component {
         //   );
         // }
         // console.log((selected.x + selected.group.mainFragment.x * (canvas.field.scale - 1)) / canvas.field.scale - selected.x);
-        if (!canvas.field.bigType) {
-          selected.move(
-            (selected.x + selected.group.mainFragment.x * (canvas.field.scale - 1)) / canvas.field.scale,
-            (selected.y + selected.group.mainFragment.y * (canvas.field.scale - 1)) / canvas.field.scale
-          );
-        }
-
-        selected.setMenuD(selected, selected.current_width, selected.current_height,
-          selected.x, selected.y, selected.group.mainFragment.x, selected.group.mainFragment.y
-        );
+        // if (!canvas.field.bigType) {
+        //   selected.move(
+        //     (selected.x + selected.group.mainFragment.x * (canvas.field.scale - 1)) / canvas.field.scale,
+        //     (selected.y + selected.group.mainFragment.y * (canvas.field.scale - 1)) / canvas.field.scale
+        //   );
+        // }
+        //
+        // selected.setMenuD(selected, selected.current_width, selected.current_height,
+        //   selected.x, selected.y, selected.group.mainFragment.x, selected.group.mainFragment.y
+        // );
 
       }
     } else {
@@ -545,8 +512,7 @@ class Fragment extends Component {
         }
 
 
-        if (selected.group.leftFragmentInd < twoX || selected.group.topFragmentInd < twoY) {
-        } else {
+        if (selected.group.leftFragmentInd < twoX || selected.group.topFragmentInd < twoY) {} else {
           selected.group.mainFragment = other;
           // let tmp = other;
           // other = selected;
@@ -573,9 +539,9 @@ class Fragment extends Component {
         //   );
         // }
 
-        other.setMenuD(other, other.current_width, other.current_height,
-          other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
-        );
+        // other.setMenuD(other, other.current_width, other.current_height,
+        //   other.x, other.y, other.group.mainFragment.x, other.group.mainFragment.y
+        // );
 
         if (twoX > selected.group.rightFragmentInd) {
           selected.group.rightFragmentInd = twoX;
@@ -649,16 +615,16 @@ class Fragment extends Component {
   rightTop() {
     let selected = (this.group != null) ? this.group : this;
     return {
-      x: selected.mainFragment.x + this.menuDX + this.current_width - this.current_third_x,
-      y: selected.mainFragment.y + this.menuDY + this.current_third_y
+      x: this.x + this.current_width - this.current_third_x,
+      y: this.y + this.current_third_y
     }
   }
 
   leftTop() {
     let selected = (this.group != null) ? this.group : this;
     return {
-      x: selected.mainFragment.x + this.menuDX + this.current_third_x,
-      y: selected.mainFragment.y + this.menuDY + this.current_third_y
+      x: this.x + this.current_third_x,
+      y: this.y + this.current_third_y
     }
   }
 
@@ -869,7 +835,6 @@ class Fragment extends Component {
       ) {
         // работает только на объекты, отсутствующие в группе, панели и меню
         let scale = canvas.field.bigType ? 1 : canvas.field.scale;
-        // TODO
         connectArray.push({
           range: getInfo.range,
           x: getCoordinates.x,
@@ -984,6 +949,19 @@ class Fragment extends Component {
     });
   }
 
+  smoothShift(dx, dy) {
+    let this_frg = (this.group == null) ? this : this.group;
+    // группа или одиночный фрагмент, к которому идет подключение
+    let this_fr = this; // сам фрагмент
+    this_frg.smoothing = true;
+
+    super.smoothShift(dx, dy, function() {
+      // при окончании перемещения требуется проверить, стоит ли объединить
+      // фрагменты в единую группу
+      this_frg.smoothing = false;
+    });
+  }
+
   /**
    * Самописная, хотя и есть одноименная функция в суперклассе
    *
@@ -1028,17 +1006,20 @@ class Fragment extends Component {
       SelectFragmentHelper.deltaY -= b_y; // без этого будет резкий скачок фрагмента
       this_fr.smoothMove(this_fr.x + b_x, this_fr.y + b_y);
     }
+
+    this.appendMargin(old_width, old_height, new_width, new_height);
     // рекурсивная функция вызываемая с задержкой в самой себе
     function resize() {
       current_width += dX;
       current_height += dY;
-      this_fr.setMenuD(this_fr, current_width, current_height, x, y, mx, my);
+      this_fr.setSizes(this_fr, current_width, current_height);
 
       if (currentTact < Component.tact - 1) {
         setTimeout(resize, Component.frameTime);
         currentTact++;
       } else {
-        this_fr.setMenuD(this_fr, new_width, new_height, x, y, mx, my);
+        this_fr.setSizes(this_fr, new_width, new_height);
+        // this_fr.setMenuD(this_fr, new_width, new_height, x, y, mx, my);
         // this_fr.current_third_x = Fragment.third_x * canvas.field.scale;
         // this_fr.current_third_y = Fragment.third_y * canvas.field.scale;
 

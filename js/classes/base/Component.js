@@ -35,6 +35,13 @@ class Component {
     this.lastY = y + this.current_height;
   }
 
+  shift(dx, dy) {
+    this.x += dx;
+    this.y += dy;
+    this.lastX += dx;
+    this.lastY += dy;
+  }
+
   /**
    *  Функция плавно перемещает компонент, не регулируя isConnecting, smoothing
    *  Требуется их явно поменять, т.к. это не будет правильно работать в случае
@@ -74,6 +81,31 @@ class Component {
     }
     reDraw();
   }
+
+  smoothShift(dx, dy, endFunction = function() {}) {
+    let oldX = this.x;
+    let oldY = this.y;
+    let currentTact = 0;
+    let dX = dx / (Component.tact);
+    let dY = dy / (Component.tact);
+    let component = this;
+
+    // рекурсивная функция вызываемая с задержкой в самой себе
+    function reDraw() {
+      component.shift(dX, dY);
+
+      if (currentTact < Component.tact - 1) {
+        setTimeout(reDraw, Component.frameTime);
+        currentTact++;
+      } else {
+        component.move(oldX, oldY);
+        component.shift(dx, dy);
+        endFunction();
+      }
+    }
+    reDraw();
+  }
+
 
   /**
    * Функция для плавного изменения размера у компонента

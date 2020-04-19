@@ -82,7 +82,6 @@ class FragmentGroup {
     this.fragments.forEach(function(fragment, ind, arr) {
       console.log(fragment.src);
       if (fragment != selected) {
-        console.log(fragment.src);
         fragment.smoothMove(
           x - selected.x + fragment.x,
           y - selected.y + fragment.y,
@@ -91,19 +90,22 @@ class FragmentGroup {
       }
     });
     selected.smoothMove(x, y, connectingFragment, true);
-    console.log(selected.src);
     // true, можно работать с группой
+  }
 
+  smoothShift(dx, dy) {
+    console.log("!smoothShiftGroup");
+    // connectingFragment - фрагмент, к которому я конекчусь.
+    this.fragments.forEach(function(fragment, ind, arr) {
+      fragment.smoothShift(dx, dy)
+    });
+    // true, можно работать с группой
   }
 
   changeGroup(newGroup) {
     this.fragments.forEach(function(fragment, ind, arr) {
       fragment.group = newGroup;
       newGroup.fragments.add(fragment);
-      fragment.setMenuD(fragment, fragment.current_width, fragment.current_height,
-        fragment.x, fragment.y, fragment.group.mainFragment.x,
-        fragment.group.mainFragment.y
-      );
     });
   }
 

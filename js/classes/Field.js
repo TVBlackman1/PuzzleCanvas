@@ -59,7 +59,7 @@ class Field extends Component {
     let scale = needToResize ? this.scale : 1;
     // используется ниже в smoothMove
     let scale2 = needToResize ? this.scale : 1 / this.scale;
-    console.log(scale, scale2);
+    // console.log(scale, scale2);
 
     var lastSeenObject = this.fragmentList.lastVisualObject;
     if (lastSeenObject != null)
@@ -95,11 +95,11 @@ class Field extends Component {
           third_argument = lastSeenObject.value.mainFragment;
         }
 
-        lastSeenObject.value.smoothMove(
-          (lastSeenObject.value.mainFragment.x - this.x) * scale2 + this.x,
-          (lastSeenObject.value.mainFragment.y - this.y) * scale2 + this.y,
-          third_argument
-        );
+        // lastSeenObject.value.smoothShift(
+        //   (lastSeenObject.value.mainFragment.x - this.x) * scale2 + this.x - lastSeenObject.value.mainFragment.x,
+        //   (lastSeenObject.value.mainFragment.y - this.y) * scale2 + this.y - lastSeenObject.value.mainFragment.y,
+        //   third_argument
+        // ); // TODO
 
         lastSeenObject = lastSeenObject.prev;
       } while (lastSeenObject != null)
