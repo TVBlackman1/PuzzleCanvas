@@ -38,52 +38,6 @@ class Canvas {
     this.fr_zones[2] = this.panel;
   }
 
-  // sortZonesByFirstX() {
-  //   this.fr_zones.sort((a, b) => (a.x > b.x) ? 1 : ((b.x > a.x) ? -1 : 0));
-  // }
-
-  // getBlankZones(start, top, bottom, type = null) {
-  //
-  //   // переписать потом на бинарный поиск
-  //   var ind = -1;
-  //   var last = -1;
-  //   for (var i = 0; i < this.fr_zones.length; i++) {
-  //     if (
-  //       top < this.fr_zones[i].y && this.fr_zones[i].y < bottom ||
-  //       top < this.fr_zones[i].lastY && this.fr_zones[i].lastY < bottom ||
-  //       this.fr_zones[i].y < top && top < this.fr_zones[i].lastY ||
-  //       this.fr_zones[i].y < bottom && bottom < this.fr_zones[i].lastY
-  //     ) {
-  //       if (this.fr_zones[i].x > start) {
-  //         ind = i;
-  //         last = this.fr_zones[ind].x;
-  //         break;
-  //       }
-  //     }
-  //   }
-  //   if (ind == -1) { // дойти до края карты, если нет элемента
-  //     last = this.canvas.width;
-  //   }
-  //   if (bottom > top) {
-  //     // создать новый пустой прямоугольник
-  //     this.blank_zones.push(new BlankField(
-  //       start - 1, top - 1,
-  //       last - start + 2, bottom - top + 2));
-  //   }
-  //
-  //   if (ind != -1) { // продолжить, если ещё есть элемент справа
-  //     this.getBlankZones(this.fr_zones[ind].x + 1, top, this.fr_zones[ind].y - 1); // верх
-  //     this.getBlankZones(this.fr_zones[ind].lastX + 1, this.fr_zones[ind].y, this.fr_zones[ind].lastY); // бок
-  //     this.getBlankZones(this.fr_zones[ind].x + 1, this.fr_zones[ind].lastY + 1, bottom - 1); // низ
-  //   }
-  // }
-  //
-  // createBlankZones() {
-  //   this.sortZonesByFirstX();
-  //   this.getBlankZones(0, 0, this.canvas.height, true);
-  // }
-
-
   getCoords(x, y) {
     var bbox = this.canvas.getBoundingClientRect();
     return {
@@ -105,8 +59,10 @@ class Canvas {
 
   // переносить объект между меню и общим полем
   checkMoveBetweenLists() {
-    if (this.left_menu.smoothing)
+    if (this.left_menu.smoothing) {
+      Menu.removeFromMenu();
       return;
+    }
     if (this.left_menu.isPlace) {
       Menu.includeInMenu();
     } else {
@@ -114,17 +70,35 @@ class Canvas {
     }
   }
 
+  smoothShiftDelta(dx, dy) {
+    let oldX = this.x;
+    let oldY = this.y;
+    let currentTact = 0;
+    let dX = dx / (Component.tact);
+    let dY = dy / (Component.tact);
+    let component = this;
+    // рекурсивная функция вызываемая с задержкой в самой себе
+    function reDraw() {
+      SelectFragmentHelper.deltaX += dX;
+      SelectFragmentHelper.deltaY += dY;
+
+      if (currentTact < Component.tact - 1) {
+        setTimeout(reDraw, Component.frameTime);
+        currentTact++;
+      } else {
+        SelectFragmentHelper.deltaX -= dX * (Component.tact);
+        SelectFragmentHelper.deltaY -= dY * (Component.tact);
+
+        SelectFragmentHelper.deltaX += dx;
+        SelectFragmentHelper.deltaY += dy;
+      }
+    }
+    reDraw();
+  }
+
   draw(context) {
     this.field.draw(context);
     this.left_menu.draw(context);
     this.panel.draw(context);
-
   }
-
-  // drawBlank(context) {
-  //   var zones = this.blank_zones;
-  //   for (var i = 0; i < zones.length; i++) {
-  //     zones[i].draw(context)
-  //   }
-  // }
 }

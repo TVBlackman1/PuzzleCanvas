@@ -82,6 +82,25 @@ class Component {
     reDraw();
   }
 
+
+  /**
+   * Функция сдвигает компонент на dx, dy
+   * Нельзя полностью заменить smoothMove подсчётом разницы координат.
+   * При одновременном работе двух smoothMove в обоих случаях подсчёт идет на
+   * конкретные координаты. То есть в итоге компонент перемещается на те координаты,
+   * которые были указаны в последнем вызванном smoothMove. Здесь сдвиг происходит
+   * относительно текущего положения, все вызовы smoothShift сработают одинаково
+   * без преимуществ одного вызова над другим
+   *
+   * @param int dx - на сколько сдвигается компонент по оси X:
+   *
+   * @param int dy - на сколько сдвигается компонент по оси Y
+   *
+   * @param function endFunction - функция, которая должна сработать по
+   *                               завершению анимации.
+   *
+   *
+   */
   smoothShift(dx, dy, endFunction = function() {}) {
     let oldX = this.x;
     let oldY = this.y;
@@ -98,7 +117,8 @@ class Component {
         setTimeout(reDraw, Component.frameTime);
         currentTact++;
       } else {
-        component.move(oldX, oldY);
+        component.shift(-dX * (Component.tact), -dY * (Component.tact));
+        // component.move(oldX, oldY);
         component.shift(dx, dy);
         endFunction();
       }

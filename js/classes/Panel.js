@@ -45,17 +45,15 @@ class Panel extends Component {
     this.fragments.length = imagesCount;
 
     cnv.panel = this;
+    this.wasHiden = false; // уже было когда-то скрыто, теперь можно скрывать и открывать по алгоритму
   }
 
   init() {
     // this.width = Math.floor(canvas.field.width * 1.64); // ШИРИНА ПАНЕЛИ
     this.current_width = this.width;
 
-    this.place.width = this.width;
-
     this.x = Math.floor(canvas.canvas.width / 2 - this.width / 2); // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
     this.stationar_x = this.x;
-    this.place.x = this.x;
 
     this.lastY = canvas.canvas.height - this.marginBottom; // МЕСТОПОЛОЖЕНИЕ ПАНЕЛИ
 
@@ -63,9 +61,18 @@ class Panel extends Component {
 
     this.y = this.lastY - this.height;
     this.stationar_y = this.y;
-    this.place.y = this.y;
 
     this.mainWidth = Math.floor(this.width - 2 * this.buttonWidth - 2 * this.paddingX);
+
+    this.place.width = this.width;
+    this.place.current_width = this.current_width;
+    this.place.current_height = this.current_height * 0.9;
+
+    this.place.x = this.x;
+    this.place.y = this.y + this.place.current_height / 10;
+    this.place.lastY = canvas.canvas.height;
+    this.place.current_height = this.place.lastY - this.place.y;
+
 
     Fragment.heightPanel = Math.floor(this.height - 2 * this.paddingY);
     Fragment.widthPanel = Math.floor(Fragment.heightPanel / Fragment.height * Fragment.width);
@@ -97,7 +104,7 @@ class Panel extends Component {
   }
 
   hide() {
-    if(!this.shown || this.smoothing)
+    if (!this.shown || this.smoothing)
       return;
     this.smoothing = true;
     let panel = this;
@@ -110,7 +117,7 @@ class Panel extends Component {
   }
 
   show() {
-    if(this.shown || this.smoothing)
+    if (this.shown || this.smoothing)
       return;
     this.smoothing = true;
     let panel = this;
@@ -133,15 +140,24 @@ class Panel extends Component {
   }
 
   onmousemove(x, y) {
-    // if (!this.place.isHadPoint(x, y)) {
-    //   this.height = this.place.height / 2;
-    // } else {
-    //   this.height = this.place.height;
-    // }
+    if (this.place.isHadPoint(x, y)) {
+      let ind = SelectFragmentHelper.translatedFragmentId;
+      if (ind == -1 || arr[ind].group == null) {
+        this.wasHiden = true;
+        canvas.field.normalDecrease();
+        canvas.panel.show();
+      }
+    } else {
+      if (this.wasHiden) {
+        canvas.field.normalIncrease();
+        canvas.panel.hide();
+      }
+    }
   }
 
   draw(context) {
     super.draw(context);
+    // this.place.draw(context);
     this.mark.draw(context);
     for (var i = 0; i < this.buttons.length; i++) {
       this.buttons[i].draw(context);

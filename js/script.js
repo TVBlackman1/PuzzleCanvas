@@ -96,8 +96,8 @@ window.onload = function() {
   canvas.canvas.onmousedown = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
     shouldConnect = true;
-    var loc = canvas.getCoords(e.clientX, e.clientY);
     if (canvas.panel.onmousedown(loc)) {
+      console.log("!");
       return;
     }
 
@@ -179,17 +179,19 @@ window.onload = function() {
 
   canvas.canvas.onmouseup = function(e) {
     var loc = canvas.getCoords(e.clientX, e.clientY);
-    console.log(loc.x, loc.y);
 
     canvas.left_menu.onmousemove(loc.x, loc.y);
     // проверка, если мы не двигали элемент, но под ним что-то изменилось
     // например, ушло меню в сторону или, наоборот, появилось
 
     if (SelectFragmentHelper.translatedFragmentId >= 0) {
+
+      let wasOnMenu = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
+        arr[SelectFragmentHelper.translatedFragmentId].group :
+        arr[SelectFragmentHelper.translatedFragmentId]
+      ).onMenu; // если спустилось с меню, запретить коннект
       canvas.checkMoveBetweenLists() // проверка на вхождение в зону меню + изменение состояния объектов
-
       var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
-
       if (selectedFragment.group != null) {
         selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
       } else {
@@ -200,7 +202,8 @@ window.onload = function() {
         selectedFragment.onBottomPanel = true;
       } else if (shouldConnect) {
         let selected = (selectedFragment.group != null) ? selectedFragment.group : selectedFragment;
-        selected.connectTo(); // проверка и дальнейшая попытка
+        if (!wasOnMenu)
+          selected.connectTo(); // проверка и дальнейшая попытка
 
       }
 
@@ -243,6 +246,20 @@ window.onload = function() {
     }
     if (event.keyCode == 51) {
       console.log(canvas.field.fragmentList.lastVisualObject.value.listElem);
+    }
+    if (event.keyCode == 52) {
+      let gr = canvas.field.fragmentList.lastVisualObject.value;
+      let fr = gr.mainFragment;
+      // gr.smoothResize(
+      //   fr.current_width, fr.current_height,
+      //   Fragment.widthPanel, Fragment.heightPanel,
+      //   false, true
+      // );
+      gr.smoothResize(
+        fr.current_width, fr.current_height,
+        fr.current_width * 0.8, fr.current_height * 0.8,
+        false, true
+      );
     }
   }, false);
 

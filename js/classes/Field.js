@@ -95,11 +95,11 @@ class Field extends Component {
           third_argument = lastSeenObject.value.mainFragment;
         }
 
-        // lastSeenObject.value.smoothShift(
-        //   (lastSeenObject.value.mainFragment.x - this.x) * scale2 + this.x - lastSeenObject.value.mainFragment.x,
-        //   (lastSeenObject.value.mainFragment.y - this.y) * scale2 + this.y - lastSeenObject.value.mainFragment.y,
-        //   third_argument
-        // ); // TODO
+        lastSeenObject.value.smoothShift(
+          (lastSeenObject.value.mainFragment.x - this.x) * scale2 + this.x - lastSeenObject.value.mainFragment.x,
+          (lastSeenObject.value.mainFragment.y - this.y) * scale2 + this.y - lastSeenObject.value.mainFragment.y,
+          third_argument
+        ); // TODO
 
         lastSeenObject = lastSeenObject.prev;
       } while (lastSeenObject != null)

@@ -13,10 +13,6 @@ class FragmentGroup {
     this.onMenu = false;
     this.onMenuLast = false; // нужно при tryMoveBeetwenLists, проверьте сами, мне лень
 
-    this.createdInBigType = canvas.field.bigType; // false или true, создана ли группа при увеличенном
-    // поле или уменьшенном. Ебаный костыль для подсчёта setMenu
-    // идея неплоха, но сука дерьмо ебаное, перепишу завтра
-
     /*
      * Нужны крайние значения
      * с помощью них можно получить крайние значения по осям X и Y для группы
@@ -77,10 +73,8 @@ class FragmentGroup {
   }
 
   smoothMove(x, y, selected, connectingFragment = null) {
-    console.log("!smoothmoveGroup");
     // connectingFragment - фрагмент, к которому я конекчусь.
     this.fragments.forEach(function(fragment, ind, arr) {
-      console.log(fragment.src);
       if (fragment != selected) {
         fragment.smoothMove(
           x - selected.x + fragment.x,
@@ -93,6 +87,19 @@ class FragmentGroup {
     // true, можно работать с группой
   }
 
+
+  /**
+   * Функция сдвигает компонент на dx, dy
+   * Подробности в описании функции класса Component
+   * @param int dx - на сколько сдвигается компонент по оси X:
+   *
+   * @param int dy - на сколько сдвигается компонент по оси Y
+   *
+   * @param function endFunction - функция, которая должна сработать по
+   *                               завершению анимации.
+   *
+   *
+   */
   smoothShift(dx, dy) {
     console.log("!smoothShiftGroup");
     // connectingFragment - фрагмент, к которому я конекчусь.
@@ -145,6 +152,7 @@ class FragmentGroup {
       return;
     }
     this.onMenuLast = this.onMenu;
+    console.log(canvas.left_menu.smoothing);
     if (!this.onMenu) {
       // поставить по умолчанию
 
@@ -165,7 +173,7 @@ class FragmentGroup {
       this.listElem.remove(); // удалиться из прошлого листа
       canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
 
-      this.mainFragment = fr;
+      // this.mainFragment = fr;
       this.smoothResize(
         fr.current_width, fr.current_height,
         Fragment.widthPanel, Fragment.heightPanel,
@@ -204,7 +212,7 @@ class FragmentGroup {
       SelectFragmentHelper.deltaX -= b_x;
       SelectFragmentHelper.deltaY -= b_y;
       this.fragments.forEach(function(fragment, ind, arr) {
-        fragment.smoothMove(fragment.x + b_x, fragment.y + b_y);
+        fragment.smoothShift(b_x, b_y);
       });
     }
   }
