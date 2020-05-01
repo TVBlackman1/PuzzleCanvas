@@ -9,111 +9,73 @@
   <link rel="stylesheet" href="css/header_style.css">
 
   <!-- <script type="text/javascript" src="js/lib/jQuery_3_4_1.js"></script> -->
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<!--  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
 </head>
 
 <body>
-  <div class="header-container">
-    <div class="container header-list" id="header-list">
-      <ul class="row header-list">
-        <li class="col-lg-3 header-links">Главная</li>
-        <li class="col-lg-3 header-links">Пазлы</li>
-        <li class="col-lg-3 header-links">О нас</li>
-      </ul>
-    </div>
-    <a class="entrance" href="../../pages/entrance/entrance.php">Вход</a>
-  </div>
   <div id="main">
     <canvas id="canvas-puzzle" width="1490" height="820"></canvas>
-    <div id="right-menu">
-      <div id="right-menu-top">
-        <div id="header">
-          Игроки в комнате
-        </div>
-        <div id="people-list">
-          <ul>
-            <li v-for="person of people">
-              <div class="person">
-                <div id="person-image" v-bind:style="{backgroundImage: 'url(' + person.img + ')'}"></div>
-                <div id="person-right">
-                  <div id="person-top">
-                    {{ person.name }}
-                  </div>
-                  <div id="person-bottom">
-                    {{ person.description }}
-                  </div>
-                </div>
-                <div id="color-sign" v-bind:style="{backgroundColor: person.color}"></div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div id="right-menu-bottom">
-        <div id="control-panel">
-          <div class="button-place">
-            <div id="button-exit"></div>
-          </div>
-          <div id="timer">17:40</div>
-          <div class="button-place">
-            <div id="button-play"></div>
-          </div>
-        </div>
-        <div id="achiev-list">
-          <ul>
-            <li v-for="achiev of achievements">
-              <div class="achiev">
-                <div id="achiev-image" v-bind:style="{backgroundImage: 'url(' + achiev.img + ')'}"></div>
-                
-                <div id="achiev-right">
-                  <div id="achiev-top">
-                    {{ achiev.name }}
-                  </div>
-                  <div id="achiev-bottom">
-                    {{ achiev.description }}
-                  </div>
-                </div>
-                <div id="color-sign" v-bind:style="{backgroundColor: achiev.color}"></div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+<!--    <div id="right-menu">-->
+<!--      <div id="right-menu-top">-->
+<!--        <div id="header">-->
+<!--          Игроки в комнате-->
+<!--        </div>-->
+<!--        <div id="people-list">-->
+<!--          <ul>-->
+<!--            <li v-for="person of people">-->
+<!--              <div class="person">-->
+<!--                <div id="person-image" v-bind:style="{backgroundImage: 'url(' + person.img + ')'}"></div>-->
+<!--                <div id="person-right">-->
+<!--                  <div id="person-top">-->
+<!--                    {{ person.name }}-->
+<!--                  </div>-->
+<!--                  <div id="person-bottom">-->
+<!--                    {{ person.description }}-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--                <div id="color-sign" v-bind:style="{backgroundColor: person.color}"></div>-->
+<!--              </div>-->
+<!--            </li>-->
+<!--          </ul>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div id="right-menu-bottom">-->
+<!--        <div id="control-panel">-->
+<!--          <div class="button-place">-->
+<!--            <div id="button-exit"></div>-->
+<!--          </div>-->
+<!--          <div id="timer">17:40</div>-->
+<!--          <div class="button-place">-->
+<!--            <div id="button-play"></div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--        <div id="achiev-list">-->
+<!--          <ul>-->
+<!--            <li v-for="achiev of achievements">-->
+<!--              <div class="achiev">-->
+<!--                <div id="achiev-image" v-bind:style="{backgroundImage: 'url(' + achiev.img + ')'}"></div>-->
+
+<!--                <div id="achiev-right">-->
+<!--                  <div id="achiev-top">-->
+<!--                    {{ achiev.name }}-->
+<!--                  </div>-->
+<!--                  <div id="achiev-bottom">-->
+<!--                    {{ achiev.description }}-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--                <div id="color-sign" v-bind:style="{backgroundColor: achiev.color}"></div>-->
+<!--              </div>-->
+<!--            </li>-->
+<!--          </ul>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
   </div>
   <!-- <canvas id="canvas-puzzle" width="1920" height="1080"> -->
 
-  <script type="text/javascript" src="js/app.js"></script>
-
-  <script type="text/javascript" src="js/vars.js"></script>
-
-  <script type="text/javascript" src="js/classes/base/Component.js"></script>
-  <script type="text/javascript" src="js/classes/base/Button.js"></script>
-
-  <script type="text/javascript" src="js/classes/BlankField.js"></script>
-  <script type="text/javascript" src="js/classes/Field.js"></script>
-  <script type="text/javascript" src="js/classes/Canvas.js"></script>
-
-  <script type="text/javascript" src="js/classes/Panel.js"></script>
-  <script type="text/javascript" src="js/classes/places/PanelPlace.js"></script>
-  <script type="text/javascript" src="js/classes/PanelButton.js"></script>
-
-  <script type="text/javascript" src="js/classes/Timer.js"></script>
-  <script type="text/javascript" src="js/classes/control-buttons/ButtonBack.js"></script>
-  <script type="text/javascript" src="js/classes/control-buttons/ButtonDelete.js"></script>
-  <script type="text/javascript" src="js/classes/control-buttons/ButtonDeleteAll.js"></script>
-  <script type="text/javascript" src="js/classes/control-buttons/ButtonPlay.js"></script>
-  <script type="text/javascript" src="js/classes/ControlPanel.js"></script>
-
-  <script type="text/javascript" src="js/classes/Menu.js"></script>
-  <script type="text/javascript" src="js/classes/places/MenuPlace.js"></script>
-
-  <script type="text/javascript" src="js/classes/FragmentGroup.js"></script>
-  <script type="text/javascript" src="js/classes/Fragment.js"></script>
-  <script type="text/javascript" src="js/classes/FragmentList.js"></script>
-  <script type="text/javascript" src="js/classes/FragmentListElem.js"></script>
-
-  <script type="text/javascript" src="js/script.js"></script>
+<!-- Пока не добавлено тк там Vue конфликтует-->
+  <!--  <script type="text/javascript" src="js/app.js"></script>-->
+    <script type="text/javascript" src="./dist/puzzle.js"></script>
 </body>
 
 </html>

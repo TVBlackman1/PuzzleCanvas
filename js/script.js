@@ -34,7 +34,7 @@ function drawAll(canvas, context) {
 }
 
 function initializeFragmentList(arr) {
-  for (i = 0; i < countImages; i++) {
+  for (let i = 0; i < countImages; i++) {
     var x = i % imagesX;
     var y = Math.floor(i / imagesX);
 
@@ -204,7 +204,6 @@ window.onload = function() {
         let selected = (selectedFragment.group != null) ? selectedFragment.group : selectedFragment;
         if (!wasOnMenu)
           selected.connectTo(); // проверка и дальнейшая попытка
-
       }
 
       SelectFragmentHelper.translatedFragmentId = -1;
@@ -271,7 +270,6 @@ window.onload = function() {
 
   // Анимация с определённой частотой для обновления экрана
   setInterval(update, 1000 / FRAMES);
-
 }
 
 // Обновление экрана
