@@ -12,7 +12,7 @@ const FIELD_HEIGHT = 10 / 11; // Местоположение поля в Field.
 const KEY_showSilhouette = 83; // S
 const KEY_shouldConnect = 32; // SPACE
 
-const DIRECTORY = "images/";
+const DIRECTORY = "/js/PuzzleCanvas/images/";
 
 
 
@@ -35,207 +35,212 @@ var showSilhouette = false;
 var canvas = undefined; // init in script.js
 
 class Component {
-  static tact = 21; // кол-во тактов анимации для всех компонентов канваса
-  static frameTime = 10000 / FRAMES / Component.tact; // задержка перед
-  // следующим тактом
-  constructor() {
-    this.borderColor = "#282828";
-    this.fillColor = "#e4e4e4"
+    static tact = 21; // кол-во тактов анимации для всех компонентов канваса
+    static frameTime = 10000 / FRAMES / Component.tact; // задержка перед
+    // следующим тактом
+    constructor() {
+        this.borderColor = "#282828";
+        this.fillColor = "#e4e4e4"
 
-    this.smoothing = false; // для отсутствия взаимодействия при анимациях
+        this.smoothing = false; // для отсутствия взаимодействия при анимациях
 
-    this.width = null; // размер
-    this.height = null;
+        this.width = null; // размер
+        this.height = null;
 
-    this.current_width = null; // текущий размер с учетом функций его изменения
-    this.current_height = null;
+        this.current_width = null; // текущий размер с учетом функций его изменения
+        this.current_height = null;
 
-    this.x = null; // расположение
-    this.y = null;
+        this.x = null; // расположение
+        this.y = null;
 
-    this.lastX = null; // конечные координаты
-    this.lastY = null;
-  }
-
-  isHadPoint(x, y) {
-    return (
-      x >= this.x && x <= this.x + this.current_width &&
-      y >= this.y && y <= this.y + this.current_height
-    )
-  }
-
-  move(x, y) {
-    this.x = x;
-    this.y = y;
-    this.lastX = x + this.current_width;
-    this.lastY = y + this.current_height;
-  }
-
-  shift(dx, dy) {
-    this.x += dx;
-    this.y += dy;
-    this.lastX += dx;
-    this.lastY += dy;
-  }
-
-  /**
-   *  Функция плавно перемещает компонент, не регулируя isConnecting, smoothing
-   *  Требуется их явно поменять, т.к. это не будет правильно работать в случае
-   *  передвижения группы фрагментов по одному (smoothing должен ставиться не
-   *  каждому фрагменту в отдельности, а объекту группы)
-   *
-   *  @param int newX - новая координата x
-   *
-   *  @param int newY - новая координата y
-   *
-   *  @param function endFunction - функция, которая должна сработать по
-   *                                завершению анимации
-   *
-   */
-  smoothMove(newX, newY, endFunction = function() {}) {
-    let oldX = this.x;
-    let oldY = this.y;
-    let currentTact = 0;
-    let dX = (newX - oldX) / (Component.tact);
-    let dY = (newY - oldY) / (Component.tact);
-    let component = this;
-
-    // рекурсивная функция вызываемая с задержкой в самой себе
-    function reDraw() {
-      component.move(
-        component.x + dX,
-        component.y + dY
-      );
-
-      if (currentTact < Component.tact - 1) {
-        setTimeout(reDraw, Component.frameTime);
-        currentTact++;
-      } else {
-        component.move(newX, newY);
-        endFunction();
-      }
+        this.lastX = null; // конечные координаты
+        this.lastY = null;
     }
-    reDraw();
-  }
 
-
-  /**
-   * Функция сдвигает компонент на dx, dy
-   * Нельзя полностью заменить smoothMove подсчётом разницы координат.
-   * При одновременном работе двух smoothMove в обоих случаях подсчёт идет на
-   * конкретные координаты. То есть в итоге компонент перемещается на те координаты,
-   * которые были указаны в последнем вызванном smoothMove. Здесь сдвиг происходит
-   * относительно текущего положения, все вызовы smoothShift сработают одинаково
-   * без преимуществ одного вызова над другим
-   *
-   * @param int dx - на сколько сдвигается компонент по оси X:
-   *
-   * @param int dy - на сколько сдвигается компонент по оси Y
-   *
-   * @param function endFunction - функция, которая должна сработать по
-   *                               завершению анимации.
-   *
-   *
-   */
-  smoothShift(dx, dy, endFunction = function() {}) {
-    let oldX = this.x;
-    let oldY = this.y;
-    let currentTact = 0;
-    let dX = dx / (Component.tact);
-    let dY = dy / (Component.tact);
-    let component = this;
-
-    // рекурсивная функция вызываемая с задержкой в самой себе
-    function reDraw() {
-      component.shift(dX, dY);
-
-      if (currentTact < Component.tact - 1) {
-        setTimeout(reDraw, Component.frameTime);
-        currentTact++;
-      } else {
-        component.shift(-dX * (Component.tact), -dY * (Component.tact));
-        // component.move(oldX, oldY);
-        component.shift(dx, dy);
-        endFunction();
-      }
+    isHadPoint(x, y) {
+        return (
+            x >= this.x && x <= this.x + this.current_width &&
+            y >= this.y && y <= this.y + this.current_height
+        )
     }
-    reDraw();
-  }
 
+    move(x, y) {
+        this.x = x;
+        this.y = y;
+        this.lastX = x + this.current_width;
+        this.lastY = y + this.current_height;
+    }
 
-  /**
-   * Функция для плавного изменения размера у компонента
-   * Не меняет значения resizing
-   *
-   * @param double - 4 длины компонента, понятные из их названий
-   *
-   * @param back - стоит ли повторять анимацию задонаперед при истинности
-   *
-   */
-  smoothResize(old_width, old_height, new_width, new_height, back = false) {
-    let currentTact = 0;
-    let dX = (new_width - old_width) / (Component.tact);
-    let dY = (new_height - old_height) / (Component.tact);
+    shift(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+        this.lastX += dx;
+        this.lastY += dy;
+    }
 
-    let component = this;
+    /**
+     *  Функция плавно перемещает компонент, не регулируя isConnecting, smoothing
+     *  Требуется их явно поменять, т.к. это не будет правильно работать в случае
+     *  передвижения группы фрагментов по одному (smoothing должен ставиться не
+     *  каждому фрагменту в отдельности, а объекту группы)
+     *
+     *  @param int newX - новая координата x
+     *
+     *  @param int newY - новая координата y
+     *
+     *  @param function endFunction - функция, которая должна сработать по
+     *                                завершению анимации
+     *
+     */
+    async smoothMove(newX, newY, endFunction = ()=>{}) {
+        let oldX = this.x;
+        let oldY = this.y;
+        let currentTact = 0;
+        let dX = (newX - oldX) / (Component.tact);
+        let dY = (newY - oldY) / (Component.tact);
+        let component = this;
 
-    // рекурсивная функция вызываемая с задержкой в самой себе
-    function resize() {
-      component.setSizes(component,
-        component.current_width + dX,
-        component.current_height + dY
-      );
-
-      if (currentTact < Component.tact - 1) {
-        setTimeout(resize, Component.frameTime);
-        currentTact++;
-      } else {
-        component.setSizes(component, new_width, new_height);
-        component.move(component.x, component.y); // при resize меняются размеры
-        // эта функция никуда не перемещает объект, но перезаписывает крайние координаты
-        // которые зависят от размеров самого объекта
-
-        if (back) {
-          // повторная анимация, возвращающая всё обратно
-          component.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
+        // рекурсивная функция вызываемая с задержкой в самой себе
+        function reDraw() {
+            return new Promise((resolve => {
+                component.move(
+                    component.x + dX,
+                    component.y + dY
+                );
+                setTimeout(()=>{resolve()}, Component.frameTime);
+            }));
         }
-      }
+        while(currentTact < Component.tact - 1){
+           await reDraw();
+           currentTact++;
+        }
+        component.move(
+            newX,
+            newY
+        );
+        endFunction();
     }
 
-    resize();
-  }
 
-  /**
-   * Функция предназначена для мгновенного изменения размера
-   * Следует вызывать из smoothResize
-   *
-   * @param component - компонент, над которым выполняются действия
-   *
-   * @param current_width - текущая длина компонента
-   *
-   * @param current_height - текущая высота компонента
-   *
-   */
-  setSizes(component, current_width, current_height) {
-    component.current_width = current_width;
-    component.current_height = current_height;
-  }
+    /**
+     * Функция сдвигает компонент на dx, dy
+     * Нельзя полностью заменить smoothMove подсчётом разницы координат.
+     * При одновременном работе двух smoothMove в обоих случаях подсчёт идет на
+     * конкретные координаты. То есть в итоге компонент перемещается на те координаты,
+     * которые были указаны в последнем вызванном smoothMove. Здесь сдвиг происходит
+     * относительно текущего положения, все вызовы smoothShift сработают одинаково
+     * без преимуществ одного вызова над другим
+     *
+     * @param int dx - на сколько сдвигается компонент по оси X:
+     *
+     * @param int dy - на сколько сдвигается компонент по оси Y
+     *
+     * @param function endFunction - функция, которая должна сработать по
+     *                               завершению анимации.
+     *
+     *
+     */
+    smoothShift(dx, dy, endFunction = function () {
+    }) {
+        let oldX = this.x;
+        let oldY = this.y;
+        let currentTact = 0;
+        let dX = dx / (Component.tact);
+        let dY = dy / (Component.tact);
+        let component = this;
+
+        // рекурсивная функция вызываемая с задержкой в самой себе
+        function reDraw() {
+            component.shift(dX, dY);
+
+            if (currentTact < Component.tact - 1) {
+                setTimeout(reDraw, Component.frameTime);
+                currentTact++;
+            } else {
+                component.shift(-dX * (Component.tact), -dY * (Component.tact));
+                // component.move(oldX, oldY);
+                component.shift(dx, dy);
+                endFunction();
+            }
+        }
+
+        reDraw();
+    }
 
 
-  draw(context) {
-    context.beginPath();
-    context.rect(
-      this.x,
-      this.y,
-      this.current_width,
-      this.current_height
-    );
+    /**
+     * Функция для плавного изменения размера у компонента
+     * Не меняет значения resizing
+     *
+     * @param double - 4 длины компонента, понятные из их названий
+     *
+     * @param back - стоит ли повторять анимацию задонаперед при истинности
+     *
+     */
+    smoothResize(old_width, old_height, new_width, new_height, back = false) {
+        let currentTact = 0;
+        let dX = (new_width - old_width) / (Component.tact);
+        let dY = (new_height - old_height) / (Component.tact);
 
-    context.strokeStyle = this.borderColor;
-    context.stroke();
-    context.fillStyle = this.fillColor;
-    context.fill();
-  }
+        let component = this;
+
+        // рекурсивная функция вызываемая с задержкой в самой себе
+        function resize() {
+            component.setSizes(component,
+                component.current_width + dX,
+                component.current_height + dY
+            );
+
+            if (currentTact < Component.tact - 1) {
+                setTimeout(resize, Component.frameTime);
+                currentTact++;
+            } else {
+                component.setSizes(component, new_width, new_height);
+                component.move(component.x, component.y); // при resize меняются размеры
+                // эта функция никуда не перемещает объект, но перезаписывает крайние координаты
+                // которые зависят от размеров самого объекта
+
+                if (back) {
+                    // повторная анимация, возвращающая всё обратно
+                    component.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
+                }
+            }
+        }
+
+        resize();
+    }
+
+    /**
+     * Функция предназначена для мгновенного изменения размера
+     * Следует вызывать из smoothResize
+     *
+     * @param component - компонент, над которым выполняются действия
+     *
+     * @param current_width - текущая длина компонента
+     *
+     * @param current_height - текущая высота компонента
+     *
+     */
+    setSizes(component, current_width, current_height) {
+        component.current_width = current_width;
+        component.current_height = current_height;
+    }
+
+
+    draw(context) {
+        context.beginPath();
+        context.rect(
+            this.x,
+            this.y,
+            this.current_width,
+            this.current_height
+        );
+
+        context.strokeStyle = this.borderColor;
+        context.stroke();
+        context.fillStyle = this.fillColor;
+        context.fill();
+    }
 }
 
 // кнопки между панелью и игровым полем
@@ -1184,245 +1189,262 @@ class Menu extends Component {
 class MenuPlace extends Component {}
 
 class FragmentGroup {
-  constructor(src, x, y, left, top) {
-    this.fragments = new Set();
-    this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
-    // В противном случае нужно чёто рассматривать а мне лень
-    this.smoothing = false;
-    this.resizing = false;
-    this.connectedToCorner = false;
+    constructor(src, x, y, left, top) {
+        this.fragments = new Set();
+        this.isConnecting = false; // группа в данный момент подключает другой объект, а потому не может перемещаться.
+        // В противном случае нужно чёто рассматривать а мне лень
+        this.smoothing = false;
+        this.resizing = false;
+        this.connectedToCorner = false;
 
-    this.listElem = null; // ссылка на соответстующий элемент в листе
-    this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
-    // в уменьшенной группе в области меню и определения его новых координат
-    this.onMenu = false;
-    this.onMenuLast = false; // нужно при tryMoveBeetwenLists, проверьте сами, мне лень
+        this.listElem = null; // ссылка на соответстующий элемент в листе
+        this.mainFragment = null; // главный фрагмент группы, нужный для вычисления расстояния до
+        // в уменьшенной группе в области меню и определения его новых координат
+        this.onMenu = false;
+        this.onMenuLast = false; // нужно при tryMoveBeetwenLists, проверьте сами, мне лень
+
+        /*
+         * Нужны крайние значения
+         * с помощью них можно получить крайние значения по осям X и Y для группы
+         * и ограничить её перемещение по полю, а так же изменяет scale у resizeSelect
+         * для меньшего изменения размера для каждого фрагмента. Т.е. чем больше длина
+         * и высота фрагмента, тем меньше изменение размера
+         */
+        this.leftFragmentInd = -1;
+        this.rightFragmentInd = -1;
+        this.topFragmentInd = -1;
+        this.bottomFragmentInd = -1;
+    }
+
+    /**
+     * Прошлые версии возвращали индекс, в этой не стоит, т.к.
+     * сейчас взятым фрагментом считается mainFragment, а не по-настоящему взятый
+     * это решается несколько проблем с "телепортацией" группы при работе с
+     * увеличением и уменьшением элементов
+     *
+     * @return bool found
+     *
+     */
+    isHadPoint(x, y) {
+        var found = false;
+        this.fragments.forEach(function (fragment, ind, arr) {
+            found = found || fragment.isHadPoint(x, y); // если нашлось, не проверяется
+        });
+        return found;
+    }
+
+    /**
+     * Перемещает все фрагменты зависимо от того, куда переместился один из них
+     *
+     * @param x - координата по оси x выбранного фрагмента
+     *
+     * @param y - координата по оси y выбранного фрагмента
+     *
+     * @param selected - выбранный фрагмент, который перемещается.
+     *                   относительно него вычисляются координаты других фрагментов
+     *                   чтобы изображение не ломалось
+     */
+    move(x, y, selected) {
+        this.fragments.forEach(function (fragment, ind, arr) {
+            if (fragment !== selected) {
+                fragment.move(
+                    x - selected.x + fragment.x,
+                    y - selected.y + fragment.y
+                )
+            }
+        });
+        selected.move(x, y); // обрабатывается последним, т.к. в цикле используются его данные
+    }
+
+    draw(context) {
+        this.fragments.forEach(function (fragment, ind, arr) {
+            fragment.draw(context);
+        });
+    }
+
+    async smoothMove(x, y, selected, connectingFragment = null) {
+        // connectingFragment - фрагмент, к которому я конекчусь.
+        let smoothMoves = [];
+        for (const fragment of this.fragments) {
+            if (fragment !== selected) {
+                smoothMoves.push(fragment.smoothMove(
+                    x - selected.x + fragment.x,
+                    y - selected.y + fragment.y,
+                    connectingFragment
+                ));
+            }
+        }
+        smoothMoves.push(selected.smoothMove(x, y, connectingFragment, true));
+        await Promise.all(smoothMoves);
+        // true, можно работать с группой
+    }
+
+
+    /**
+     * Функция сдвигает компонент на dx, dy
+     * Подробности в описании функции класса Component
+     * @param int dx - на сколько сдвигается компонент по оси X:
+     *
+     * @param int dy - на сколько сдвигается компонент по оси Y
+     *
+     * @param function endFunction - функция, которая должна сработать по
+     *                               завершению анимации.
+     *
+     *
+     */
+    smoothShift(dx, dy) {
+        console.log("!smoothShiftGroup");
+        // connectingFragment - фрагмент, к которому я конекчусь.
+        this.fragments.forEach(function (fragment, ind, arr) {
+            fragment.smoothShift(dx, dy)
+        });
+        // true, можно работать с группой
+    }
+
+    changeGroup(newGroup) {
+        this.fragments.forEach(function (fragment, ind, arr) {
+            fragment.group = newGroup;
+            newGroup.fragments.add(fragment);
+        });
+    }
+
+    connectTo() {
+        var minRange = -1;
+        var minFragment = null;
+        let result = {res: false}; // информация о том, нужно ли группе присоеденятся
+        this.fragments.forEach(function (fragment, ind, arr) {
+
+            // для каждого из фрагментов смотрим, можем ли мы присоединить его к другим фрагментам вне группы
+            var res = fragment.connectTo(fragment.ind, false); // информация о возможности присоединения БЕЗ самого присоединения
+            // res - null при объекте в меню или наведенном на меню => не стоит присоединяться
+            console.log(res);
+            // сортировка по расстоянию, если есть возможность присоединить. Выбор минимального из расстояний
+            if (res && res.res) {
+                if (minRange == -1) {
+                    minRange = res.range;
+                    minFragment = fragment;
+                }
+                if (res.range < minRange) {
+                    minRange = res.range;
+                    minFragment = fragment;
+                }
+            }
+        });
+        if (minFragment != null) {
+            result = minFragment.connectTo(minFragment.ind, true);
+        }
+        return result;
+    }
 
     /*
-     * Нужны крайние значения
-     * с помощью них можно получить крайние значения по осям X и Y для группы
-     * и ограничить её перемещение по полю, а так же изменяет scale у resizeSelect
-     * для меньшего изменения размера для каждого фрагмента. Т.е. чем больше длина
-     * и высота фрагмента, тем меньше изменение размера
+     * Меняет размер, если объект на меню
+     *
      */
-    this.leftFragmentInd = -1;
-    this.rightFragmentInd = -1;
-    this.topFragmentInd = -1;
-    this.bottomFragmentInd = -1;
-  }
-
-  /**
-   * Прошлые версии возвращали индекс, в этой не стоит, т.к.
-   * сейчас взятым фрагментом считается mainFragment, а не по-настоящему взятый
-   * это решается несколько проблем с "телепортацией" группы при работе с
-   * увеличением и уменьшением элементов
-   *
-   * @return bool found
-   *
-   */
-  isHadPoint(x, y) {
-    var found = false;
-    this.fragments.forEach(function(fragment, ind, arr) {
-      found = found || fragment.isHadPoint(x, y); // если нашлось, не проверяется
-    });
-    return found;
-  }
-
-  /**
-   * Перемещает все фрагменты зависимо от того, куда переместился один из них
-   *
-   * @param x - координата по оси x выбранного фрагмента
-   *
-   * @param y - координата по оси y выбранного фрагмента
-   *
-   * @param selected - выбранный фрагмент, который перемещается.
-   *                   относительно него вычисляются координаты других фрагментов
-   *                   чтобы изображение не ломалось
-   */
-  move(x, y, selected) {
-    this.fragments.forEach(function(fragment, ind, arr) {
-      if (fragment !== selected) {
-        fragment.move(
-          x - selected.x + fragment.x,
-          y - selected.y + fragment.y
-        )
-      }
-    });
-    selected.move(x, y); // обрабатывается последним, т.к. в цикле используются его данные
-  }
-
-  draw(context) {
-    this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.draw(context);
-    });
-  }
-
-  smoothMove(x, y, selected, connectingFragment = null) {
-    // connectingFragment - фрагмент, к которому я конекчусь.
-    this.fragments.forEach(function(fragment, ind, arr) {
-      if (fragment != selected) {
-        fragment.smoothMove(
-          x - selected.x + fragment.x,
-          y - selected.y + fragment.y,
-          connectingFragment
-        )
-      }
-    });
-    selected.smoothMove(x, y, connectingFragment, true);
-    // true, можно работать с группой
-  }
-
-
-  /**
-   * Функция сдвигает компонент на dx, dy
-   * Подробности в описании функции класса Component
-   * @param int dx - на сколько сдвигается компонент по оси X:
-   *
-   * @param int dy - на сколько сдвигается компонент по оси Y
-   *
-   * @param function endFunction - функция, которая должна сработать по
-   *                               завершению анимации.
-   *
-   *
-   */
-  smoothShift(dx, dy) {
-    console.log("!smoothShiftGroup");
-    // connectingFragment - фрагмент, к которому я конекчусь.
-    this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.smoothShift(dx, dy)
-    });
-    // true, можно работать с группой
-  }
-
-  changeGroup(newGroup) {
-    this.fragments.forEach(function(fragment, ind, arr) {
-      fragment.group = newGroup;
-      newGroup.fragments.add(fragment);
-    });
-  }
-
-  connectTo() {
-    var minRange = -1;
-    var minFragment = null;
-    this.fragments.forEach(function(fragment, ind, arr) {
-
-      // для каждого из фрагментов смотрим, можем ли мы присоединить его к другим фрагментам вне группы
-      var res = fragment.connectTo(fragment.ind, false); // информация о возможности присоединения БЕЗ самого присоединения
-      // res - null при объекте в меню или наведенном на меню => не стоит присоединяться
-
-      // сортировка по расстоянию, если есть возможность присоединить. Выбор минимального из расстояний
-      if (res && res.res) {
-        if (minRange == -1) {
-          minRange = res.range;
-          minFragment = fragment;
+    tryMoveBeetwenLists(fr) {
+        // fr - фрагмент, который мы взяли. Относительно него будут строиться остальные
+        if (this.onMenuLast == this.onMenu) {
+            return;
         }
-        if (res.range < minRange) {
-          minRange = res.range;
-          minFragment = fragment;
+        this.onMenuLast = this.onMenu;
+        console.log(canvas.left_menu.smoothing);
+        if (!this.onMenu) {
+            // поставить по умолчанию
+
+            let tmp = this.listElem;
+            this.listElem.remove(); // удалиться из прошлого листа
+            canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
+
+            this.scale = canvas.field.bigType ? 1 : canvas.field.scale;
+            this.smoothResize(
+                Fragment.widthPanel, Fragment.heightPanel,
+                Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
+                false, true
+            );
+        } else {
+            // поставить в зависимости от главного, в меню
+
+            let tmp = this.listElem;
+            this.listElem.remove(); // удалиться из прошлого листа
+            canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
+
+            // this.mainFragment = fr;
+            this.smoothResize(
+                fr.current_width, fr.current_height,
+                Fragment.widthPanel, Fragment.heightPanel,
+                false, true
+            );
+            console.log();
         }
-      }
-    });
-    if (minFragment != null)
-      minFragment.connectTo(minFragment.ind, true);
-
-  }
-
-  /*
-   * Меняет размер, если объект на меню
-   *
-   */
-  tryMoveBeetwenLists(fr) {
-    // fr - фрагмент, который мы взяли. Относительно него будут строиться остальные
-    if (this.onMenuLast == this.onMenu) {
-      return;
     }
-    this.onMenuLast = this.onMenu;
-    console.log(canvas.left_menu.smoothing);
-    if (!this.onMenu) {
-      // поставить по умолчанию
 
-      let tmp = this.listElem;
-      this.listElem.remove(); // удалиться из прошлого листа
-      canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
-
-      this.scale = canvas.field.bigType ? 1 : canvas.field.scale;
-      this.smoothResize(
-        Fragment.widthPanel, Fragment.heightPanel,
-        Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
-        false, true
-      );
-    } else {
-      // поставить в зависимости от главного, в меню
-
-      let tmp = this.listElem;
-      this.listElem.remove(); // удалиться из прошлого листа
-      canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
-
-      // this.mainFragment = fr;
-      this.smoothResize(
-        fr.current_width, fr.current_height,
-        Fragment.widthPanel, Fragment.heightPanel,
-        false, true
-      );
-      console.log();
+    /**
+     * Меняет относительные координаты у фрагментов группы для
+     * нормального уменьшения / увеличения изображения при добавлении в группу
+     *
+     * @param double - 4 длины пазлины, понятные из их названий
+     *
+     * @param bool back - повторяет анимацию задонаперед
+     *
+     * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
+     *
+     */
+    smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
+        // append_cursor для группы обрабатывается отдельно
+        // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
+        // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
+        // изображение сместится, баг
+        // Другими словами, сначала требуется изменить размер всех пазлов,
+        // а потом переместить их. Это происходит быстро и без видимых проблем
+        this.fragments.forEach(function (fragment, ind, arr) {
+            // false - append_cursor здесь не рассматривается из-за if-а дальше
+            // ведь должно обрабатываться одноразово
+            fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
+        });
+        if (append_cursor) {
+            let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
+            let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+            SelectFragmentHelper.deltaX -= b_x;
+            SelectFragmentHelper.deltaY -= b_y;
+            this.fragments.forEach(function (fragment, ind, arr) {
+                fragment.smoothShift(b_x, b_y);
+            });
+        }
     }
-  }
 
-  /**
-   * Меняет относительные координаты у фрагментов группы для
-   * нормального уменьшения / увеличения изображения при добавлении в группу
-   *
-   * @param double - 4 длины пазлины, понятные из их названий
-   *
-   * @param bool back - повторяет анимацию задонаперед
-   *
-   * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
-   *
-   */
-  smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
-    // append_cursor для группы обрабатывается отдельно
-    // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
-    // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
-    // изображение сместится, баг
-    // Другими словами, сначала требуется изменить размер всех пазлов,
-    // а потом переместить их. Это происходит быстро и без видимых проблем
-    this.fragments.forEach(function(fragment, ind, arr) {
-      // false - append_cursor здесь не рассматривается из-за if-а дальше
-      // ведь должно обрабатываться одноразово
-      fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
-    });
-    if (append_cursor) {
-      let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
-      let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-      SelectFragmentHelper.deltaX -= b_x;
-      SelectFragmentHelper.deltaY -= b_y;
-      this.fragments.forEach(function(fragment, ind, arr) {
-        fragment.smoothShift(b_x, b_y);
-      });
+    /**
+     * Выделяет группу изменением размера
+     *
+     * @param back - bool, стоит ли возвращать анимацию назад
+     *
+     * @param charact - увеличить или уменьшить (-1, 1)
+     *
+     * @param scale - double, во сколько раз стоит уменьшить/увеличить изображение
+     *
+     */
+    resizeSelect(this_gr = this, back = true, charact = -1, scale = 0.95) {
+        let maxDif = Math.max(this_gr.rightFragmentInd - this_gr.leftFragmentInd,
+            this_gr.topFragmentInd - this_gr.bottomFragmentInd);
+        let scaleForFragment = 1 - (1 - scale) / maxDif;
+        // формула для нормального изменения размера всей группы.
+        // Если поставить scale, то при большой длине или высоте изменения размера
+        // в пиксилях будут велики, а в данном случае они будут одинаковы.
+        this_gr.fragments.forEach(function (fragment, ind, arr) {
+            fragment.resizeSelect(back, charact, scaleForFragment);
+        });
     }
-  }
 
-  /**
-   * Выделяет группу изменением размера
-   *
-   * @param back - bool, стоит ли возвращать анимацию назад
-   *
-   * @param charact - увеличить или уменьшить (-1, 1)
-   *
-   * @param scale - double, во сколько раз стоит уменьшить/увеличить изображение
-   *
-   */
-  resizeSelect(this_gr = this, back = true, charact = -1, scale = 0.95) {
-    let maxDif = Math.max(this_gr.rightFragmentInd - this_gr.leftFragmentInd,
-      this_gr.topFragmentInd - this_gr.bottomFragmentInd);
-    let scaleForFragment = 1 - (1 - scale) / maxDif;
-    // формула для нормального изменения размера всей группы.
-    // Если поставить scale, то при большой длине или высоте изменения размера
-    // в пиксилях будут велики, а в данном случае они будут одинаковы.
-    this_gr.fragments.forEach(function(fragment, ind, arr) {
-      fragment.resizeSelect(back, charact, scaleForFragment);
-    });
-  }
+    smoothMoveWithCallback(x, y, selected, callback, connectingFragment = null) {
+        let observer = new Proxy(this, {
+            set: (target, p, value) => {
+                if (p === "smoothing" && value === false) {
+                    callback();
+                }
+                return true;
+            }
+        });
+        observer.smoothMove(x, y, selected, connectingFragment);
+        this.smoothMove(x, y, selected, connectingFragment);
+    }
 }
 
 // Возможно стоит убрать подключение к smoothing объекту. а то проблем слишком дохуя??
@@ -1965,13 +1987,17 @@ class Fragment extends Component {
   canConnectRightFragment() {
     var leftTopOfRightFragment = this.right.leftTop();
     var tmpRes = this.rangeFromRightTop(leftTopOfRightFragment.x, leftTopOfRightFragment.y);
+
     if (tmpRes <= Fragment.connectRange)
       return {
         res: true,
         range: tmpRes
       };
     return {
-      res: false
+      res: false,
+        range: tmpRes,
+        right:true,
+
     };
   }
 
@@ -1990,7 +2016,9 @@ class Fragment extends Component {
         range: tmpRes
       };
     return {
-      res: false
+      res: false,
+        range: tmpRes,
+        left:true,
     };
   }
 
@@ -2009,7 +2037,8 @@ class Fragment extends Component {
         range: tmpRes
       };
     return {
-      res: false
+      res: false,
+        range: tmpRes,
     };
   }
 
@@ -2028,7 +2057,9 @@ class Fragment extends Component {
         range: tmpRes
       };
     return {
-      res: false
+      res: false,
+        range: tmpRes,
+
     };
   }
 
@@ -2080,7 +2111,6 @@ class Fragment extends Component {
     if (arr[i].onMenu || (arr[i].group != null && arr[i].group.onMenu)) {
       return;
     }
-
     let connectArray = [];
 
     let leftFragment = this.left;
@@ -2088,7 +2118,6 @@ class Fragment extends Component {
     let topFragment = this.top;
     let bottomFragment = this.bottom;
     let inner_this = this;
-
     let x = i % imagesX;
     let y = Math.floor(i / imagesX);
 
@@ -2149,7 +2178,7 @@ class Fragment extends Component {
      *
      */
     function connectToFragment(other, getInfo, getCoordinates, newX, newY) {
-      if (
+        if (
         getInfo.res && (inner_this.group == null || !inner_this.group.fragments.has(other)) &&
         !other.onBottomPanel && ((other.group != null && !other.group.onMenu) || (other.group == null && !other.onMenu))
       ) {
@@ -2187,7 +2216,6 @@ class Fragment extends Component {
     connectArray.sort(function(a, b) {
       return a.range - b.range;
     });
-
     if (connectArray.length > 0) {
       var near = connectArray[0];
       if (withConnect) {
@@ -2234,7 +2262,7 @@ class Fragment extends Component {
    *                                 Срабатывает у одного фрагмента из всей
    *                                 группы, нет повторений
    */
-  smoothMove(newX, newY, connectingFragment = null, shouldWorkGroups = false) {
+ async smoothMove(newX, newY, connectingFragment = null, shouldWorkGroups = false) {
     let near = null;
     let this_frg = (this.group == null) ? this : this.group;
     // группа или одиночный фрагмент, к которому идет подключение
@@ -2245,7 +2273,7 @@ class Fragment extends Component {
       near.isConnecting = true;
     }
 
-    super.smoothMove(newX, newY, function() {
+    await super.smoothMove(newX, newY, function() {
       // при окончании перемещения требуется проверить, стоит ли объединить
       // фрагменты в единую группу
       if (connectingFragment != null) {
@@ -2359,6 +2387,20 @@ class Fragment extends Component {
       );
     }
   }
+
+  smoothMoveWithCallback(x, y, callback,connectingFragment = null, shouldWorkGroups = false){
+      let observer = new Proxy(this, {
+          set: (target, p, value) => {
+              if (p === "smoothing" && value === false) {
+                  let got = callback();
+                  console.log(got);
+              }
+              return true;
+          }
+      });
+      observer.smoothMove(x,y,connectingFragment);
+      this.smoothMove(x,y,connectingFragment, shouldWorkGroups);
+  }
 }
 
 class FragmentList {
@@ -2453,6 +2495,91 @@ class FragmentListElem {
   }
 }
 
+class Broadcaster {
+    constructor(room){
+        this.room = room;
+    }
+    broadcast(broadcastEvent, data){
+        setTimeout(()=>{
+            let channel = Echo.private('room.'+this.room.uid);
+            channel.whisper(broadcastEvent, data);
+        },100);
+    }
+}
+
+class PuzzleWorker {
+
+    constructor(canvas) {
+        this.tasks = [];
+        this.canvas = canvas;
+        this.fragment = null;
+    }
+
+    push(task) {
+        this.tasks.push(task);
+    }
+
+    async execute(arr) {
+        if (this.tasks.length !== 0) {
+            let task = this.tasks[this.tasks.length - 1];
+            let selectedFragment = arr[task.ind];
+
+            if (!task.onBottomPanel && selectedFragment.onBottomPanel) {
+                selectedFragment.onBottomPanel = false;
+                selectedFragment.moveToPanel();
+            }
+
+            if (!task.group) {
+                await selectedFragment.smoothMove(task.x, task.y);
+                if(task.shouldConnect){
+                    selectedFragment.connectTo(selectedFragment.ind);
+                }
+
+            } else {
+                await selectedFragment.group.smoothMove(task.x, task.y, selectedFragment);
+                if(task.shouldConnect){
+                    selectedFragment.group.connectTo(selectedFragment.ind);
+                }
+            }
+
+            this.tasks.pop();
+            this.execute(arr);
+        }
+    }
+
+    error(error) {
+        console.log("The error in worker: " + error);
+    }
+}
+
+//инициализация подключения и слушателя действий оппонента
+async function initializeSockets(puzzleworker){
+    let uid = $(location).attr('href').split('/').pop();
+    let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    let response = await axios.get('/puzzle/info/room/'+uid+'?_token='+token);
+    let room = response.data;
+    let channel = Echo.private('room.' + room.uid);
+    channel.listen('.client-move', (response) => {
+        console.log("received" ,response);
+        puzzleworker.push(response);
+        puzzleworker.execute(arr); // arr - массив пазлов
+    });
+    return room;
+}
+
+//создаем по передаваемому фрагменту задание для воркера оппонента
+function formExecutableTask(fragment, shouldConnectOnOtherSide) {
+    return  {
+        ind:fragment.ind,
+        x:fragment.x,
+        y:fragment.y,
+        group:!!fragment.group,
+        shouldConnect:shouldConnectOnOtherSide,
+        onBottomPanel:fragment.onBottomPanel,
+        onMenu:!!fragment.group ? fragment.group.onMenu : fragment.onMenu,
+    };
+}
+
 /*
   Главный файл, управляющий работой канваса
   Здесь установлены слушатели, а так же глобальные функции отрисовки,
@@ -2461,273 +2588,280 @@ class FragmentListElem {
 
 */
 function drawAll(canvas, context) {
-  context.lineWidth = "1";
+    context.lineWidth = "1";
 
-  context.clearRect(
-    0, 0,
-    canvas.canvas.width,
-    canvas.canvas.height
-  );
-  context.beginPath();
-  context.rect(
-    0, 0,
-    canvas.canvas.width,
-    canvas.canvas.height
-  );
-  context.fillStyle = "#373737";
-  context.fill();
-  canvas.draw(context);
-  canvas.panel.drawFragments(context);
-  if (arr[SelectFragmentHelper.translatedFragmentId])
-    // рисование выбранного фрагмента поверх всего, рисует повторно
-    if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      let el = arr[SelectFragmentHelper.translatedFragmentId]
-      let selected = (el.group != null) ? el.group : el;
-      selected.draw(context);
-    }
+    context.clearRect(
+        0, 0,
+        canvas.canvas.width,
+        canvas.canvas.height
+    );
+    context.beginPath();
+    context.rect(
+        0, 0,
+        canvas.canvas.width,
+        canvas.canvas.height
+    );
+    context.fillStyle = "#373737";
+    context.fill();
+    canvas.draw(context);
+    canvas.panel.drawFragments(context);
+    if (arr[SelectFragmentHelper.translatedFragmentId])
+        // рисование выбранного фрагмента поверх всего, рисует повторно
+        if (SelectFragmentHelper.translatedFragmentId >= 0) {
+            let el = arr[SelectFragmentHelper.translatedFragmentId]
+            let selected = (el.group != null) ? el.group : el;
+            selected.draw(context);
+        }
 
 }
 
 function initializeFragmentList(arr) {
-  for (i = 0; i < countImages; i++) {
-    var x = i % imagesX;
-    var y = Math.floor(i / imagesX);
+    for (let i = 0; i < countImages; i++) {
+        var x = i % imagesX;
+        var y = Math.floor(i / imagesX);
 
-    var leftId = i % imagesX - 1;
-    var topId = i - imagesX;
+        var leftId = i % imagesX - 1;
+        var topId = i - imagesX;
 
-    arr.push(
-      new Fragment(
-        i,
-        DIRECTORY + "puzzle/" + (i + 1) + '.png',
-        DIRECTORY + "puzzle/" + (i + 1) + '_.png',
-        100, 100,
-        (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null),
-        i
-      )
-    );
+        arr.push(
+            new Fragment(
+                i,
+                DIRECTORY + "puzzle/" + (i + 1) + '.png',
+                DIRECTORY + "puzzle/" + (i + 1) + '_.png',
+                100, 100,
+                (leftId >= 0 ? arr[i - 1] : null), (topId >= 0 ? arr[topId] : null),
+                i
+            )
+        );
 
-    canvas.panel.fragments[i] = i; // для заполнения порядка индексов
-    // фрагментов у нижней панели
+        canvas.panel.fragments[i] = i; // для заполнения порядка индексов
+        // фрагментов у нижней панели
 
-    // инициализация двусвязного списка фрагментов
-    canvas.field.fragmentList.appendElem(new FragmentListElem(
-      arr[arr.length - 1]
-    ));
-  }
+        // инициализация двусвязного списка фрагментов
+        canvas.field.fragmentList.appendElem(new FragmentListElem(
+            arr[arr.length - 1]
+        ));
+    }
 }
 
 function initializeSizes(fragment, img) {
 
-  canvas.field.all_width = canvas.canvas.width * FIELD_WIDTH;
-  canvas.field.all_height = canvas.canvas.height * FIELD_HEIGHT;
+    canvas.field.all_width = canvas.canvas.width * FIELD_WIDTH;
+    canvas.field.all_height = canvas.canvas.height * FIELD_HEIGHT;
 
-  fragment.init(img);
+    fragment.init(img);
 
-  canvas.field.init();
-  canvas.panel.init();
-  canvas.left_menu.init();
+    canvas.field.init();
+    canvas.panel.init();
+    canvas.left_menu.init();
 
-  // canvas.createBlankZones();
+    // canvas.createBlankZones();
 
-  for (i = 0; i < countImages; i++) {
-    // изначально уменьшены, т.к. окно тоже изначально уменьшено
-    arr[i].current_width = Fragment.widthScale * canvas.field.scale;
-    arr[i].current_height = Fragment.heightScale * canvas.field.scale;
+    for (let i = 0; i < countImages; i++) {
+        // изначально уменьшены, т.к. окно тоже изначально уменьшено
+        arr[i].current_width = Fragment.widthScale * canvas.field.scale;
+        arr[i].current_height = Fragment.heightScale * canvas.field.scale;
 
-    // устанавливает треть объекта в зависимости
-    arr[i].current_third_x = arr[i].current_width / 5;
-    arr[i].current_third_y = arr[i].current_height / 5;
-  }
+        // устанавливает треть объекта в зависимости
+        arr[i].current_third_x = arr[i].current_width / 5;
+        arr[i].current_third_y = arr[i].current_height / 5;
+    }
 }
 
-window.onload = function() {
+window.onload = async function () {
 
-  console.log("Started");
-  canvas = new Canvas("canvas-puzzle", countImages);
-  canvas.initElements();
-  initializeFragmentList(arr);
+    console.log("Started");
+    canvas = new Canvas("canvas-puzzle", countImages);
+    canvas.initElements();
 
-  canvas.canvas.onmousedown = function(e) {
-    var loc = canvas.getCoords(e.clientX, e.clientY);
-    shouldConnect = true;
-    if (canvas.panel.onmousedown(loc)) {
-      console.log("!");
-      return;
-    }
+    let puzzleWorker = new PuzzleWorker(canvas);
+    let room = await initializeSockets(puzzleWorker);
+    let broadcaster = new Broadcaster(room);
 
-    let iterFunction = function(lastSeenObject) {
-      var value = lastSeenObject.value;
-      var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
-      if (objInCoords) {
-        if (!value.smoothing && !value.isConnecting && !value.resizing) {
-          /*
-           * объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
-           * если рассматривается группа фрагментов (FragmentGroup), то:
-           *  -- расчитывает расстояние от mainFragment группы, а потому
-           *  -- delta значения могут быть очень большими или даже отрицательными
-           *  -- взятым фрагментом в этом случае считается mainFragment группы
-           *
-           */
+    initializeFragmentList(arr);
 
-          // не имеет смысла для групп, undefined для них, не выполняется
-          if (value.onBottomPanel) {
-            value.onBottomPanel = false;
-            value.moveToPanel();
-          }
-          value.connectedToCorner = false;
-          ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
-          SelectFragmentHelper.deltaX = ranges.x;
-          SelectFragmentHelper.deltaY = ranges.y;
-          SelectFragmentHelper.translatedFragmentId = value.mainFragment.ind;
-          lastSeenObject.replaceToTop(); // отображать поверх других объектов
-          return true; // если сработал объект - вернуть истину, обрабатывается далее
+    canvas.canvas.onmousedown = function (e) {
+        var loc = canvas.getCoords(e.clientX, e.clientY);
+        shouldConnect = true;
+        if (canvas.panel.onmousedown(loc)) {
+            console.log("!");
+            return;
         }
-      }
+
+        let iterFunction = function (lastSeenObject) {
+            var value = lastSeenObject.value;
+            var objInCoords = value.isHadPoint(loc.x, loc.y); // у группы или фрагмента
+            if (objInCoords) {
+                if (!value.smoothing && !value.isConnecting && !value.resizing) {
+                    /*
+                     * объект под мышкой, не выполняет анимацию и не подсоединяет к себе чужой объект одновременно
+                     * если рассматривается группа фрагментов (FragmentGroup), то:
+                     *  -- расчитывает расстояние от mainFragment группы, а потому
+                     *  -- delta значения могут быть очень большими или даже отрицательными
+                     *  -- взятым фрагментом в этом случае считается mainFragment группы
+                     *
+                     */
+
+                    // не имеет смысла для групп, undefined для них, не выполняется
+                    if (value.onBottomPanel) {
+                        value.onBottomPanel = false;
+                        value.moveToPanel();
+                    }
+                    value.connectedToCorner = false;
+                    let ranges = value.mainFragment.rangeToStartImage(loc.x, loc.y);
+                    SelectFragmentHelper.deltaX = ranges.x;
+                    SelectFragmentHelper.deltaY = ranges.y;
+                    SelectFragmentHelper.translatedFragmentId = value.mainFragment.ind;
+                    lastSeenObject.replaceToTop(); // отображать поверх других объектов
+                    return true; // если сработал объект - вернуть истину, обрабатывается далее
+                }
+            }
+        }
+
+        lastSeenObject = canvas.left_menu.fragmentList.lastVisualObject;
+        if (lastSeenObject != null)
+            do {
+                // если этот объект подходит под условия, то цикл останавливается
+                if (iterFunction(lastSeenObject))
+                    break;
+                lastSeenObject = lastSeenObject.prev;
+            } while (lastSeenObject != null)
+
+        // Если жмякаем по меню, то фрагменты далее не будут обрабатываться
+        // т.е. из-под меню их не достать, собственно без проверки они достаются
+        if (canvas.left_menu.isHadPoint(loc.x, loc.y))
+            return;
+
+        var lastSeenObject = canvas.field.fragmentList.lastVisualObject;
+        if (lastSeenObject != null)
+            do {
+                // если этот объект подходит под условия, то цикл останавливается
+                if (iterFunction(lastSeenObject))
+                    break;
+                lastSeenObject = lastSeenObject.prev;
+            } while (lastSeenObject != null)
+
+        // TODO выход из функции при выполнении верхнего блока
     }
 
-    lastSeenObject = canvas.left_menu.fragmentList.lastVisualObject;
-    if (lastSeenObject != null)
-      do {
-        // если этот объект подходит под условия, то цикл останавливается
-        if (iterFunction(lastSeenObject))
-          break;
-        lastSeenObject = lastSeenObject.prev;
-      } while (lastSeenObject != null)
+    canvas.canvas.onmousemove = function (e) {
+        var loc = canvas.getCoords(e.clientX, e.clientY);
+        if (SelectFragmentHelper.translatedFragmentId >= 0) {
+            var newX = loc.x - SelectFragmentHelper.deltaX;
+            var newY = loc.y - SelectFragmentHelper.deltaY;
+            if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
+                arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
+            } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
+                arr[SelectFragmentHelper.translatedFragmentId].group.move(
+                    newX, newY,
+                    arr[SelectFragmentHelper.translatedFragmentId]
+                );
+            }
+        }
 
-    // Если жмякаем по меню, то фрагменты далее не будут обрабатываться
-    // т.е. из-под меню их не достать, собственно без проверки они достаются
-    if (canvas.left_menu.isHadPoint(loc.x, loc.y))
-      return;
+        canvas.panel.onmousemove(loc.x, loc.y);
+        canvas.left_menu.onmousemove(loc.x, loc.y);
+    };
 
-    var lastSeenObject = canvas.field.fragmentList.lastVisualObject;
-    if (lastSeenObject != null)
-      do {
-        // если этот объект подходит под условия, то цикл останавливается
-        if (iterFunction(lastSeenObject))
-          break;
-        lastSeenObject = lastSeenObject.prev;
-      } while (lastSeenObject != null)
+    canvas.canvas.onmouseup = function (e) {
+        var loc = canvas.getCoords(e.clientX, e.clientY);
 
-    // TODO выход из функции при выполнении верхнего блока
-  }
+        canvas.left_menu.onmousemove(loc.x, loc.y);
+        // проверка, если мы не двигали элемент, но под ним что-то изменилось
+        // например, ушло меню в сторону или, наоборот, появилось
 
-  canvas.canvas.onmousemove = function(e) {
-    var loc = canvas.getCoords(e.clientX, e.clientY);
-    if (SelectFragmentHelper.translatedFragmentId >= 0) {
-      var newX = loc.x - SelectFragmentHelper.deltaX;
-      var newY = loc.y - SelectFragmentHelper.deltaY;
-      if (arr[SelectFragmentHelper.translatedFragmentId].group == null) {
-        arr[SelectFragmentHelper.translatedFragmentId].move(newX, newY);
+        if (SelectFragmentHelper.translatedFragmentId >= 0) {
 
-      } else if (arr[SelectFragmentHelper.translatedFragmentId].group != null) {
-        arr[SelectFragmentHelper.translatedFragmentId].group.move(
-          newX, newY,
-          arr[SelectFragmentHelper.translatedFragmentId]
-        );
-      }
+            let wasOnMenu = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
+                    arr[SelectFragmentHelper.translatedFragmentId].group :
+                    arr[SelectFragmentHelper.translatedFragmentId]
+            ).onMenu; // если спустилось с меню, запретить коннект
+            canvas.checkMoveBetweenLists() // проверка на вхождение в зону меню + изменение состояния объектов
+            var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
+            if (selectedFragment.group != null) {
+                selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
+            } else {
+                selectedFragment.tryMoveBeetwenLists();
+            }
+            console.log(`send coords ${arr[SelectFragmentHelper.translatedFragmentId].x} ${arr[SelectFragmentHelper.translatedFragmentId].y}`);
+
+            let shouldConnectOnOtherSide = {res: false};
+            if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
+                selectedFragment.onBottomPanel = true;
+            } else if (shouldConnect) {
+                let selected = (selectedFragment.group != null) ? selectedFragment.group : selectedFragment;
+                if (!wasOnMenu)
+                    shouldConnectOnOtherSide = selected.connectTo(); // проверка и дальнейшая попытка
+            }
+            broadcaster.broadcast('move', formExecutableTask(selectedFragment, shouldConnectOnOtherSide.res)); //formTask->sockets.js
+
+            SelectFragmentHelper.translatedFragmentId = -1;
+        }
     }
 
-    canvas.panel.onmousemove(loc.x, loc.y);
-    canvas.left_menu.onmousemove(loc.x, loc.y);
-  };
-
-  canvas.canvas.onmouseup = function(e) {
-    var loc = canvas.getCoords(e.clientX, e.clientY);
-
-    canvas.left_menu.onmousemove(loc.x, loc.y);
-    // проверка, если мы не двигали элемент, но под ним что-то изменилось
-    // например, ушло меню в сторону или, наоборот, появилось
-
-    if (SelectFragmentHelper.translatedFragmentId >= 0) {
-
-      let wasOnMenu = ((arr[SelectFragmentHelper.translatedFragmentId].group != null) ?
-        arr[SelectFragmentHelper.translatedFragmentId].group :
-        arr[SelectFragmentHelper.translatedFragmentId]
-      ).onMenu; // если спустилось с меню, запретить коннект
-      canvas.checkMoveBetweenLists() // проверка на вхождение в зону меню + изменение состояния объектов
-      var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
-      if (selectedFragment.group != null) {
-        selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
-      } else {
-        selectedFragment.tryMoveBeetwenLists();
-      }
-
-      if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
-        selectedFragment.onBottomPanel = true;
-      } else if (shouldConnect) {
-        let selected = (selectedFragment.group != null) ? selectedFragment.group : selectedFragment;
-        if (!wasOnMenu)
-          selected.connectTo(); // проверка и дальнейшая попытка
-      }
-
-      SelectFragmentHelper.translatedFragmentId = -1;
+    canvas.canvas.onmousewheel = function (e) {
+        // return;
+        canvas.left_menu.onmousewheel(e.wheelDelta);
     }
-  }
 
-  canvas.canvas.onmousewheel = function(e) {
-    // return;
-    canvas.left_menu.onmousewheel(e.wheelDelta);
-  }
+    // document.addEventListener('mousedown', function(event) {
+    //   if (lastDownTarget != event.target) {
+    //     showSilhouette = false;
+    //   }
+    //   lastDownTarget = event.target;
+    // }, false);
 
-  // document.addEventListener('mousedown', function(event) {
-  //   if (lastDownTarget != event.target) {
-  //     showSilhouette = false;
-  //   }
-  //   lastDownTarget = event.target;
-  // }, false);
+    document.addEventListener('keydown', function (event) {
+        if (event.keyCode == KEY_shouldConnect) {
+            if (shouldConnect)
+                shouldConnect = false;
+            else shouldConnect = true;
+            console.log("shouldConnect is", shouldConnect);
+        }
+        if (event.keyCode == KEY_showSilhouette) {
+            showSilhouette = true;
+        }
+        if (event.keyCode == 9) {
+            canvas.left_menu.toogleMenu();
+        }
+        if (event.keyCode == 49) {
+            canvas.field.normalDecrease();
+            canvas.panel.show();
+        }
+        if (event.keyCode == 50) {
+            canvas.field.normalIncrease();
+            canvas.panel.hide();
+        }
+        if (event.keyCode == 51) {
+            console.log(canvas.field.fragmentList.lastVisualObject.value.listElem);
+        }
+        if (event.keyCode == 52) {
+            let gr = canvas.field.fragmentList.lastVisualObject.value;
+            let fr = gr.mainFragment;
+            // gr.smoothResize(
+            //   fr.current_width, fr.current_height,
+            //   Fragment.widthPanel, Fragment.heightPanel,
+            //   false, true
+            // );
+            gr.smoothResize(
+                fr.current_width, fr.current_height,
+                fr.current_width * 0.8, fr.current_height * 0.8,
+                false, true
+            );
+        }
+    }, false);
 
-  document.addEventListener('keydown', function(event) {
-    if (event.keyCode == KEY_shouldConnect) {
-      if (shouldConnect)
-        shouldConnect = false;
-      else shouldConnect = true;
-      console.log("shouldConnect is", shouldConnect);
-    }
-    if (event.keyCode == KEY_showSilhouette) {
-      showSilhouette = true;
-    }
-    if (event.keyCode == 9) {
-      canvas.left_menu.toogleMenu();
-    }
-    if (event.keyCode == 49) {
-      canvas.field.normalDecrease();
-      canvas.panel.show();
-    }
-    if (event.keyCode == 50) {
-      canvas.field.normalIncrease();
-      canvas.panel.hide();
-    }
-    if (event.keyCode == 51) {
-      console.log(canvas.field.fragmentList.lastVisualObject.value.listElem);
-    }
-    if (event.keyCode == 52) {
-      let gr = canvas.field.fragmentList.lastVisualObject.value;
-      let fr = gr.mainFragment;
-      // gr.smoothResize(
-      //   fr.current_width, fr.current_height,
-      //   Fragment.widthPanel, Fragment.heightPanel,
-      //   false, true
-      // );
-      gr.smoothResize(
-        fr.current_width, fr.current_height,
-        fr.current_width * 0.8, fr.current_height * 0.8,
-        false, true
-      );
-    }
-  }, false);
+    document.addEventListener('keyup', function (event) {
+        if (event.keyCode == KEY_showSilhouette) {
+            showSilhouette = false;
+        }
+    }, false);
 
-  document.addEventListener('keyup', function(event) {
-    if (event.keyCode == KEY_showSilhouette) {
-      showSilhouette = false;
-    }
-  }, false);
-
-  // Анимация с определённой частотой для обновления экрана
-  setInterval(update, 1000 / FRAMES);
+    // Анимация с определённой частотой для обновления экрана
+    setInterval(update, 1000 / FRAMES);
 }
 
 // Обновление экрана
 function update() {
-  drawAll(canvas, canvas.context);
+    drawAll(canvas, canvas.context);
 }

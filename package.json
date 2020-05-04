@@ -1,26 +1,28 @@
 {
-  "name": "puzzlecanvas",
-  "version": "1.0.0",
-  "description": "canvas for puzzles",
-  "main": "index.js",
-  "dependencies": {
-    "gulp": "^4.0.2",
-    "gulp-cli": "^2.2.0",
-    "gulp-concat": "^2.6.1"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "start": "gulp scripts",
-    "tasks": "gulp --tasks"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TVBlackman1/PuzzleCanvas.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/TVBlackman1/PuzzleCanvas/issues"
-  },
-  "homepage": "https://github.com/TVBlackman1/PuzzleCanvas#readme"
+    "name": "puzzlecanvas",
+    "version": "1.0.0",
+    "description": "canvas for puzzles",
+    "main": "index.js",
+    "dependencies": {
+        "gulp": "^4.0.2",
+        "gulp-cli": "^2.2.0",
+        "gulp-concat": "^2.6.1",
+        "gulp-concat-css": "^3.1.0"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "scripts": "gulp scripts",
+        "styles": "gulp styles",
+        "tasks": "gulp --tasks"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/TVBlackman1/PuzzleCanvas.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/TVBlackman1/PuzzleCanvas/issues"
+    },
+    "homepage": "https://github.com/TVBlackman1/PuzzleCanvas#readme"
 }

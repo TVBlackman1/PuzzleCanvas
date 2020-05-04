@@ -12,7 +12,7 @@ const FIELD_HEIGHT = 10 / 11; // Местоположение поля в Field.
 const KEY_showSilhouette = 83; // S
 const KEY_shouldConnect = 32; // SPACE
 
-const DIRECTORY = "images/";
+const DIRECTORY = "/js/PuzzleCanvas/images/";
 
 
 

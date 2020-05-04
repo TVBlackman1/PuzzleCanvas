@@ -1,5 +1,6 @@
 const concat = require('gulp-concat');
 const gulp = require("gulp");
+const concatCss = require('gulp-concat-css');
 gulp.task('scripts', function() {
     return gulp.src([
         './js/vars.js',
@@ -23,7 +24,24 @@ gulp.task('scripts', function() {
         './js/classes/Fragment.js',
         './js/classes/FragmentList.js',
         './js/classes/FragmentListElem.js',
-        './js/script.js',])
+        './js/classes/sockets/Broadcaster.js',
+        './js/classes/sockets/PuzzleWorker.js',
+        './js/sockets.js',
+        './js/script.js',
+//        './js/classes/utility/Timer.js', TODO слить back и front Timer'ов
+    ])
         .pipe(concat('puzzle.js'))
         .pipe(gulp.dest('./dist/'));
+});
+
+gulp.task('styles', function () {
+    return gulp.src([
+        './css/reset.css',
+        './css/style/style.css',
+        './css/top-panel/top-panel.css',
+        './css/bottom-panel/bottom-panel.css',
+        './css/header_style.css',
+    ])
+        .pipe(concatCss('puzzle.css'))
+        .pipe(gulp.dest("./dist/"))
 });
