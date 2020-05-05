@@ -246,7 +246,7 @@ class Fragment extends Component {
         )
     }
 
-    tryMoveBeetwenLists() {
+    async tryMoveBeetwenLists() {
         if (this.onMenuLast == this.onMenu) {
             return;
         }
@@ -259,7 +259,7 @@ class Fragment extends Component {
             canvas.field.fragmentList.appendElem(tmp); // добавиться в новый
 
             this.scale = canvas.field.bigType ? 1 : canvas.field.scale;
-            this.smoothResize(
+            await this.smoothResize(
                 Fragment.widthPanel, Fragment.heightPanel,
                 Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
                 false, true
@@ -272,7 +272,7 @@ class Fragment extends Component {
             this.listElem.remove(); // удалиться из прошлого листа
             canvas.left_menu.fragmentList.appendElem(tmp); // добавиться в новый
 
-            this.smoothResize(
+            await this.smoothResize(
                 this.current_width, this.current_height,
                 Fragment.widthPanel, Fragment.heightPanel,
                 false, true
@@ -662,7 +662,7 @@ class Fragment extends Component {
         }
 
         if (arr[i].onMenu || (arr[i].group != null && arr[i].group.onMenu)) {
-            return;
+            return {res:false};
         }
         let connectArray = [];
 
@@ -842,13 +842,13 @@ class Fragment extends Component {
         });
     }
 
-    smoothShift(dx, dy) {
+    async smoothShift(dx, dy) {
         let this_frg = (this.group == null) ? this : this.group;
         // группа или одиночный фрагмент, к которому идет подключение
         let this_fr = this; // сам фрагмент
         this_frg.smoothing = true;
 
-        super.smoothShift(dx, dy, function () {
+        await super.smoothShift(dx, dy).then(()=> {
             // при окончании перемещения требуется проверить, стоит ли объединить
             // фрагменты в единую группу
             this_frg.smoothing = false;
@@ -869,7 +869,7 @@ class Fragment extends Component {
      *
      * @param append_cursor - стоит ли отталкиваться от местоположения курсора
      */
-    smoothResize(old_width, old_height, new_width, new_height, back = false, append_cursor = false) {
+    async smoothResize(old_width, old_height, new_width, new_height, back = false, append_cursor = false) {
         let this_frg = (this.group == null) ? this : this.group;
         this_frg.resizing = true;
         let currentTact = 0;
@@ -887,35 +887,36 @@ class Fragment extends Component {
             // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
             let b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
             let b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
-            canvas.smoothShiftDelta(-b_x, -b_y)
-            this_fr.smoothShift(b_x, b_y);
+            canvas.smoothShiftDelta(-b_x, -b_y);
+            await this_fr.smoothShift(b_x, b_y);
         }
 
         this.appendMargin(old_width, old_height, new_width, new_height);
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function resize() {
-            current_width += dX;
-            current_height += dY;
-            this_fr.setSizes(this_fr, current_width, current_height);
-
-            if (currentTact < Component.tact - 1) {
-                setTimeout(resize, Component.frameTime);
-                currentTact++;
-            } else {
-                this_fr.setSizes(this_fr, new_width, new_height);
-                this_fr.current_third_x = this_fr.current_width / 5;
-                this_fr.current_third_y = this_fr.current_height / 5;
-                if (back) {
-                    // повторная анимация, возвращающая всё обратно
-                    this_fr.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
-                } else {
-                    this_frg.resizing = false;
-                }
-            }
+            return new Promise(resolve=> {
+                current_width += dX;
+                current_height += dY;
+                this_fr.setSizes(this_fr, current_width, current_height);
+                setTimeout(()=>{resolve()}, Component.frameTime);
+            });
         }
 
-        resize();
+        while(currentTact < Component.tact - 1){
+            currentTact++;
+            await resize();
+        }
+
+        this_fr.setSizes(this_fr, new_width, new_height);
+        this_fr.current_third_x = this_fr.current_width / 5;
+        this_fr.current_third_y = this_fr.current_height / 5;
+        if (back) {
+            // повторная анимация, возвращающая всё обратно
+            await this_fr.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
+        } else {
+            this_frg.resizing = false;
+        }
     }
 
     /**

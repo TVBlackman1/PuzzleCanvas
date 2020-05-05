@@ -21,12 +21,16 @@ class PuzzleWorker {
             }
 
             if (!task.group) {
+                selectedFragment.onMenu = task.onMenu;
+                await selectedFragment.tryMoveBeetwenLists();
                 await selectedFragment.smoothMove(task.x, task.y);
                 if(task.shouldConnect){
                     selectedFragment.connectTo(selectedFragment.ind);
                 }
 
             } else {
+                selectedFragment.group.onMenu = task.onMenu;
+                await selectedFragment.group.tryMoveBeetwenLists();
                 await selectedFragment.group.smoothMove(task.x, task.y, selectedFragment);
                 if(task.shouldConnect){
                     selectedFragment.group.connectTo(selectedFragment.ind);

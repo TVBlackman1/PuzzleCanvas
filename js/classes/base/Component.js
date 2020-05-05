@@ -1,5 +1,5 @@
 class Component {
-    static tact = 21; // кол-во тактов анимации для всех компонентов канваса
+    static tact = 42; // кол-во тактов анимации для всех компонентов канваса
     static frameTime = 10000 / FRAMES / Component.tact; // задержка перед
     // следующим тактом
     constructor() {
@@ -102,8 +102,7 @@ class Component {
      *
      *
      */
-    smoothShift(dx, dy, endFunction = function () {
-    }) {
+    async smoothShift(dx, dy) {
         let oldX = this.x;
         let oldY = this.y;
         let currentTact = 0;
@@ -113,20 +112,17 @@ class Component {
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function reDraw() {
-            component.shift(dX, dY);
-
-            if (currentTact < Component.tact - 1) {
-                setTimeout(reDraw, Component.frameTime);
-                currentTact++;
-            } else {
-                component.shift(-dX * (Component.tact), -dY * (Component.tact));
-                // component.move(oldX, oldY);
-                component.shift(dx, dy);
-                endFunction();
-            }
+            return new Promise(resolve => {
+                component.shift(dX, dY);
+                setTimeout(()=>{resolve()}, Component.frameTime);
+            })
         }
-
-        reDraw();
+        while(currentTact < Component.tact - 1){
+            currentTact++;
+            await reDraw();
+        }
+        component.shift(-dX * (Component.tact), -dY * (Component.tact));
+        component.shift(dx, dy);
     }
 
 
@@ -139,7 +135,7 @@ class Component {
      * @param back - стоит ли повторять анимацию задонаперед при истинности
      *
      */
-    smoothResize(old_width, old_height, new_width, new_height, back = false) {
+    async smoothResize(old_width, old_height, new_width, new_height, back = false) {
         let currentTact = 0;
         let dX = (new_width - old_width) / (Component.tact);
         let dY = (new_height - old_height) / (Component.tact);
@@ -148,28 +144,30 @@ class Component {
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function resize() {
-            component.setSizes(component,
-                component.current_width + dX,
-                component.current_height + dY
-            );
+            return new Promise(resolve => {
+                component.setSizes(component,
+                    component.current_width + dX,
+                    component.current_height + dY
+                );
+                setTimeout(()=>{resolve()}, Component.frameTime)
+            });
 
-            if (currentTact < Component.tact - 1) {
-                setTimeout(resize, Component.frameTime);
-                currentTact++;
-            } else {
-                component.setSizes(component, new_width, new_height);
-                component.move(component.x, component.y); // при resize меняются размеры
-                // эта функция никуда не перемещает объект, но перезаписывает крайние координаты
-                // которые зависят от размеров самого объекта
 
-                if (back) {
-                    // повторная анимация, возвращающая всё обратно
-                    component.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
-                }
-            }
+
         }
+        while(currentTact < Component.tact - 1){
+            currentTact++;
+            await resize();
+        }
+        component.setSizes(component, new_width, new_height);
+        component.move(component.x, component.y); // при resize меняются размеры
+        // эта функция никуда не перемещает объект, но перезаписывает крайние координаты
+        // которые зависят от размеров самого объекта
 
-        resize();
+        if (back) {
+            // повторная анимация, возвращающая всё обратно
+            await component.smoothResize(new_width, new_height, old_width, old_height, false, append_cursor);
+        }
     }
 
     /**

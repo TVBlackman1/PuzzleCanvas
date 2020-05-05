@@ -117,8 +117,8 @@ class Menu extends Component {
     // фрагментов в цикле ниже
     let lastX = menu.x;
     let lastY = menu.y;
-    super.smoothMove(newX, newY, function() {
-      menu.smoothing = false;
+    super.smoothMove(newX, newY).then(()=>{
+        this.smoothing = false;
     });
     this.place.smoothMove(newX, newY);
 

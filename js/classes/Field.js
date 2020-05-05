@@ -95,7 +95,7 @@ class Field extends Component {
           third_argument = lastSeenObject.value.mainFragment;
         }
 
-        lastSeenObject.value.smoothShift(
+       lastSeenObject.value.smoothShift(
           (lastSeenObject.value.mainFragment.x - this.x) * scale2 + this.x - lastSeenObject.value.mainFragment.x,
           (lastSeenObject.value.mainFragment.y - this.y) * scale2 + this.y - lastSeenObject.value.mainFragment.y,
           third_argument
@@ -111,8 +111,8 @@ class Field extends Component {
     }
     this.smoothing = true;
     // super.smoothMove(Math.floor(canvas.canvas.width / 2 - this.width * this.scale / 2), this.y);
-    super.smoothMove(this.x, this.y, function() {
-      canvas.field.smoothing = false;
+    super.smoothMove(this.x, this.y).then(()=>{
+        this.smoothing = false;
     });
     this.bigType = !this.bigType;
   }
@@ -125,7 +125,7 @@ class Field extends Component {
   normalDecrease() {
     if (!this.bigType || this.smoothing)
       return;
-    this.normalResize(true);
+    return this.normalResize(true);
   }
 
   /*
@@ -136,7 +136,7 @@ class Field extends Component {
   normalIncrease() {
     if (this.bigType || this.smoothing)
       return;
-    this.normalResize(false);
+    return this.normalResize(false);
   }
 
   draw(context) {

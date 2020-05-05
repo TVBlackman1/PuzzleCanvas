@@ -108,12 +108,11 @@ class Panel extends Component {
       return;
     this.smoothing = true;
     let panel = this;
-    this.smoothMove(this.x, this.y + 90, function() {
-      panel.smoothing = false;
-    });
-    this.mark.smoothMove(this.mark.x, this.mark.y + 90);
+    this.mark.smoothMove(this.mark.x, this.mark.y + 90).then(r=>{});
     this.shown = false;
-
+    this.smoothMove(this.x, this.y + 90).then(()=>{
+          this.smoothing = false;
+      });
   }
 
   show() {
@@ -121,11 +120,12 @@ class Panel extends Component {
       return;
     this.smoothing = true;
     let panel = this;
-    this.smoothMove(this.x, this.stationar_y, function() {
-      panel.smoothing = false;
-    });
-    this.mark.smoothMove(this.mark.x, this.mark.stationar_y);
+
+    this.mark.smoothMove(this.mark.x, this.mark.stationar_y).then(r => {});
     this.shown = true;
+    this.smoothMove(this.x, this.stationar_y).then(()=>{
+        this.smoothing = false;
+    });
   }
 
   onmousedown(loc) {
@@ -149,8 +149,8 @@ class Panel extends Component {
       }
     } else {
       if (this.wasHiden) {
-        canvas.field.normalIncrease();
-        canvas.panel.hide();
+          canvas.field.normalIncrease();
+          canvas.panel.hide();
       }
     }
   }
