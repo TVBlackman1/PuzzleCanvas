@@ -5,10 +5,13 @@ async function initializeSockets(puzzleworker){
     let response = await axios.get('/puzzle/info/room/'+uid+'?_token='+token);
     let room = response.data;
     let channel = Echo.private('room.' + room.uid);
-    channel.listen('.client-move', (response) => {
+    channel.listen('.client-move', async (response) => {
         console.log("received" ,response);
+
+
         puzzleworker.push(response);
-        puzzleworker.execute(arr); // arr - массив пазлов
+        await puzzleworker.execute(arr); // arr - массив пазлов
+
     });
     return room;
 }

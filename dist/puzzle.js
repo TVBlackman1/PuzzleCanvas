@@ -149,6 +149,7 @@ class Component {
         // рекурсивная функция вызываемая с задержкой в самой себе
         function reDraw() {
             return new Promise(resolve => {
+                console.log("shifting", dX, dY);
                 component.shift(dX, dY);
                 setTimeout(()=>{resolve()}, Component.frameTime);
             })
@@ -481,107 +482,108 @@ class Field extends Component {
 // init in script.js
 
 class Canvas {
-  constructor(id, countImages) {
-    console.log("Canvas created");
-    this.canvas = document.getElementById(id);
-    this.context = this.canvas.getContext('2d');
+    constructor(id, countImages) {
+        console.log("Canvas created");
+        this.canvas = document.getElementById(id);
+        this.context = this.canvas.getContext('2d');
 
-    // отключение сглаживания, хз нужно ли, но любое смазывание я хочу убрать
-    // суть в том, что мелкое изображение пазла на нижней панели изначально
-    // смазано, а после, при его взятии (и увеличении изображения соответственно)
-    // но перестает быть смазанным и начинает быть супер резким. Такая смена
-    // отображения должна быть пресечена
-    this.context.mozImageSmoothingEnabled = false;
-    this.context.webkitImageSmoothingEnabled = false;
-    this.context.msImageSmoothingEnabled = false;
+        // отключение сглаживания, хз нужно ли, но любое смазывание я хочу убрать
+        // суть в том, что мелкое изображение пазла на нижней панели изначально
+        // смазано, а после, при его взятии (и увеличении изображения соответственно)
+        // но перестает быть смазанным и начинает быть супер резким. Такая смена
+        // отображения должна быть пресечена
+        this.context.mozImageSmoothingEnabled = false;
+        this.context.webkitImageSmoothingEnabled = false;
+        this.context.msImageSmoothingEnabled = false;
 
-    this.context.imageSmoothingEnabled = false; // то же самое, но основное
+        this.context.imageSmoothingEnabled = false; // то же самое, но основное
 
-    this.panel = null;
-    this.left_menu = null;
-    this.field = null;
+        this.panel = null;
+        this.left_menu = null;
+        this.field = null;
 
-    this.fr_zones = [];
-    this.fr_zones.length = 3;
+        this.fr_zones = [];
+        this.fr_zones.length = 3;
 
-    this.blank_zones = [];
+        this.blank_zones = [];
 
-  }
-
-  initElements() {
-    this.field = new Field();
-    this.panel = new Panel(countImages, this);
-    this.left_menu = new Menu(this);
-
-    this.fr_zones[0] = this.field;
-    this.fr_zones[1] = this.left_menu;
-    this.fr_zones[2] = this.panel;
-  }
-
-  getCoords(x, y) {
-    var bbox = this.canvas.getBoundingClientRect();
-    return {
-      x: (x - bbox.left) * (this.canvas.width / bbox.width),
-      y: (y - bbox.top) * (this.canvas.height / bbox.height)
-    };
-  }
-
-  isInZones(x, y) {
-    var zones = this.fr_zones;
-    for (var i = 0; i < zones.length; i++) {
-      if (zones[i].isHadPoint(x, y)) {
-        console.log("!");
-        return true;
-      }
     }
-    return false;
-  }
 
-  // переносить объект между меню и общим полем
-  checkMoveBetweenLists() {
-    if (this.left_menu.smoothing) {
-      Menu.removeFromMenu();
-      return;
+    initElements() {
+        this.field = new Field();
+        this.panel = new Panel(countImages, this);
+        this.left_menu = new Menu(this);
+
+        this.fr_zones[0] = this.field;
+        this.fr_zones[1] = this.left_menu;
+        this.fr_zones[2] = this.panel;
     }
-    if (this.left_menu.isPlace) {
-      Menu.includeInMenu();
-    } else {
-      Menu.removeFromMenu();
+
+    getCoords(x, y) {
+        var bbox = this.canvas.getBoundingClientRect();
+        return {
+            x: (x - bbox.left) * (this.canvas.width / bbox.width),
+            y: (y - bbox.top) * (this.canvas.height / bbox.height)
+        };
     }
-  }
 
-  smoothShiftDelta(dx, dy) {
-    let oldX = this.x;
-    let oldY = this.y;
-    let currentTact = 0;
-    let dX = dx / (Component.tact);
-    let dY = dy / (Component.tact);
-    let component = this;
-    // рекурсивная функция вызываемая с задержкой в самой себе
-    function reDraw() {
-      SelectFragmentHelper.deltaX += dX;
-      SelectFragmentHelper.deltaY += dY;
+    isInZones(x, y) {
+        var zones = this.fr_zones;
+        for (var i = 0; i < zones.length; i++) {
+            if (zones[i].isHadPoint(x, y)) {
+                console.log("!");
+                return true;
+            }
+        }
+        return false;
+    }
 
-      if (currentTact < Component.tact - 1) {
-        setTimeout(reDraw, Component.frameTime);
-        currentTact++;
-      } else {
+    // переносить объект между меню и общим полем
+    checkMoveBetweenLists() {
+        if (this.left_menu.smoothing) {
+            Menu.removeFromMenu();
+            return;
+        }
+        if (this.left_menu.isPlace) {
+            Menu.includeInMenu();
+        } else {
+            Menu.removeFromMenu();
+        }
+    }
+
+    async smoothShiftDelta(dx, dy) {
+        let oldX = this.x;
+        let oldY = this.y;
+        let currentTact = 0;
+        let dX = dx / (Component.tact);
+        let dY = dy / (Component.tact);
+        let component = this;
+
+        // рекурсивная функция вызываемая с задержкой в самой себе
+        function reDraw() {
+            return new Promise(resolve => {
+                SelectFragmentHelper.deltaX += dX;
+                SelectFragmentHelper.deltaY += dY;
+                setTimeout(()=>{resolve()}, Component.frameTime);
+            });
+        }
+        while (currentTact < Component.tact - 1) {
+            currentTact++;
+            await reDraw();
+        }
         SelectFragmentHelper.deltaX -= dX * (Component.tact);
         SelectFragmentHelper.deltaY -= dY * (Component.tact);
 
         SelectFragmentHelper.deltaX += dx;
         SelectFragmentHelper.deltaY += dy;
-      }
     }
-    reDraw();
-  }
-
-  draw(context) {
-    this.field.draw(context);
-    this.left_menu.draw(context);
-    this.panel.draw(context);
-  }
-}
+        draw(context)
+        {
+            this.field.draw(context);
+            this.left_menu.draw(context);
+            this.panel.draw(context);
+        }
+    }
 
 // init in Fragment.js
 
@@ -1384,31 +1386,36 @@ class FragmentGroup {
      * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
      *
      */
-    async smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
+    smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
         // append_cursor для группы обрабатывается отдельно
         // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
         // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
         // изображение сместится, баг
         // Другими словами, сначала требуется изменить размер всех пазлов,
         // а потом переместить их. Это происходит быстро и без видимых проблем
-        let resizes = [];
         this.fragments.forEach(function (fragment, ind, arr) {
             // false - append_cursor здесь не рассматривается из-за if-а дальше
             // ведь должно обрабатываться одноразово
-            resizes.push(fragment.smoothResize(old_x, old_y, new_x, new_y, back, false));
+            fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
         });
-        await Promise.all(resizes);
+        // let resizes = [];
+        // this.fragments.forEach(function (fragment, ind, arr) {
+        //     // false - append_cursor здесь не рассматривается из-за if-а дальше
+        //     // ведь должно обрабатываться одноразово
+        //     resizes.push(fragment.smoothResize(old_x, old_y, new_x, new_y, back, false));
+        // });
+        // await Promise.all(resizes);
         if (append_cursor) {
             let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
-            let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-            SelectFragmentHelper.deltaX -= b_x;
-            SelectFragmentHelper.deltaY -= b_y;
-            let shifts = [];
-            this.fragments.forEach(function (fragment, ind, arr) {
-                shifts.push(fragment.smoothShift(b_x, b_y));
-            });
-            await Promise.all(shifts);
-        }
+                    let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+                    SelectFragmentHelper.deltaX -= b_x;
+                    SelectFragmentHelper.deltaY -= b_y;
+                    // let shifts = [];
+                    this.fragments.forEach(function (fragment, ind, arr) {
+                       fragment.smoothShift(b_x, b_y);
+                    });
+                    // await Promise.all(shifts);
+                }
     }
 
     /**
@@ -1431,6 +1438,12 @@ class FragmentGroup {
         this_gr.fragments.forEach(function (fragment, ind, arr) {
             fragment.resizeSelect(back, charact, scaleForFragment);
         });
+    }
+    toMenuPos(x = this.mainFragment.x, y = this.mainFragment.y) {
+        let selected = this.mainFragment;
+        let menu = canvas.left_menu;
+        let dx = menu.current_width - menu.startShowedWidth;
+        return {x:x-dx, y:y};
     }
 }
 
@@ -1682,9 +1695,10 @@ class Fragment extends Component {
         )
     }
 
+    //возвращает true если фрагмент был перенесен
     async tryMoveBeetwenLists() {
         if (this.onMenuLast == this.onMenu) {
-            return;
+            return false;
         }
         this.onMenuLast = this.onMenu;
         if (!this.onMenu) {
@@ -1700,6 +1714,7 @@ class Fragment extends Component {
                 Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
                 false, true
             );
+            return true; // menu -> field
         } else {
             // поставить в зависимости от главного, в меню
             // относительно курсора
@@ -1713,6 +1728,7 @@ class Fragment extends Component {
                 Fragment.widthPanel, Fragment.heightPanel,
                 false, true
             );
+            return true; // field -> menu
         }
     }
 
@@ -1723,10 +1739,10 @@ class Fragment extends Component {
      * перемещаются вправо, в этом суть
      * В аргументах - бывшие и новые размеры фрагмента для высчитывания отступа
      */
-    appendMargin(old_width, old_height, new_width, new_height) {
+    async appendMargin(old_width, old_height, new_width, new_height) {
         let this_fr = this;
         if (this_fr.group == null) {
-            return;
+            return Promise.resolve();
         }
         let oneX = this_fr.ind % imagesX;
         let oneY = Math.floor(this_fr.ind / imagesX);
@@ -1736,7 +1752,7 @@ class Fragment extends Component {
 
         let dx = (oneX - twoX) * (new_width - old_width) / 5 * 3;
         let dy = (oneY - twoY) * (new_height - old_height) / 5 * 3;
-        this_fr.smoothShift(dx, dy);
+        await this_fr.smoothShift(dx, dy);
     }
 
     // Расстояниме от курсора мыши до старта изображения в левом верхнем углу в пикселях.
@@ -2323,17 +2339,18 @@ class Fragment extends Component {
             // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
             let b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
             let b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
-            canvas.smoothShiftDelta(-b_x, -b_y);
-            await this_fr.smoothShift(b_x, b_y);
+            await Promise.all([canvas.smoothShiftDelta(-b_x, -b_y),
+            this_fr.smoothShift(b_x, b_y)]);
         }
 
-        this.appendMargin(old_width, old_height, new_width, new_height);
+        await this.appendMargin(old_width, old_height, new_width, new_height);
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function resize() {
             return new Promise(resolve=> {
                 current_width += dX;
                 current_height += dY;
+                console.log("resizing", dX, dY);
                 this_fr.setSizes(this_fr, current_width, current_height);
                 setTimeout(()=>{resolve()}, Component.frameTime);
             });
@@ -2379,6 +2396,13 @@ class Fragment extends Component {
                 back
             );
         }
+    }
+
+    //функция, пересчитывающая текущие координаты в координаты меню
+    toMenuPos(x, y) {
+        let menu = canvas.left_menu;
+        let dx = menu.current_width - menu.startShowedWidth;
+        return {x:x-dx, y:y};
     }
 }
 
@@ -2499,9 +2523,13 @@ class PuzzleWorker {
     }
 
     async execute(arr) {
+
         if (this.tasks.length !== 0) {
+
             let task = this.tasks[this.tasks.length - 1];
             let selectedFragment = arr[task.ind];
+
+//тут уже NAN
 
             if (!task.onBottomPanel && selectedFragment.onBottomPanel) {
                 selectedFragment.onBottomPanel = false;
@@ -2509,22 +2537,14 @@ class PuzzleWorker {
             }
 
             if (!task.group) {
-                selectedFragment.onMenu = task.onMenu;
-                await selectedFragment.tryMoveBeetwenLists();
-                await selectedFragment.smoothMove(task.x, task.y);
-                if(task.shouldConnect){
-                    selectedFragment.connectTo(selectedFragment.ind);
-                }
-
+                await this.executeMove(task, selectedFragment);
+                await this.executeConnection(task, selectedFragment, selectedFragment)
             } else {
-                selectedFragment.group.onMenu = task.onMenu;
-                await selectedFragment.group.tryMoveBeetwenLists();
-                await selectedFragment.group.smoothMove(task.x, task.y, selectedFragment);
-                if(task.shouldConnect){
-                    selectedFragment.group.connectTo(selectedFragment.ind);
-                }
-            }
 
+                await this.executeMove(task, selectedFragment.group, selectedFragment);
+
+                await this.executeConnection(task, selectedFragment.group, selectedFragment)
+            }
             this.tasks.pop();
             this.execute(arr);
         }
@@ -2532,6 +2552,38 @@ class PuzzleWorker {
 
     error(error) {
         console.log("The error in worker: " + error);
+    }
+
+    /**
+     *
+     * @param task - executable task
+     * @param elem - Fragment/Fragment group
+     * @param selected - SelectedFragment для корректной работы группы
+     * @returns {Promise<void>}
+     */
+    async executeMove(task, elem, selected = null) {
+        const onMenuLast = elem.onMenu;
+        elem.onMenu = task.onMenu;
+        await elem.tryMoveBeetwenLists(selected);
+
+        if (this.canvas.left_menu.shown) {
+            //меню открыто, переносим по обычным координатам
+            await elem.smoothMove(task.x, task.y, selected);
+        } else {
+            //меню закрыто, если нужно перенестить на меню, необходимо пересчитать координаты
+            if (task.onMenu) {
+                const coords = elem.toMenuPos(task.x, task.y);
+                await elem.smoothMove(coords.x, coords.y, selected);
+            } else {
+                await elem.smoothMove(task.x, task.y, selected);
+            }
+        }
+    }
+
+    async executeConnection(task, elem, selected = null){
+        if (task.shouldConnect) {
+            await elem.connectTo(selected.ind);
+        }
     }
 }
 
@@ -2542,10 +2594,13 @@ async function initializeSockets(puzzleworker){
     let response = await axios.get('/puzzle/info/room/'+uid+'?_token='+token);
     let room = response.data;
     let channel = Echo.private('room.' + room.uid);
-    channel.listen('.client-move', (response) => {
+    channel.listen('.client-move', async (response) => {
         console.log("received" ,response);
+
+
         puzzleworker.push(response);
-        puzzleworker.execute(arr); // arr - массив пазлов
+        await puzzleworker.execute(arr); // arr - массив пазлов
+
     });
     return room;
 }
@@ -2746,7 +2801,7 @@ window.onload = async function () {
         canvas.left_menu.onmousemove(loc.x, loc.y);
     };
 
-    canvas.canvas.onmouseup = function (e) {
+    canvas.canvas.onmouseup = async function (e) {
         var loc = canvas.getCoords(e.clientX, e.clientY);
 
         canvas.left_menu.onmousemove(loc.x, loc.y);
@@ -2762,11 +2817,10 @@ window.onload = async function () {
             canvas.checkMoveBetweenLists() // проверка на вхождение в зону меню + изменение состояния объектов
             var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
             if (selectedFragment.group != null) {
-                selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
+                await selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
             } else {
-                selectedFragment.tryMoveBeetwenLists();
+                await selectedFragment.tryMoveBeetwenLists();
             }
-            console.log(`send coords ${arr[SelectFragmentHelper.translatedFragmentId].x} ${arr[SelectFragmentHelper.translatedFragmentId].y}`);
 
             let shouldConnectOnOtherSide = {res: false};
             if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {

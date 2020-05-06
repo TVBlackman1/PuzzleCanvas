@@ -198,31 +198,36 @@ class FragmentGroup {
      * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
      *
      */
-    async smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
+    smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
         // append_cursor для группы обрабатывается отдельно
         // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
         // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
         // изображение сместится, баг
         // Другими словами, сначала требуется изменить размер всех пазлов,
         // а потом переместить их. Это происходит быстро и без видимых проблем
-        let resizes = [];
         this.fragments.forEach(function (fragment, ind, arr) {
             // false - append_cursor здесь не рассматривается из-за if-а дальше
             // ведь должно обрабатываться одноразово
-            resizes.push(fragment.smoothResize(old_x, old_y, new_x, new_y, back, false));
+            fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
         });
-        await Promise.all(resizes);
+        // let resizes = [];
+        // this.fragments.forEach(function (fragment, ind, arr) {
+        //     // false - append_cursor здесь не рассматривается из-за if-а дальше
+        //     // ведь должно обрабатываться одноразово
+        //     resizes.push(fragment.smoothResize(old_x, old_y, new_x, new_y, back, false));
+        // });
+        // await Promise.all(resizes);
         if (append_cursor) {
             let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
-            let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-            SelectFragmentHelper.deltaX -= b_x;
-            SelectFragmentHelper.deltaY -= b_y;
-            let shifts = [];
-            this.fragments.forEach(function (fragment, ind, arr) {
-                shifts.push(fragment.smoothShift(b_x, b_y));
-            });
-            await Promise.all(shifts);
-        }
+                    let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+                    SelectFragmentHelper.deltaX -= b_x;
+                    SelectFragmentHelper.deltaY -= b_y;
+                    // let shifts = [];
+                    this.fragments.forEach(function (fragment, ind, arr) {
+                       fragment.smoothShift(b_x, b_y);
+                    });
+                    // await Promise.all(shifts);
+                }
     }
 
     /**
@@ -245,5 +250,11 @@ class FragmentGroup {
         this_gr.fragments.forEach(function (fragment, ind, arr) {
             fragment.resizeSelect(back, charact, scaleForFragment);
         });
+    }
+    toMenuPos(x = this.mainFragment.x, y = this.mainFragment.y) {
+        let selected = this.mainFragment;
+        let menu = canvas.left_menu;
+        let dx = menu.current_width - menu.startShowedWidth;
+        return {x:x-dx, y:y};
     }
 }

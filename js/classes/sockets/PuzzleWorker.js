@@ -11,9 +11,13 @@ class PuzzleWorker {
     }
 
     async execute(arr) {
+
         if (this.tasks.length !== 0) {
+
             let task = this.tasks[this.tasks.length - 1];
             let selectedFragment = arr[task.ind];
+
+//тут уже NAN
 
             if (!task.onBottomPanel && selectedFragment.onBottomPanel) {
                 selectedFragment.onBottomPanel = false;
@@ -21,22 +25,14 @@ class PuzzleWorker {
             }
 
             if (!task.group) {
-                selectedFragment.onMenu = task.onMenu;
-                await selectedFragment.tryMoveBeetwenLists();
-                await selectedFragment.smoothMove(task.x, task.y);
-                if(task.shouldConnect){
-                    selectedFragment.connectTo(selectedFragment.ind);
-                }
-
+                await this.executeMove(task, selectedFragment);
+                await this.executeConnection(task, selectedFragment, selectedFragment)
             } else {
-                selectedFragment.group.onMenu = task.onMenu;
-                await selectedFragment.group.tryMoveBeetwenLists();
-                await selectedFragment.group.smoothMove(task.x, task.y, selectedFragment);
-                if(task.shouldConnect){
-                    selectedFragment.group.connectTo(selectedFragment.ind);
-                }
-            }
 
+                await this.executeMove(task, selectedFragment.group, selectedFragment);
+
+                await this.executeConnection(task, selectedFragment.group, selectedFragment)
+            }
             this.tasks.pop();
             this.execute(arr);
         }
@@ -44,5 +40,37 @@ class PuzzleWorker {
 
     error(error) {
         console.log("The error in worker: " + error);
+    }
+
+    /**
+     *
+     * @param task - executable task
+     * @param elem - Fragment/Fragment group
+     * @param selected - SelectedFragment для корректной работы группы
+     * @returns {Promise<void>}
+     */
+    async executeMove(task, elem, selected = null) {
+        const onMenuLast = elem.onMenu;
+        elem.onMenu = task.onMenu;
+        await elem.tryMoveBeetwenLists(selected);
+
+        if (this.canvas.left_menu.shown) {
+            //меню открыто, переносим по обычным координатам
+            await elem.smoothMove(task.x, task.y, selected);
+        } else {
+            //меню закрыто, если нужно перенестить на меню, необходимо пересчитать координаты
+            if (task.onMenu) {
+                const coords = elem.toMenuPos(task.x, task.y);
+                await elem.smoothMove(coords.x, coords.y, selected);
+            } else {
+                await elem.smoothMove(task.x, task.y, selected);
+            }
+        }
+    }
+
+    async executeConnection(task, elem, selected = null){
+        if (task.shouldConnect) {
+            await elem.connectTo(selected.ind);
+        }
     }
 }

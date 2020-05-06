@@ -246,9 +246,10 @@ class Fragment extends Component {
         )
     }
 
+    //возвращает true если фрагмент был перенесен
     async tryMoveBeetwenLists() {
         if (this.onMenuLast == this.onMenu) {
-            return;
+            return false;
         }
         this.onMenuLast = this.onMenu;
         if (!this.onMenu) {
@@ -264,6 +265,7 @@ class Fragment extends Component {
                 Fragment.widthScale * this.scale, Fragment.heightScale * this.scale,
                 false, true
             );
+            return true; // menu -> field
         } else {
             // поставить в зависимости от главного, в меню
             // относительно курсора
@@ -277,6 +279,7 @@ class Fragment extends Component {
                 Fragment.widthPanel, Fragment.heightPanel,
                 false, true
             );
+            return true; // field -> menu
         }
     }
 
@@ -287,10 +290,10 @@ class Fragment extends Component {
      * перемещаются вправо, в этом суть
      * В аргументах - бывшие и новые размеры фрагмента для высчитывания отступа
      */
-    appendMargin(old_width, old_height, new_width, new_height) {
+    async appendMargin(old_width, old_height, new_width, new_height) {
         let this_fr = this;
         if (this_fr.group == null) {
-            return;
+            return Promise.resolve();
         }
         let oneX = this_fr.ind % imagesX;
         let oneY = Math.floor(this_fr.ind / imagesX);
@@ -300,7 +303,7 @@ class Fragment extends Component {
 
         let dx = (oneX - twoX) * (new_width - old_width) / 5 * 3;
         let dy = (oneY - twoY) * (new_height - old_height) / 5 * 3;
-        this_fr.smoothShift(dx, dy);
+        await this_fr.smoothShift(dx, dy);
     }
 
     // Расстояниме от курсора мыши до старта изображения в левом верхнем углу в пикселях.
@@ -887,11 +890,11 @@ class Fragment extends Component {
             // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
             let b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
             let b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
-            canvas.smoothShiftDelta(-b_x, -b_y);
-            await this_fr.smoothShift(b_x, b_y);
+            await Promise.all([canvas.smoothShiftDelta(-b_x, -b_y),
+            this_fr.smoothShift(b_x, b_y)]);
         }
 
-        this.appendMargin(old_width, old_height, new_width, new_height);
+        await this.appendMargin(old_width, old_height, new_width, new_height);
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function resize() {
@@ -943,5 +946,12 @@ class Fragment extends Component {
                 back
             );
         }
+    }
+
+    //функция, пересчитывающая текущие координаты в координаты меню
+    toMenuPos(x, y) {
+        let menu = canvas.left_menu;
+        let dx = menu.current_width - menu.startShowedWidth;
+        return {x:x-dx, y:y};
     }
 }

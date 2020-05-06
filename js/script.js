@@ -181,7 +181,7 @@ window.onload = async function () {
         canvas.left_menu.onmousemove(loc.x, loc.y);
     };
 
-    canvas.canvas.onmouseup = function (e) {
+    canvas.canvas.onmouseup = async function (e) {
         var loc = canvas.getCoords(e.clientX, e.clientY);
 
         canvas.left_menu.onmousemove(loc.x, loc.y);
@@ -197,11 +197,10 @@ window.onload = async function () {
             canvas.checkMoveBetweenLists() // проверка на вхождение в зону меню + изменение состояния объектов
             var selectedFragment = arr[SelectFragmentHelper.translatedFragmentId];
             if (selectedFragment.group != null) {
-                selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
+                await selectedFragment.group.tryMoveBeetwenLists(selectedFragment);
             } else {
-                selectedFragment.tryMoveBeetwenLists();
+                await selectedFragment.tryMoveBeetwenLists();
             }
-            console.log(`send coords ${arr[SelectFragmentHelper.translatedFragmentId].x} ${arr[SelectFragmentHelper.translatedFragmentId].y}`);
 
             let shouldConnectOnOtherSide = {res: false};
             if (selectedFragment.group == null && canvas.panel.isHadPoint(loc.x, loc.y)) {
