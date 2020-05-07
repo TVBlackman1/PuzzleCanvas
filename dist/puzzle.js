@@ -2529,20 +2529,21 @@ class PuzzleWorker {
             let task = this.tasks[this.tasks.length - 1];
             let selectedFragment = arr[task.ind];
 
-//тут уже NAN
-
             if (!task.onBottomPanel && selectedFragment.onBottomPanel) {
                 selectedFragment.onBottomPanel = false;
                 selectedFragment.moveToPanel();
+            }else if(task.onBottomPanel && !selectedFragment.onBottomPanel){
+                await this.executeMove(task, selectedFragment);
+                selectedFragment.onBottomPanel = true;
+                selectedFragment.moveToPanel();
+                return;
             }
 
             if (!task.group) {
                 await this.executeMove(task, selectedFragment);
                 await this.executeConnection(task, selectedFragment, selectedFragment)
             } else {
-
                 await this.executeMove(task, selectedFragment.group, selectedFragment);
-
                 await this.executeConnection(task, selectedFragment.group, selectedFragment)
             }
             this.tasks.pop();
@@ -2559,7 +2560,7 @@ class PuzzleWorker {
      * @param task - executable task
      * @param elem - Fragment/Fragment group
      * @param selected - SelectedFragment для корректной работы группы
-     * @returns {Promise<void>}
+     * @returns {Promise<void>} - конец перевижения
      */
     async executeMove(task, elem, selected = null) {
         const onMenuLast = elem.onMenu;
