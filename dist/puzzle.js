@@ -138,7 +138,7 @@ class Component {
      *
      *
      */
-    async smoothShift(dx, dy) {
+    smoothShift(dx, dy, endFunction = function() {}) {
         let oldX = this.x;
         let oldY = this.y;
         let currentTact = 0;
@@ -148,19 +148,22 @@ class Component {
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function reDraw() {
-            return new Promise(resolve => {
+            component.shift(dX, dY);
+
+            if (currentTact < Component.tact - 1) {
+                setTimeout(reDraw, Component.frameTime);
+                currentTact++;
                 console.log("shifting", dX, dY);
-                component.shift(dX, dY);
-                setTimeout(()=>{resolve()}, Component.frameTime);
-            })
+            } else {
+                component.shift(-dX * (Component.tact), -dY * (Component.tact));
+                // component.move(oldX, oldY);
+                component.shift(dx, dy);
+                endFunction();
+            }
         }
-        while(currentTact < Component.tact - 1){
-            currentTact++;
-            await reDraw();
-        }
-        component.shift(-dX * (Component.tact), -dY * (Component.tact));
-        component.shift(dx, dy);
+        reDraw();
     }
+
 
 
     /**
@@ -188,9 +191,6 @@ class Component {
                 );
                 setTimeout(()=>{resolve()}, Component.frameTime)
             });
-
-
-
         }
         while(currentTact < Component.tact - 1){
             currentTact++;
@@ -1290,14 +1290,12 @@ class FragmentGroup {
      *
      *
      */
-    async smoothShift(dx, dy) {
+   smoothShift(dx, dy) {
         console.log("!smoothShiftGroup");
-        let shifts = [];
         // connectingFragment - фрагмент, к которому я конекчусь.
         this.fragments.forEach(function (fragment) {
-            shifts.push(fragment.smoothShift(dx, dy));
+            fragment.smoothShift(dx, dy);
         });
-        await Promise.all(shifts);
         // true, можно работать с группой
     }
 
@@ -1386,36 +1384,31 @@ class FragmentGroup {
      * @param bool append_cursor - стоит ли отталкиваться от местоположения курсора
      *
      */
-    smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
+    async smoothResize(old_x, old_y, new_x, new_y, back = false, append_cursor = false) {
         // append_cursor для группы обрабатывается отдельно
         // в здешнем if-e, т.к. иначе у mainFragment изменятся координаты
         // и они не правильно посчитаются в дальнейшем у некоторых фрагментов
         // изображение сместится, баг
         // Другими словами, сначала требуется изменить размер всех пазлов,
         // а потом переместить их. Это происходит быстро и без видимых проблем
+        let resizes = [];
         this.fragments.forEach(function (fragment, ind, arr) {
             // false - append_cursor здесь не рассматривается из-за if-а дальше
             // ведь должно обрабатываться одноразово
-            fragment.smoothResize(old_x, old_y, new_x, new_y, back, false);
+            resizes.push(fragment.smoothResize(old_x, old_y, new_x, new_y, back, false));
         });
-        // let resizes = [];
-        // this.fragments.forEach(function (fragment, ind, arr) {
-        //     // false - append_cursor здесь не рассматривается из-за if-а дальше
-        //     // ведь должно обрабатываться одноразово
-        //     resizes.push(fragment.smoothResize(old_x, old_y, new_x, new_y, back, false));
-        // });
-        // await Promise.all(resizes);
-        if (append_cursor) {
-            let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
-                    let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
-                    SelectFragmentHelper.deltaX -= b_x;
-                    SelectFragmentHelper.deltaY -= b_y;
-                    // let shifts = [];
-                    this.fragments.forEach(function (fragment, ind, arr) {
-                       fragment.smoothShift(b_x, b_y);
-                    });
-                    // await Promise.all(shifts);
-                }
+        await Promise.all(resizes);
+        // if (append_cursor) {
+        //     let b_x = SelectFragmentHelper.deltaX * (1 - new_x / old_x);
+        //             let b_y = SelectFragmentHelper.deltaY * (1 - new_y / old_y);
+        //             SelectFragmentHelper.deltaX -= b_x;
+        //             SelectFragmentHelper.deltaY -= b_y;
+        //             // let shifts = [];
+        //             this.fragments.forEach(function (fragment, ind, arr) {
+        //                fragment.smoothShift(b_x, b_y);
+        //             });
+        //             // await Promise.all(shifts);
+        //         }
     }
 
     /**
@@ -1739,7 +1732,7 @@ class Fragment extends Component {
      * перемещаются вправо, в этом суть
      * В аргументах - бывшие и новые размеры фрагмента для высчитывания отступа
      */
-    async appendMargin(old_width, old_height, new_width, new_height) {
+    appendMargin(old_width, old_height, new_width, new_height) {
         let this_fr = this;
         if (this_fr.group == null) {
             return Promise.resolve();
@@ -1752,7 +1745,7 @@ class Fragment extends Component {
 
         let dx = (oneX - twoX) * (new_width - old_width) / 5 * 3;
         let dy = (oneY - twoY) * (new_height - old_height) / 5 * 3;
-        await this_fr.smoothShift(dx, dy);
+        this_fr.smoothShift(dx, dy);
     }
 
     // Расстояниме от курсора мыши до старта изображения в левом верхнем углу в пикселях.
@@ -2294,17 +2287,14 @@ class Fragment extends Component {
         });
     }
 
-    async smoothShift(dx, dy) {
+    smoothShift(dx, dy) {
         let this_frg = (this.group == null) ? this : this.group;
         // группа или одиночный фрагмент, к которому идет подключение
         let this_fr = this; // сам фрагмент
         this_frg.smoothing = true;
-
-        await super.smoothShift(dx, dy).then(()=> {
-            // при окончании перемещения требуется проверить, стоит ли объединить
-            // фрагменты в единую группу
+        super.smoothShift(dx, dy, function () {
             this_frg.smoothing = false;
-        });
+        })
     }
 
     /**
@@ -2339,18 +2329,17 @@ class Fragment extends Component {
             // работает только для одиначных объектов, т.к. в группе обрабатывается отдельно
             let b_x = SelectFragmentHelper.deltaX * (1 - new_width / old_width);
             let b_y = SelectFragmentHelper.deltaY * (1 - new_height / old_height);
-            await Promise.all([canvas.smoothShiftDelta(-b_x, -b_y),
-            this_fr.smoothShift(b_x, b_y)]);
+            canvas.smoothShiftDelta(-b_x, -b_y);
+            this_fr.smoothShift(b_x, b_y);
         }
 
-        await this.appendMargin(old_width, old_height, new_width, new_height);
+        this.appendMargin(old_width, old_height, new_width, new_height);
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function resize() {
             return new Promise(resolve=> {
                 current_width += dX;
                 current_height += dY;
-                console.log("resizing", dX, dY);
                 this_fr.setSizes(this_fr, current_width, current_height);
                 setTimeout(()=>{resolve()}, Component.frameTime);
             });

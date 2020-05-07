@@ -102,7 +102,7 @@ class Component {
      *
      *
      */
-    async smoothShift(dx, dy) {
+    smoothShift(dx, dy, endFunction = function() {}) {
         let oldX = this.x;
         let oldY = this.y;
         let currentTact = 0;
@@ -112,18 +112,22 @@ class Component {
 
         // рекурсивная функция вызываемая с задержкой в самой себе
         function reDraw() {
-            return new Promise(resolve => {
-                component.shift(dX, dY);
-                setTimeout(()=>{resolve()}, Component.frameTime);
-            })
+            component.shift(dX, dY);
+
+            if (currentTact < Component.tact - 1) {
+                setTimeout(reDraw, Component.frameTime);
+                currentTact++;
+                console.log("shifting", dX, dY);
+            } else {
+                component.shift(-dX * (Component.tact), -dY * (Component.tact));
+                // component.move(oldX, oldY);
+                component.shift(dx, dy);
+                endFunction();
+            }
         }
-        while(currentTact < Component.tact - 1){
-            currentTact++;
-            await reDraw();
-        }
-        component.shift(-dX * (Component.tact), -dY * (Component.tact));
-        component.shift(dx, dy);
+        reDraw();
     }
+
 
 
     /**
@@ -151,9 +155,6 @@ class Component {
                 );
                 setTimeout(()=>{resolve()}, Component.frameTime)
             });
-
-
-
         }
         while(currentTact < Component.tact - 1){
             currentTact++;
