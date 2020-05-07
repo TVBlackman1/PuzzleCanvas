@@ -667,6 +667,10 @@ class Fragment extends Component {
         if (arr[i].onMenu || (arr[i].group != null && arr[i].group.onMenu)) {
             return {res:false};
         }
+
+        if(canvas.field.smoothing){
+            return {res:false};
+        }
         let connectArray = [];
 
         let leftFragment = this.left;

@@ -385,6 +385,12 @@ class Field extends Component {
           continue;
         }
 
+        //рассматриваемый фрагмент находится в анимации, необходимо подождать пока она закончится
+        if (lastSeenObject.value.smoothing){
+            return false;
+        }
+
+
         lastSeenObject.value.smoothResize(
           lastSeenObject.value.mainFragment.current_width,
           lastSeenObject.value.mainFragment.current_height,
@@ -421,6 +427,7 @@ class Field extends Component {
         this.smoothing = false;
     });
     this.bigType = !this.bigType;
+    return true;
   }
 
   /*
@@ -430,7 +437,7 @@ class Field extends Component {
    */
   normalDecrease() {
     if (!this.bigType || this.smoothing)
-      return;
+      return false;
     return this.normalResize(true);
   }
 
@@ -441,7 +448,7 @@ class Field extends Component {
    */
   normalIncrease() {
     if (this.bigType || this.smoothing)
-      return;
+      return false;
     return this.normalResize(false);
   }
 
@@ -731,13 +738,13 @@ class Panel extends Component {
       let ind = SelectFragmentHelper.translatedFragmentId;
       if (ind == -1 || arr[ind].group == null) {
         this.wasHiden = true;
-        canvas.field.normalDecrease();
-        canvas.panel.show();
+        let needToShow = canvas.field.normalDecrease();
+        if(needToShow) canvas.panel.show();
       }
     } else {
       if (this.wasHiden) {
-          canvas.field.normalIncrease();
-          canvas.panel.hide();
+          let needToShow = canvas.field.normalIncrease();
+          if(needToShow) canvas.panel.hide();
       }
     }
   }
@@ -2107,6 +2114,10 @@ class Fragment extends Component {
         }
 
         if (arr[i].onMenu || (arr[i].group != null && arr[i].group.onMenu)) {
+            return {res:false};
+        }
+
+        if(canvas.field.smoothing){
             return {res:false};
         }
         let connectArray = [];

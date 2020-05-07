@@ -144,13 +144,13 @@ class Panel extends Component {
       let ind = SelectFragmentHelper.translatedFragmentId;
       if (ind == -1 || arr[ind].group == null) {
         this.wasHiden = true;
-        canvas.field.normalDecrease();
-        canvas.panel.show();
+        let needToShow = canvas.field.normalDecrease();
+        if(needToShow) canvas.panel.show();
       }
     } else {
       if (this.wasHiden) {
-          canvas.field.normalIncrease();
-          canvas.panel.hide();
+          let needToShow = canvas.field.normalIncrease();
+          if(needToShow) canvas.panel.hide();
       }
     }
   }
