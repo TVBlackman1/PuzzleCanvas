@@ -1,0 +1,27 @@
+body {
+  background-color: #dbdbdb; }
+  body div#main {
+    display: grid;
+    grid-template-columns: 1490px 1fr;
+    grid-template-rows: 1fr;
+    grid-column-gap: 6px;
+    width: 1800px;
+    height: 820px;
+    margin: auto;
+    margin-top: 23px; }
+    body div#main #canvas-puzzle {
+      display: block;
+      border: 2px solid #4e4e4e;
+      box-sizing: border-box;
+      width: 1800px;
+      width: 1490px;
+      margin: auto;
+      height: 820px; }
+    body div#main #right-menu {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: 450px 366px;
+      grid-row-gap: 4px;
+      box-sizing: border-box; }
+
+/*# sourceMappingURL=style.css.map */

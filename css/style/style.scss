@@ -1,0 +1,38 @@
+
+body {
+	background-color: #dbdbdb;
+	$all-width: 1800px;
+	$height: 820px;
+	$canvas-width: 1490px;
+	$right-menu-column-gap: 4px;
+	$right-menu-top-height: 450px;
+
+	div#main {
+		display: grid;
+		grid-template-columns: $canvas-width 1fr;
+		grid-template-rows: 1fr;
+		grid-column-gap: 6px;
+		width: $all-width;
+		height: $height;
+		margin: auto;
+		margin-top: 23px;
+		#canvas-puzzle {
+			display: block;
+			border: 2px solid #4e4e4e;
+			box-sizing: border-box;
+			width: 1800px;
+			width: 1490px;
+			margin: auto;
+			height: 820px;
+		}
+		#right-menu {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows:
+				$right-menu-top-height
+				$height - $right-menu-top-height - $right-menu-column-gap;
+			grid-row-gap: $right-menu-column-gap;
+			box-sizing: border-box;
+		}
+	}
+}
