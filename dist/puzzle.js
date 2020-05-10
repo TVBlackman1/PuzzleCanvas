@@ -863,7 +863,7 @@ class Timer extends Component {
 
 class ButtonBack extends Button {
   static name = "back";
-  
+
   constructor() {
     super();
   }
@@ -887,7 +887,7 @@ class ButtonDelete extends Button {
 
 class ButtonDeleteAll extends Button {
   static name = "delete-all";
-  
+
   constructor() {
     super();
   }
@@ -1447,7 +1447,6 @@ class FragmentGroup {
     }
 }
 
-// Возможно стоит убрать подключение к smoothing объекту. а то проблем слишком дохуя??
 // на заметку, потом посмотрим - Михаил
 
 // Давно уже убрал, но комент забавный я оставил, пусть будет на память как и "var hello = 4"
@@ -2590,6 +2589,7 @@ class PuzzleWorker {
 
 //инициализация подключения и слушателя действий оппонента
 async function initializeSockets(puzzleworker){
+  console.log("Ошибка? Разумеется, без сервера ж");
     let uid = $(location).attr('href').split('/').pop();
     let token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     let response = await axios.get('/puzzle/info/room/'+uid+'?_token='+token);
